@@ -5,6 +5,7 @@ import { configScript } from './config.mjs';
 await mkdir('dist/vendor',{recursive:true});
 await build({stdin:{contents:"export { createClient } from '@supabase/supabase-js';",resolveDir:process.cwd()},bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,outfile:'dist/vendor/supabase.js'});
 await build({stdin:{contents:"export { create } from 'qrcode';",resolveDir:process.cwd()},bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,outfile:'dist/vendor/qrcode.js'});
+await build({stdin:{contents:"export { jsPDF } from 'jspdf';",resolveDir:process.cwd()},bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,outfile:'dist/vendor/jspdf.js'});
 await writeFile('dist/vendor/qrcode.LICENSE.txt',await readFile('node_modules/qrcode/license','utf8')+'\n\n'+await readFile('node_modules/dijkstrajs/LICENSE.md','utf8'));
 await writeFile('dist/config.js',configScript());
 if (process.env.REQUIRE_SUPABASE_CONFIG === '1' && (!process.env.SUPABASE_URL || !process.env.SUPABASE_PUBLISHABLE_KEY)) {

@@ -1,4 +1,5 @@
 import { receiptData, receiptMarkup, qrSvg, trackingReceiptUrl, receiptPageStyle, whatsappReceiptUrl } from './receipt.js';
+import { makeReceiptPdf } from './receipt-pdf.js';
 
 export function confirmTrackingRenewal(parent) {
   return new Promise(resolve => {
@@ -22,7 +23,7 @@ export function showReceipt({ root, order, workshopName, demo, links, backend, a
     <label class="field" for="ticket-paper-size">Papel térmico<select id="ticket-paper-size"><option value="80">80 mm · Estándar</option><option value="58">58 mm · Compacto</option></select></label>
     <p id="ticket-status" class="ticket-status" role="status"></p><p id="ticket-error" class="error" role="alert"></p>
     <button id="ticket-print" class="primary" disabled>Imprimir ticket</button>
-    ${demo ? '' : '<a id="ticket-whatsapp" hidden target="_blank" rel="noopener noreferrer">Compartir recepción por WhatsApp ↗</a><p id="ticket-share-help" hidden>Se abrirá WhatsApp con el número de ticket y el enlace privado. Elige al cliente antes de enviarlo.</p>'}
+    ${demo ? '' : '<button id="ticket-share-pdf" hidden>Compartir ticket PDF</button><button id="ticket-download-pdf" hidden>Descargar ticket PDF</button><a id="ticket-whatsapp" hidden target="_blank" rel="noopener noreferrer">Compartir enlace por WhatsApp ↗</a><p id="ticket-share-help" hidden>El PDF contiene datos del cliente y un enlace privado. Elige WhatsApp y verifica el destinatario antes de enviar. Si no aparece, descarga el PDF y adjúntalo manualmente.</p>'}
     <button id="ticket-retry" hidden>Volver a validar enlace</button>
     ${demo ? '' : '<button id="ticket-create">Crear QR</button><a id="ticket-customer" hidden>Abrir seguimiento del cliente ↗</a><form id="ticket-import" class="actions-stack" hidden><label class="field" for="ticket-existing-url">Recuperar un QR anterior<input id="ticket-existing-url" type="url" required maxlength="512" autocomplete="off" spellcheck="false" placeholder="Pega el enlace del ticket anterior"></label><button type="submit">Conservar este QR</button><p>Escanea el ticket anterior y pega su enlace. Se guardará cifrado, sin invalidarlo ni cambiar su vencimiento.</p></form>'}
     <p>En el diálogo de impresión selecciona tu impresora y el mismo ancho de papel, escala 100 %, sin encabezados ni pies de página. También puedes guardar como PDF.</p>
@@ -35,6 +36,8 @@ export function showReceipt({ root, order, workshopName, demo, links, backend, a
   const retryButton = view.querySelector('#ticket-retry'), sizeSelect = view.querySelector('#ticket-paper-size');
   const status = view.querySelector('#ticket-status'), error = view.querySelector('#ticket-error');
   const importForm = view.querySelector('#ticket-import'), share = view.querySelector('#ticket-whatsapp'), shareHelp = view.querySelector('#ticket-share-help');
+  const sharePdf = view.querySelector('#ticket-share-pdf'), downloadPdf = view.querySelector('#ticket-download-pdf');
+  let pdfFile = null;
   const generation = links.generation();
   const current = () => view.isConnected && isCurrent() && links.generation() === generation;
   let busy = false;
@@ -55,6 +58,8 @@ export function showReceipt({ root, order, workshopName, demo, links, backend, a
     if (createButton) createButton.disabled = value;
     retryButton.disabled = value;
     if (importForm) importForm.querySelector('button').disabled = value;
+    if (sharePdf) sharePdf.disabled = value;
+    if (downloadPdf) downloadPdf.disabled = value;
   }
   async function prepare() {
     if (!current()) return false;
@@ -63,7 +68,7 @@ export function showReceipt({ root, order, workshopName, demo, links, backend, a
       renderPaper(); view.dataset.ready = 'true'; status.textContent = 'DEMO · Sin QR compartido';
       return true;
     }
-    const customer = view.querySelector('#ticket-customer'); customer.hidden = true; share.hidden = true; share.removeAttribute('href'); shareHelp.hidden = true;
+    const customer = view.querySelector('#ticket-customer'); customer.hidden = true; share.hidden = true; share.removeAttribute('href'); shareHelp.hidden = true; sharePdf.hidden = true; downloadPdf.hidden = true; pdfFile = null;
     linkState = 'unknown'; importForm.hidden = true; createButton.hidden = false;
     status.textContent = 'Recuperando el QR del taller de forma segura…';
     try {
@@ -95,7 +100,13 @@ export function showReceipt({ root, order, workshopName, demo, links, backend, a
       if (!current()) return false;
       renderPaper(qrSvg(checked.url, create), checked.local);
       view.dataset.ready = 'true'; customer.href = checked.url; customer.hidden = false; retryButton.hidden = true;
-      if (!checked.local) { share.href = whatsappReceiptUrl(data, checked.url, applicationUrl); share.hidden = false; shareHelp.hidden = false; }
+      if (!checked.local) {
+        const { jsPDF } = await import('./vendor/jspdf.js');
+        if (!current()) return false;
+        pdfFile = new window.File([makeReceiptPdf(data, checked.url, jsPDF, create)], `ticket-GT-${data.number}.pdf`, { type: 'application/pdf' });
+        share.href = whatsappReceiptUrl(data, checked.url, applicationUrl); share.hidden = false; shareHelp.hidden = false; downloadPdf.hidden = false;
+        sharePdf.hidden = !(navigator.share && navigator.canShare?.({ files: [pdfFile] }));
+      }
       status.textContent = checked.local ? 'Aviso: el QR apunta al entorno local y no funciona desde otro dispositivo.' : 'QR recuperado de forma segura · Reimprimir conserva el mismo enlace.';
       return true;
     } catch (failure) {
@@ -133,6 +144,16 @@ export function showReceipt({ root, order, workshopName, demo, links, backend, a
     } finally { if (current()) setBusy(false); }
   };
   retryButton.onclick = async () => { if (busy) return; setBusy(true); try { await prepare(); } finally { if (current()) setBusy(false); } };
+  if (sharePdf) sharePdf.onclick = async () => {
+    if (busy || !current() || !pdfFile) return;
+    try { await navigator.share({ files: [pdfFile], title: `Ticket GT-${data.number}`, text: 'Ticket de recepción y seguimiento privado.' }); }
+    catch (failure) { if (current() && failure.name !== 'AbortError') error.textContent = 'No pudimos compartir el PDF. Descárgalo y adjúntalo en WhatsApp.'; }
+  };
+  if (downloadPdf) downloadPdf.onclick = () => {
+    if (busy || !current() || !pdfFile) return;
+    const objectUrl = URL.createObjectURL(pdfFile), link = document.createElement('a');
+    link.href = objectUrl; link.download = pdfFile.name; link.click(); setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+  };
   printButton.onclick = async () => {
     if (busy) return; setBusy(true);
     try { if (await prepare() && current()) { pageSize(); window.print(); } }

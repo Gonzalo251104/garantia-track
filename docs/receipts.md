@@ -12,7 +12,7 @@ For a ticket issued before this migration, choose Recuperar un QR anterior and p
 
 Use Copiar enlace activo to retrieve/copy without rotation. Renovar enlace / QR explicitly replaces a link after confirmation; Revocar blocks it and removes the recoverable secret. Expired or revoked links are never reactivated by reload, import or ensure. Failed validation disables printing; retry after restoring connectivity. The demo prints a labeled sample with no shared QR.
 
-On an active public ticket, **Compartir recepción por WhatsApp** opens WhatsApp with the workshop name, ticket number and existing private tracking link. The user selects the recipient and sends the message manually. It does not attach a PDF or transmit photos, phone numbers, internal notes or other receipt details. The link is a bearer capability: verify the recipient before sending. Sharing is unavailable for local, demo or inactive links and never rotates or extends a link.
+On an active public ticket, **Compartir ticket PDF** opens the native share sheet when file sharing is supported. Select WhatsApp and the recipient, then send manually. The PDF includes the receipt details, QR and clickable tracking link. If file sharing or WhatsApp is unavailable in the share sheet, download the PDF and attach it manually. The separate WhatsApp link option shares a text message. A PDF or message contains a private bearer capability: verify the recipient before sending. Sharing is unavailable for local, demo or inactive links and never rotates or extends a link. Built-in PDF fonts cover Latin text; characters outside that range are displayed as question marks.
 
 ## Printing
 
