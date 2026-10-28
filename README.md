@@ -1,64 +1,82 @@
 # GarantiaTrack
 
-A responsive, navigable prototype for console and controller repair shops. Source code, identifiers and documentation are in English. Customer-facing copy is in Spanish.
+Console and controller repair intake, authenticated workshop records and private customer tracking. The existing Spanish interface is preserved; source and documentation are in English.
 
 ## Run locally
 
-Requires Node.js 22 or newer. No dependencies, installation, accounts, API keys or build step are required.
+Requires Node.js 22 or newer.
 
 ```sh
+npm ci
 npm run dev
 ```
 
-Open http://127.0.0.1:4173. Keep the server running while using the prototype.
+Open http://127.0.0.1:4173. The server binds to loopback only. Leave it running while testing. The SDK is bundled locally; no CDN or browser-side package installation is required.
+
+Without Supabase configuration the application shows a setup screen. **Explorar con datos ficticios** explicitly enters the isolated local demo. Missing configuration or backend failures never silently save workshop records into demo storage.
+
+## Connect Supabase
+
+Follow [Supabase setup](docs/supabase-setup.md). Apply the versioned SQL migration, configure Auth and create an ignored `.env` from `.env.example` with the project URL and **publishable / anon key only**. Restart the development server. Never use a secret or service_role key.
 
 ```sh
+npm run lint
 npm run check
 npm test
+npm run build
 ```
 
-## Walkthrough
+## Connected workflow
 
-1. Browse the five fictional repair orders. Search by model, customer, phone or order number and try the status filters.
-2. Choose **Recibir equipo**, enter fictional details, select accessories and optionally attach device photos.
-3. Create the order. Its detail page shows the intake record, photos and history.
-4. Change the status, budget, internal notes and customer message, then save.
-5. Open **Abrir vista del cliente**. Verify the status and message changed and that internal notes and contact details are not rendered there.
-6. Return to the workshop, export CSV or print an intake record using the browser print dialog.
-7. Use **Restablecer datos de ejemplo** and confirm to remove local changes.
+1. Create an account, confirm its email and sign in. Configure SMTP before inviting external users.
+2. Create the workshop after authentication. Existing staff memberships are provisioned by the project administrator, not by user-editable metadata.
+3. Receive an equipment item. The server allocates its number and writes the initial event in one transaction.
+4. Compressed JPEG evidence is uploaded to a private bucket. Five reserved slots per order prevent concurrent over-allocation.
+5. If an upload fails, retry the same intake form: request and photo identifiers are reused. An already committed order is not recreated.
+6. Update status, quote and notes. Stale edits are rejected; reload before trying again.
+7. Create a customer tracking link from the order. Creating another link invalidates the previous one. Copy it to another browser to test anonymous access.
+8. Revoke the link when needed. Valid links expire after 30 days. Tracking never exposes customer contact, internal notes, serial number, quotes or photos.
+9. Sign out to clear the workshop view.
 
-## Prototype boundaries
+A password recovery flow is included. Use the same browser that requested a recovery link because Auth uses PKCE.
 
-- Fictional examples only. Do not enter personal, payment or confidential information.
-- Orders and compressed photos are stored in localStorage for this origin and browser. Clearing browser data or resetting the demo removes them. Private browsing and storage quotas can prevent saves.
-- Tracking links work only where the local order exists. Another browser or device will not receive newly created orders.
-- The client view is a presentation preview, not an authorization boundary: all demo data is delivered to the browser. There is no authentication or secure tenant isolation.
-- Printed records do not contain QR codes yet. Tracking is available through the real navigable link. No fake QR is displayed.
-- No WhatsApp messages, email, payments, background jobs or notifications are sent.
-- Arbitrary status changes are intentionally allowed for exploring screens. Production transition rules, approvals and delivery controls are not implemented.
-- Photo files are decoded and re-encoded locally; there is no upload service. Maximum five photos per order and 10 MB per input file; browser storage may fill sooner.
-- Drafts are not retained when leaving the intake page. Use one editing tab at a time; cross-tab changes show a reload warning, not conflict resolution.
+## Data and security
 
-## Implementation
+- PostgreSQL RLS isolates workshops. API table grants are SELECT-only for authenticated users.
+- Transactional security-definer functions explicitly check workshop membership and have fixed search paths and restricted execution grants.
+- Cross-workshop relations use composite foreign keys. Client role assignment, direct order mutation and anonymous table reads are forbidden.
+- Photos require a reserved database path and membership. The bucket restricts uploads to JPEG and 2 MiB. Uploads cannot overwrite evidence.
+- Signed photo URLs last five minutes and are not exposed on tracking pages. A previously issued URL can remain valid until it expires after sign-out.
+- Browser Auth sessions are managed by the official SDK. No privileged credentials are shipped to the browser.
+- Tracking tokens contain 256 random bits, remain in URL fragments and are stored only as SHA-256 hashes in PostgreSQL. The RPC returns an explicit field allowlist.
+- The connected mode does not import local demo data.
+- JWT validation, SMTP, HTTP upload behavior and the deployed Supabase environment still require live integration verification.
 
-This first interaction prototype deliberately uses buildless HTML, CSS and browser ES modules to avoid installation and hosting costs. It does not claim to implement the planned React/Hono/PostgreSQL production architecture. Pure domain helpers and the screen structure can guide that implementation after workshop validation.
+## Current boundaries
 
-- `dist/index.html`: entry document and accessibility landmarks.
-- `dist/app.js`: routes, forms, local persistence and interaction handlers.
-- `dist/domain.js`: seed data, input checks, money and public projection.
-- `dist/styles.css`: desktop/mobile layouts and print styles.
-- `scripts/server.mjs`: loopback-only static development server.
-- `tests/`: Node built-in test suite.
-- `docs/`: design, validation, production migration and Gitflow instructions.
+The workshop list loads at most 500 recent orders; search and CSV export cover that loaded set. Member invitation UI, billing, payment verification, state transition restrictions, QR printing, offline sync and automatic WhatsApp notifications remain out of scope. CSV and printing remain available.
 
-## Repository and deployment status
+Leaving intake discards an unsaved draft or pending local photo retries. Pending reservations can be reviewed by a project administrator; no automatic cleanup job is shipped. Images are decoded and recompressed by the browser. Bucket MIME restrictions are not a substitute for a future server-side content inspection pipeline.
 
-Work is kept on `feature/navigable-prototype`. No GitHub remote or PR has been created. Branch protection cannot be enforced locally; configure it when the repository is connected. The included Actions workflow runs checks and tests on PRs to `main` and `develop`.
+Before collecting real customer information, verify SMTP, email confirmation, access controls, backups (including photo objects), retention and recovery on the target project.
 
-A private Sites project was registered and its identity is stored in `.openai/hosting.json`. Publication was intentionally withheld because the Sites source workflow requires a direct push to its managed `main` branch and does not provide the agreed PR workflow. The existence of the manifest does not indicate a deployed version.
+## Repository structure
 
-For a future static host, serve `dist/` as the document root. Hash routes work without rewrite configuration. See `docs/architecture.md` before using real information.
+- `dist/app.js`: existing interface, Auth screens and mode-aware interactions.
+- `dist/backend.js`: official SDK adapter, transactional RPCs and private storage.
+- `dist/domain.js`: pure domain and demo helpers.
+- `scripts/`: config validation, bundling, syntax checks and loopback server.
+- `supabase/migrations/`: schema, RPCs, RLS and private bucket.
+- `tests/database.test.js`: executable PostgreSQL authorization tests using PGlite.
+- `docs/`: setup, architecture, review plan and verification results.
+- `dist/vendor/`, `dist/config.js`: generated, ignored build outputs.
+
+## Gitflow status
+
+`feature/supabase-integration` depends on the unmerged `feature/navigable-prototype`. No permanent branch was modified. No remote repository is configured, so no real PR has been created. See [workflow](docs/workflow.md) and the prepared [PR description](docs/pr-supabase.md). CI covers PRs into permanent and feature branches for stacked review.
+
+The old Sites manifest records a private project identity, not a deployment. Local-only development continues; no Site publication or direct push to main is performed.
 
 ## License
 
-All rights reserved. No redistribution license has been selected. Repository visibility does not grant a commercial reuse license.
+All rights reserved. No redistribution license has been selected.

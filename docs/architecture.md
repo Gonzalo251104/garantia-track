@@ -1,24 +1,29 @@
-# Prototype architecture and migration
+# Architecture
 
-## Current design
+The existing buildless interface and visual system remain intact. This iteration adds a small SDK bundle and backend adapter instead of rewriting validated screens into another framework.
 
-One static application, no network data services, no dependencies. Hash routing supports dashboard, intake, detail and tracking. Pure helpers separate input validation, currency handling, numbering and customer-facing projection from rendering. localStorage is demo persistence only. System fonts and inline SVG icons avoid third-party requests.
+## Runtime
 
-The workshop is a fictional Pixel Lab. The visual system uses forest green, warm off-white and restrained lime highlights. A left rail becomes bottom navigation below 760 px. The table becomes order cards on mobile. Form fields use explicit labels and touch-sized controls. Tracking is intentionally quieter than the workshop panel.
+Browser interface → official Supabase SDK → Auth / PostgREST RPCs / private Storage.
 
-## Production migration
+No privileged application server is needed for this scope. PostgreSQL functions perform membership checks and transactional writes. The development Node server only serves static files and explicitly public configuration; it has no database password or service key. This is a deliberate simplification of the earlier Hono proposal.
 
-1. Move screens into React/Vite feature folders and shared components.
-2. Introduce Hono API routes and authenticated Supabase requests.
-3. Add PostgreSQL migrations, workshop membership, composite tenant constraints and tested RLS policies.
-4. Replace local numbering with transactional sequences and use idempotency keys on creation.
-5. Replace browser photo storage with private object storage, validated uploads and access policies.
-6. Replace numeric demo tracking routes with random, hashed, revocable tokens and a minimal server response.
-7. Add real state transition rules, manual approval evidence, delivery outcome and payment ledger.
-8. Configure SMTP, account recovery, retention, encrypted backups and a verified restore procedure.
+## Trust boundaries
 
-Do not add real workshop data before these protections exist. The public projection helper is a rendering convenience and does not secure client-side demo data.
+The client can supply untrusted values and JWT sessions; the server validates tokens and PostgreSQL enforces membership. RLS and table privileges constrain reads. Write RPCs are SECURITY DEFINER with empty search paths, fully qualified application tables, explicit membership checks and narrow grants.
 
-## Operating cost
+Tracking links are bearer capabilities. Their separate RPC bypasses tenant RLS only to return a fixed allowlist. It never returns photo URLs, credentials or internal/customer records. Tokens must not appear in analytics, logs or query strings.
 
-Local preview costs $0. Static hosting needs no database or runtime for this version. The selected production services and costs must be reviewed before launch; they are not provisioned by this prototype.
+## Storage consistency
+
+Intake commits first with a unique workshop/request key. Photo reservations then allocate up to five paths under workshop/order/photo IDs. Upload is immutable and metadata becomes ready only after the object exists. Retrying the same form reuses request/photo identifiers, so an acknowledged or ambiguous upload is finalized rather than duplicated. Database and object storage are not one transaction: partial completion is explicit and documented.
+
+## Local demo
+
+Demo data remains in its original localStorage key and requires an explicit sessionStorage mode choice. Connected records never enter that store. Missing configuration fails closed. Auth sign-out and identity changes clear in-memory workshop records.
+
+## Portability and remaining work
+
+Schema migrations are ordinary PostgreSQL, with Auth uid and Storage table dependencies isolated in a small number of policies/RPCs. Replacing Supabase requires replacing those integrations, session handling and the SDK adapter; it is not a zero-effort migration. No vendor-neutral repository hierarchy is introduced before a second provider exists.
+
+The interface loads 500 recent orders. Paginated server search, member management, server-side image inspection, background cleanup, application-level abuse controls and monitoring are future work. Static generated assets require npm build before deployment.

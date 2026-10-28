@@ -1,17 +1,16 @@
-# Gitflow and review
+# Gitflow and PRs
 
-- `main`: released versions only.
-- `develop`: integration branch.
-- `feature/*`: branch from and propose PRs into `develop`.
-- `release/*`: branch from `develop`, PR into `main`, then synchronize into `develop` through a PR.
-- `hotfix/*`: branch from `main`, PR into `main`, then synchronize into `develop` through a PR.
+Permanent branches are main (releases) and develop (integration). Feature branches normally start from develop. Release branches start from develop and hotfix branches from main. All changes to permanent branches require actual PRs.
 
-Never push directly to `main` or `develop` after repository initialization. Do not merge this prototype locally to simulate a PR. Connect a GitHub repository, push the feature branch and open a real PR first.
+The first prototype is still unmerged. This integration therefore uses a stacked feature branch:
 
-Use English Conventional Commits. Example: `feat(prototype): add intake and customer tracking flows`.
+- feature/navigable-prototype → develop
+- feature/supabase-integration → feature/navigable-prototype
 
-Suggested first PR title: `feat(prototype): add responsive repair intake and tracking`.
+After the prototype PR merges, retarget the integration PR to develop, rebasing if a squash merge changed its ancestry. Do not merge into develop or main locally and do not push them directly.
 
-The PR description should summarize demo-only persistence, list automated checks and browser QA, and explicitly state that authentication, secure tracking and production storage remain out of scope.
+No remote is configured and no real PR has been opened. docs/pr-supabase.md contains the complete review description; it is not a substitute for a PR.
 
-Require the CI check, resolved conversations and disabled force pushes on the permanent branches. Do not require self-approval for a solo contributor. Use squash merges for features and merge commits for release synchronization. Use semantic version tags only on released commits in `main`.
+Use English Conventional Commits. Require lint, syntax checks, tests and build on every PR. The workflow includes feature targets for stacked PRs. Configure branch protection when the remote exists; use required checks and resolved conversations, without impossible self-approval rules for a solo author. Squash feature PRs and preserve merge commits for release synchronization.
+
+This branch increments the working package version to 0.2.0. It is unreleased; create a semantic version tag only on main after release review.
