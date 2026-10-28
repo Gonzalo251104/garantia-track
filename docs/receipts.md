@@ -4,11 +4,13 @@ Open an order and select **Ticket de recepción · QR**. The dedicated ticket vi
 
 ## Tracking lifecycle
 
-Printing and switching paper width never rotate a token. A link created in the same tab is reused across order navigation and status updates, and its validity is checked before preparing/printing the QR. Creating or renewing a link requires an explicit confirmation because it invalidates previous links and printed tickets. Revocation clears the in-memory link. Sign-out and identity changes clear all cached links and invalidate pending UI callbacks.
+Printing, switching paper width, reloading, signing in again or opening another tab retrieves the same active token through an authenticated RPC. The server stores its recoverable value in Supabase Vault using authenticated encryption; the public tracking table retains its SHA-256 hash and an opaque Vault reference. Neither raw tokens nor decryption keys are persisted in browser storage or configuration. Sign-out/identity changes still clear transient memory and invalidate pending callbacks.
 
-The database stores token hashes only. The raw URL is retained exclusively in this tab's JavaScript memory, not localStorage, sessionStorage, source or logs. A full reload or a different tab cannot recover that URL. To print after a reload, deliberately renew it and replace old customer tickets. This limitation preserves the existing backend security model; the feature adds no schema change. Tokens keep their existing 30-day lifetime and revocation behavior. A recipient can share a QR, so treat the printed ticket as private.
+The three receipt RPCs check workshop membership and serialize on the order row. get_receipt_tracking retrieves without creating or extending a link. ensure_receipt_tracking creates only when no tracking record exists; concurrent preparations reuse the existing record. It does not replace legacy, expired or revoked links. import_receipt_tracking verifies the supplied token against the current active hash before encrypting it, preserving both hash and expiry exactly. The anonymous get_order_tracking endpoint is unchanged and returns only its existing customer field allowlist. Anonymous users cannot retrieve a receipt token, and members cannot directly read Vault or tracking tables.
 
-Use **Copiar enlace activo** to copy without rotation and **Renovar enlace / QR** to deliberately replace it. The preview validates the cached link using the existing minimal tracking RPC. Unavailable, expired or revoked links and failed network checks disable printing. A direct browser print before preparation produces a blocked-ticket message. The demo prints an explicitly labeled sample with no shared QR.
+For a ticket issued before this migration, choose Recuperar un QR anterior and paste the URL obtained by scanning that ticket. The old QR remains valid throughout this process. A hash cannot reconstruct an unknown old token: if the old URL is unavailable, use explicit renewal only after deciding to replace old tickets. Existing records are never automatically invalidated during migration. New links retain their original 30-day lifetime. Retrieval and reprinting never extend that lifetime.
+
+Use Copiar enlace activo to retrieve/copy without rotation. Renovar enlace / QR explicitly replaces a link after confirmation; Revocar blocks it and removes the recoverable secret. Expired or revoked links are never reactivated by reload, import or ensure. Failed validation disables printing; retry after restoring connectivity. The demo prints a labeled sample with no shared QR.
 
 ## Printing
 
@@ -32,3 +34,13 @@ APP_PUBLIC_URL=https://garantiatrack-console-workshop.gonzaloacd.chatgpt.site
 This canonical HTTPS origin is used for newly created tracking links and must serve the same Supabase project. It does not change Auth callback URLs. Omit it in a normal production build to use the current application origin. Localhost QR links are explicitly labeled as local and do not work on another device. No URL shortener or third-party QR service receives the link. See `.env.example` and `tests/config.test.js` for validation.
 
 No additional monthly service cost is introduced. The QR generator is bundled locally; jsQR is a test-only independent decoder. At larger volume, continue using standard frontend assets and the existing PostgreSQL tracking endpoint rather than introducing a printing microservice.
+
+## Migration, backup and verification
+
+Apply supabase/migrations/20261028212715_persistent_receipt_tracking.sql before deploying this frontend. Supabase Vault and pgcrypto must already be installed; the migration fails clearly if Vault is unavailable. The file was generated with the official CLI and aligned to the MCP-applied remote version. It leaves pre-existing hashes, expiries and revocation states unchanged and keeps the old rotation/revocation signatures compatible. Frontend rollback does not require dropping this additive migration or removing encrypted links.
+
+Vault and its decryption root key are a backend dependency. No root key or service-role credential is exposed to the browser. Same-project recovery retains the key; for manual migration to a new project, follow the provider's key-preserving restore procedure and verify decryption before switching traffic. Raw PostgreSQL dumps alone are insufficient for restoring encrypted capabilities into a project with a different key. Keep encryption backups and access permissions in the recovery plan. The SQL helpers isolate the Vault operations for replacement if migrating providers.
+
+PGlite tests use an explicitly labeled Vault contract double, not production encryption. They verify tenant isolation, grants, lifecycle, legacy adoption and unchanged expiry. Live Supabase probes separately verify real encryption/decryption, scoped recovery and revocation with fixture changes rolled back.
+
+References: [Vault encryption, grants and key portability](https://supabase.com/docs/guides/database/vault), [membership-checked definer advisory](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).

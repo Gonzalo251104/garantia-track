@@ -197,11 +197,10 @@ function enhanceDetail(order){
   const userId=session?.user?.id,workshopId=workshop?.id,generation=receiptLinks.generation();
   const current=()=>actions.isConnected && !demoMode && session?.user?.id===userId && workshop?.id===workshopId && receiptLinks.generation()===generation;
   viewer.hidden=true;
-  actions.querySelector('#copy-link').textContent='Crear enlace privado';
+  actions.querySelector('#copy-link').textContent='Recuperar enlace del taller';
   actions.insertAdjacentHTML('beforeend','<input id="tracking-url" readonly aria-label="Enlace privado de seguimiento" hidden><button id="renew-link" class="quiet" hidden>Renovar enlace / QR</button><button id="revoke-link" class="quiet">Revocar enlace anterior</button>');
-  actions.parentElement.querySelector('.hint').textContent='El QR conserva el enlace al imprimir copias. Renovarlo invalida los tickets anteriores. Caduca a los 30 días. El enlace solo se conserva en memoria durante esta pestaña.';
+  actions.parentElement.querySelector('.hint').textContent='El QR se guarda cifrado y se recupera al recargar. Reimprimir o copiar conserva el enlace y su vencimiento. Solo renovar o revocar invalida tickets anteriores.';
   const showLink=url=>{viewer.href=url;viewer.hidden=false;const input=actions.querySelector('#tracking-url');input.value=url;input.hidden=false;actions.querySelector('#copy-link').textContent='Copiar enlace activo';actions.querySelector('#renew-link').hidden=false;};
-  const cached=receiptLinks.get(order.id);if(cached)showLink(cached);
   const busy=value=>actions.querySelectorAll('button').forEach(button=>{button.disabled=value;});
   const display=document.querySelector('.detail-grid');
   display.insertAdjacentHTML('afterend','<div id="cloud-photos" class="photo-grid" aria-live="polite"></div>');
@@ -211,15 +210,19 @@ function enhanceDetail(order){
   async function shareLink(renew=false){
     busy(true);
     try{
-      let url=renew?null:receiptLinks.get(order.id);
-      if(!url){if(!await confirmTrackingRenewal(actions)||!current())return;url=await backend.trackingLink(order);if(!current())return;receiptLinks.set(order.id,url);}
-      if(!current())return;showLink(url);
+      if(renew){if(!await confirmTrackingRenewal(actions)||!current())return;await backend.trackingLink(order);if(!current())return;}
+      const stored=await backend.receiptLink(order,!renew);
+      if(!current())return;
+      if(stored.state!=='active'){location.hash=`/ticket/${order.number}`;notify('Abre el ticket para recuperar o renovar el QR de forma explícita.');return;}
+      const url=stored.url;receiptLinks.set(order.id,url);showLink(url);
       try{await navigator.clipboard.writeText(url);if(current())notify('Enlace privado copiado.');}catch{if(current()){actions.querySelector('#tracking-url').select();notify('Puedes copiar el enlace del campo.');}}
     }catch(error){if(current())notify(friendly(error));}finally{if(current())busy(false);}
   }
   document.querySelector('#copy-link').onclick=()=>shareLink();
   document.querySelector('#renew-link').onclick=()=>shareLink(true);
   document.querySelector('#revoke-link').onclick=async()=>{busy(true);try{await backend.revoke(order);if(!current())return;receiptLinks.remove(order.id);viewer.hidden=true;actions.querySelector('#tracking-url').hidden=true;actions.querySelector('#tracking-url').value='';actions.querySelector('#copy-link').textContent='Crear enlace privado';actions.querySelector('#renew-link').hidden=true;notify('Enlace revocado.');}catch(error){if(current())notify(friendly(error));}finally{if(current())busy(false);}};
+  busy(true);
+  backend.receiptLink(order).then(stored=>{if(!current())return;if(stored.state==='active'){receiptLinks.set(order.id,stored.url);showLink(stored.url);}else{receiptLinks.remove(order.id);actions.querySelector('#copy-link').textContent=stored.state==='missing'?'Crear enlace privado':'Recuperar QR desde el ticket';}}).catch(()=>{if(current())notify('No pudimos recuperar el QR. Abre el ticket para volver a intentarlo.');}).finally(()=>{if(current())busy(false);});
   document.querySelector('#update-form .form-actions .hint').textContent='Cambios guardados en tu taller';
 }
 async function render(){

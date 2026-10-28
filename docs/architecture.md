@@ -14,6 +14,10 @@ The client can supply untrusted values and JWT sessions; the server validates to
 
 Tracking links are bearer capabilities. Their separate RPC bypasses tenant RLS only to return a fixed allowlist. It never returns photo URLs, credentials or internal/customer records. Tokens must not appear in analytics, logs or query strings.
 
+## Recoverable receipt tracking
+
+Member-only receipt RPCs recover a token from Supabase Vault after per-order membership checks. Public tracking retains the hash-based capability lookup and its minimal field allowlist. Order-level locks serialize retrieval, creation, import, rotation and revocation. Reads/reprints never change expiry, and creation never silently replaces an existing record. Vault plaintext is not exposed through Data API table grants. Legacy import validates the exact active hash and preserves old tickets. Key-preserving backup/restore is required when changing Supabase projects; the Vault helper functions isolate this provider dependency. See receipts.md.
+
 ## Storage consistency
 
 Intake commits first with a unique workshop/request key. Photo reservations then allocate up to five paths under workshop/order/photo IDs. Upload is immutable and metadata becomes ready only after the object exists. Retrying the same form reuses request/photo identifiers, so an acknowledged or ambiguous upload is finalized rather than duplicated. Database and object storage are not one transaction: partial completion is explicit and documented.
