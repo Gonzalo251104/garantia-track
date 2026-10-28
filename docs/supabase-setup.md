@@ -14,7 +14,7 @@ npx supabase db push
 
 Complete authentication and database password prompts yourself in your terminal. Do not paste private tokens, database passwords or service_role keys into chat. SQL Editor application does not automatically populate the CLI migration history; choose one approach and reconcile history before switching. Do not rerun the non-idempotent initial migration over an existing schema.
 
-The migration creates the tables, constrained RPCs, RLS and the private `repair-photos` bucket. No fake users or customer orders are seeded in cloud mode.
+The initial migration creates the tables, constrained RPCs, RLS and the private `repair-photos` bucket. Also apply `20261028212715_persistent_receipt_tracking.sql` before running the current frontend. It requires the project's Supabase Vault and pgcrypto extensions and adds encrypted receipt recovery. Both migrations are already applied on the connected project; do not rerun either. For a fresh project, apply migrations in filename order or let the CLI manage the full sequence. No fake users or customer orders are seeded in cloud mode.
 
 ## 2. Configure authentication
 

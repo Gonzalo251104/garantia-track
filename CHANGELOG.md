@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Encrypted receipt token recovery with Supabase Vault and member-only transactional RPCs.
+- Stable QR retrieval across reloads, tabs and sign-ins without changing expiry.
+- Hash-verified adoption of pre-migration tickets without rotating their URLs.
+- Lifecycle, tenant-isolation and adapter tests; a non-cryptographic Vault contract double is clearly separated from live encryption verification.
+
+### Changed
+- First-time creation is serialized and idempotent; expired, legacy and revoked records are never silently replaced.
+- Explicit rotation and revocation share the per-order lock and maintain the encrypted capability consistently.
+
+
 ## [0.3.0] - 2026-10-28
 
 ### Added

@@ -13,6 +13,12 @@ console.log('PASS: live Auth endpoint and public API key.');
 const {data,error}=await client.rpc('get_order_tracking',{p_token:'0'.repeat(64)});
 assert.equal(error,null);assert.equal(data,null);
 console.log('PASS: live tracking RPC rejects an unknown token.');
+for(const name of ['get_receipt_tracking','ensure_receipt_tracking','import_receipt_tracking']){
+  const args={p_order:crypto.randomUUID(),...(name==='import_receipt_tracking'?{p_token:'0'.repeat(64)}:{})};
+  const denied=await client.rpc(name,args);
+  assert.equal(denied.error?.code,'42501','Anonymous receipt capability operations must be denied.');
+}
+console.log('PASS: live receipt recovery, creation and import deny anonymous callers.');
 const records=await client.from('repair_orders').select('id').limit(1);
 assert.ok(records.error,'Anonymous order-table access must be denied.');
 assert.equal(records.error.code,'42501');
