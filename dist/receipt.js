@@ -5,6 +5,13 @@ export const paperProfiles = Object.freeze({
   '58': Object.freeze({ width: 58, content: 48, margin: 5, qr: 40 })
 });
 
+export function whatsappReceiptUrl(data, trackingUrl, applicationUrl) {
+  const checked = trackingReceiptUrl(trackingUrl, applicationUrl);
+  if (checked.local) throw new Error('El enlace local no se puede compartir.');
+  const message = `Hola, tu equipo fue recibido en ${data.workshop}. Ticket GT-${data.number}.\nSigue el estado de tu reparación aquí: ${checked.url}\nEste enlace es privado; compártelo solo con personas de confianza.`;
+  return `https://wa.me/?text=${encodeURIComponent(message)}`;
+}
+
 export function trackingReceiptUrl(value, applicationUrl) {
   const base = new URL(applicationUrl), url = new URL(value);
   const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);

@@ -1,4 +1,4 @@
-import { receiptData, receiptMarkup, qrSvg, trackingReceiptUrl, receiptPageStyle } from './receipt.js';
+import { receiptData, receiptMarkup, qrSvg, trackingReceiptUrl, receiptPageStyle, whatsappReceiptUrl } from './receipt.js';
 
 export function confirmTrackingRenewal(parent) {
   return new Promise(resolve => {
@@ -22,6 +22,7 @@ export function showReceipt({ root, order, workshopName, demo, links, backend, a
     <label class="field" for="ticket-paper-size">Papel térmico<select id="ticket-paper-size"><option value="80">80 mm · Estándar</option><option value="58">58 mm · Compacto</option></select></label>
     <p id="ticket-status" class="ticket-status" role="status"></p><p id="ticket-error" class="error" role="alert"></p>
     <button id="ticket-print" class="primary" disabled>Imprimir ticket</button>
+    ${demo ? '' : '<a id="ticket-whatsapp" hidden target="_blank" rel="noopener noreferrer">Compartir recepción por WhatsApp ↗</a><p id="ticket-share-help" hidden>Se abrirá WhatsApp con el número de ticket y el enlace privado. Elige al cliente antes de enviarlo.</p>'}
     <button id="ticket-retry" hidden>Volver a validar enlace</button>
     ${demo ? '' : '<button id="ticket-create">Crear QR</button><a id="ticket-customer" hidden>Abrir seguimiento del cliente ↗</a><form id="ticket-import" class="actions-stack" hidden><label class="field" for="ticket-existing-url">Recuperar un QR anterior<input id="ticket-existing-url" type="url" required maxlength="512" autocomplete="off" spellcheck="false" placeholder="Pega el enlace del ticket anterior"></label><button type="submit">Conservar este QR</button><p>Escanea el ticket anterior y pega su enlace. Se guardará cifrado, sin invalidarlo ni cambiar su vencimiento.</p></form>'}
     <p>En el diálogo de impresión selecciona tu impresora y el mismo ancho de papel, escala 100 %, sin encabezados ni pies de página. También puedes guardar como PDF.</p>
@@ -33,7 +34,7 @@ export function showReceipt({ root, order, workshopName, demo, links, backend, a
   const printButton = view.querySelector('#ticket-print'), createButton = view.querySelector('#ticket-create');
   const retryButton = view.querySelector('#ticket-retry'), sizeSelect = view.querySelector('#ticket-paper-size');
   const status = view.querySelector('#ticket-status'), error = view.querySelector('#ticket-error');
-  const importForm = view.querySelector('#ticket-import');
+  const importForm = view.querySelector('#ticket-import'), share = view.querySelector('#ticket-whatsapp'), shareHelp = view.querySelector('#ticket-share-help');
   const generation = links.generation();
   const current = () => view.isConnected && isCurrent() && links.generation() === generation;
   let busy = false;
@@ -62,7 +63,7 @@ export function showReceipt({ root, order, workshopName, demo, links, backend, a
       renderPaper(); view.dataset.ready = 'true'; status.textContent = 'DEMO · Sin QR compartido';
       return true;
     }
-    const customer = view.querySelector('#ticket-customer'); customer.hidden = true;
+    const customer = view.querySelector('#ticket-customer'); customer.hidden = true; share.hidden = true; share.removeAttribute('href'); shareHelp.hidden = true;
     linkState = 'unknown'; importForm.hidden = true; createButton.hidden = false;
     status.textContent = 'Recuperando el QR del taller de forma segura…';
     try {
@@ -94,6 +95,7 @@ export function showReceipt({ root, order, workshopName, demo, links, backend, a
       if (!current()) return false;
       renderPaper(qrSvg(checked.url, create), checked.local);
       view.dataset.ready = 'true'; customer.href = checked.url; customer.hidden = false; retryButton.hidden = true;
+      if (!checked.local) { share.href = whatsappReceiptUrl(data, checked.url, applicationUrl); share.hidden = false; shareHelp.hidden = false; }
       status.textContent = checked.local ? 'Aviso: el QR apunta al entorno local y no funciona desde otro dispositivo.' : 'QR recuperado de forma segura · Reimprimir conserva el mismo enlace.';
       return true;
     } catch (failure) {
