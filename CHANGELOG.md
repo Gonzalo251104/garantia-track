@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.0] - 2026-10-28
 
 ### Added
 - Dedicated intake receipt preview with 58/80 mm thermal profiles, monochrome QR and browser printing/PDF support.
