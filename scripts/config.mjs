@@ -10,6 +10,13 @@ export function publicConfig(env = process.env) {
     try { valid = JSON.parse(Buffer.from(supabaseKey.split('.')[1], 'base64url').toString()).role === 'anon'; } catch { valid = false; }
   }
   if (!valid) throw new Error('Use a publishable key or an anon JWT. Secret and service_role keys are forbidden.');
-  return {supabaseUrl:url.origin,supabaseKey};
+  const config = {supabaseUrl:url.origin,supabaseKey};
+  if (env.APP_PUBLIC_URL) {
+    const app = new URL(env.APP_PUBLIC_URL);
+    if (app.protocol !== 'https:' || app.username || app.password || app.pathname !== '/' || app.search || app.hash) throw new Error('APP_PUBLIC_URL must be a public HTTPS origin without credentials or paths.');
+    if (['localhost','127.0.0.1','[::1]'].includes(app.hostname)) throw new Error('APP_PUBLIC_URL must not use loopback.');
+    config.publicAppUrl = app.origin;
+  }
+  return config;
 }
 export const configScript = env => `window.GARANTIATRACK_CONFIG = ${JSON.stringify(publicConfig(env)).replaceAll('<','\\u003c')};\n`;

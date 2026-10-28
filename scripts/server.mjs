@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { configScript } from './config.mjs';
 const root = path.resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
+const port = Number(process.env.PORT || 4173);
+if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT must be an integer between 1 and 65535.');
 const types = {'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml'};
 createServer(async (request, response) => {
   try {
@@ -21,4 +23,4 @@ createServer(async (request, response) => {
     response.setHeader('X-Content-Type-Options', 'nosniff');
     response.end(await readFile(file));
   } catch { response.writeHead(404); response.end('Not found'); }
-}).listen(4173, '127.0.0.1', () => console.log('Local: http://127.0.0.1:4173'));
+}).listen(port, '127.0.0.1', () => console.log(`Local: http://127.0.0.1:${port}`));
