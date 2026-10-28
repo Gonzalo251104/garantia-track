@@ -1,0 +1,17 @@
+{
+  "name": "garantiatrack-prototype",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/build.mjs && node --env-file-if-exists=.env scripts/server.mjs",
+    "build": "node --env-file-if-exists=.env scripts/build.mjs",
+    "test": "node --test",
+    "check": "node scripts/check.mjs",
+    "lint": "eslint .",
+    "smoke:supabase": "node --env-file=.env scripts/smoke-supabase.mjs"
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": { "@supabase/supabase-js": "2.118.0" },
+  "devDependencies": { "esbuild": "0.28.2", "@electric-sql/pglite": "^0.3.0", "eslint": "10.13.0" }
+}

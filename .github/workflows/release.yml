@@ -1,0 +1,54 @@
+name: Publish GitHub release
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - name: Tag the approved main commit and publish release notes
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('node:fs');
+            const { version } = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Expected a stable semantic version.');
+            const tag = `v${version}`;
+            const body = fs.readFileSync(`docs/releases/${tag}.md`, 'utf8');
+            const repo = context.repo;
+            let ref;
+            try {
+              ref = (await github.rest.git.getRef({ ...repo, ref: `tags/${tag}` })).data;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            if (ref && ref.object.sha !== context.sha) throw new Error('Existing tag points to another commit; refusing to move it.');
+            if (!ref) await github.rest.git.createRef({ ...repo, ref: `refs/tags/${tag}`, sha: context.sha });
+            try {
+              const release = (await github.rest.repos.getReleaseByTag({ ...repo, tag })).data;
+              core.info(`Release already exists: ${release.html_url}`);
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              const release = (await github.rest.repos.createRelease({ ...repo, tag_name: tag, target_commitish: context.sha, name: `GarantiaTrack ${tag}`, body, draft: false, prerelease: false })).data;
+              core.info(release.html_url);
+            }
