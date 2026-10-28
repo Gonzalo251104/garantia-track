@@ -12,7 +12,7 @@ function loadDemo() {
 try { orders = JSON.parse(localStorage.getItem(storageKey)); if (!Array.isArray(orders) || !orders.length || !orders.every(order => Number.isInteger(order.number) && Array.isArray(order.events) && Array.isArray(order.photos) && statuses.some(([key])=>key===order.status))) orders = seedOrders(); } catch { orders = seedOrders(); }
 }
 if(demoMode) loadDemo();
-let photos = [], activeFilter = 'all', search = '', toastTimer;
+let activeFilter = 'all', search = '', toastTimer;
 const root = document.querySelector('#app');
 const icon = name => {
   const paths = {grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',plus:'<path d="M12 5v14M5 12h14"/>',controller:'<path d="M7 7h10c3 0 5 10 3 11-2 1-4-3-5-3H9c-1 0-3 4-5 3C2 17 4 7 7 7Z"/><path d="M8 9v5m-2-2.5h4M16 10h.1M18 13h.1"/>',console:'<path d="m8 3 8 2v15l-8 1Z"/><path d="M8 3 5 5v14l3 2m8-16 3 2v11l-3 2M11 7v8m2 3h.1"/>',link:'<path d="m10 13 4-4m-6 6-2 2a3 3 0 0 1-4-4l5-5a3 3 0 0 1 4 0m2 1 2-2a3 3 0 0 1 4 4l-5 5a3 3 0 0 1-4 0"/>',clock:'<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',check:'<path d="m5 12 4 4L19 6"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>'};
@@ -23,11 +23,15 @@ const date = value => new Intl.DateTimeFormat('es-PE',{day:'2-digit',month:'shor
 const badge = status => `<span class="badge ${status}">${statusLabel(status)}</span>`;
 function notify(message) { const toast=document.querySelector('#toast'); toast.textContent=message; toast.classList.add('visible'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>toast.classList.remove('visible'),3500); }
 function persist(next) { try { localStorage.setItem(storageKey,JSON.stringify(next)); orders=next; return true; } catch { notify('No se pudo guardar. El almacenamiento está lleno o bloqueado.'); return false; } }
-async function updateOrder(number,changes) {
-  if(demoMode) return persist(orders.map(order=>order.number===number ? {...order,...changes} : order));
-  const order=orders.find(order=>order.number===number);
+async function updateOrder(order,changes,isCurrent) {
+  if(!isCurrent())return false;
+  if(demoMode) return persist(orders.map(item=>item.number===order.number ? {...item,...changes} : item));
+  const workshopId=workshop.id;
   await backend.update(order,changes);
-  orders=await backend.load(workshop.id);
+  if(!isCurrent())return false;
+  const loaded=await backend.load(workshopId);
+  if(!isCurrent())return false;
+  orders=loaded;
   return true;
 }
 function shell(content,section='orders') {
@@ -52,10 +56,12 @@ function renderRows() {
   document.querySelector('#order-results').innerHTML=found.length ? `<div class="table-wrap"><table><thead><tr><th>Equipo / Orden</th><th>Cliente</th><th>Estado</th><th>Presupuesto</th><th></th></tr></thead><tbody>${found.map(o=>`<tr><td><div class="device-cell"><div class="device-art">${icon(o.device)}</div><div><strong>${e(o.model)}</strong><span class="order-number">GT-${o.number}</span> <small>· ${o.device==='console'?'Consola':'Mando'}</small></div></div></td><td><strong>${e(o.customer)}</strong><small>${e(o.phone)}</small></td><td>${badge(o.status)}</td><td>${o.quote?money(o.quote):'<small>Por definir</small>'}</td><td><a class="row-link" href="#/orders/${o.number}" aria-label="Ver orden GT-${o.number}">Ver orden →</a></td></tr>`).join('')}</tbody></table></div><div class="panel-foot">${found.length} ${found.length===1?'orden':'órdenes'} · ${demoMode?'Los cambios se guardan solo en este navegador':'Hasta 500 órdenes recientes · Datos del taller'}</div>` : '<div class="empty"><h3>No encontramos órdenes</h3><p>Prueba otro término o cambia el filtro.</p></div>';
 }
 function intake() {
-  photos=[];
+  let photos=[];
   const requestId=crypto.randomUUID(), photoIds=new Map();
   shell(`<a class="back" href="#/orders">← Volver a reparaciones</a><div class="eyebrow">NUEVA RECEPCIÓN</div><div class="heading-row"><div><h1>Un equipo en buenas manos.</h1><p class="subtitle">Deja constancia de cómo llega. El resto empieza aquí.</p></div><span class="badge">Borrador sin guardar</span></div><div class="form-layout"><form id="intake-form" class="panel"><section class="section"><div class="section-title"><span class="step-number">01</span><h2>¿Quién lo trae?</h2></div><div class="field-grid"><label class="field">Nombre del cliente *<input name="customer" autocomplete="off" maxlength="80" required placeholder="Ej. Alex de Prueba"></label><label class="field">Celular de contacto *<input name="phone" type="tel" inputmode="numeric" maxlength="9" pattern="9[0-9]{8}" required placeholder="900000006"><span class="hint">Usa un número ficticio de 9 dígitos.</span></label></div></section><section class="section"><div class="section-title"><span class="step-number">02</span><h2>Conozcamos el equipo</h2></div><div class="field-grid"><div class="field full">Tipo de equipo<div class="choices"><label class="choice"><input type="radio" name="device" value="console" checked>${icon('console')} Consola</label><label class="choice"><input type="radio" name="device" value="controller">${icon('controller')} Mando</label></div></div><label class="field">Modelo *<input name="model" maxlength="100" required placeholder="Ej. PlayStation 5 · Digital" list="models"><datalist id="models"><option value="PlayStation 5 · Digital"><option value="PlayStation 4 · Slim"><option value="Nintendo Switch · OLED"><option value="Xbox Series S"><option value="DualSense · Blanco"><option value="Xbox Wireless · Carbon Black"></datalist></label><label class="field">Número de serie <span class="hint">Opcional</span><input name="serial" maxlength="80" placeholder="Ej. DEMO-PS5-046"></label><label class="field full">Falla reportada por el cliente *<textarea name="issue" maxlength="1500" required placeholder="¿Qué está pasando y desde cuándo?"></textarea></label></div></section><section class="section"><div class="section-title"><span class="step-number">03</span><h2>Así lo recibimos</h2></div><div class="field-grid"><div class="field full">Accesorios recibidos<div class="choices">${['Cable de poder','Cable HDMI','Cable USB','Base','Estuche'].map(label=>`<label class="choice"><input type="checkbox" name="accessories" value="${label}">${label}</label>`).join('')}</div></div><label class="field full">Estado físico<textarea name="condition" maxlength="1500" placeholder="Rayones, golpes, sellos o piezas faltantes…"></textarea></label><div class="field full"><label class="upload">${icon('plus')}<br>Fotos del estado de ingreso<input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" multiple aria-label="Añadir fotos del equipo"></label><span class="hint">Hasta 5 fotos JPG, PNG o WebP de 10 MB. Se reducen antes de guardarse localmente.</span><div id="photo-preview" class="photo-grid"></div></div></div></section><div class="section"><p class="error" id="form-error" role="alert"></p><p class="hint">* Campos obligatorios. Este prototipo es de prueba: no ingreses información personal ni fotos sensibles.</p></div><div class="form-actions"><a class="quiet" href="#/orders">Cancelar</a><button class="primary" type="submit">Crear orden de recepción →</button></div></form><aside><div class="aside-card"><div class="eyebrow">UNA BUENA RECEPCIÓN</div><h2 style="margin-top:12px">Los detalles importan.</h2><p>Un registro claro evita dudas al entregar el equipo.</p><ul class="check-list"><li>Confirma el modelo y la serie</li><li>Revisa los accesorios juntos</li><li>Documenta marcas y golpes</li><li>Comparte el seguimiento</li></ul><p>Al guardar se asignará el número de orden y podrás abrir la vista del cliente.</p></div></aside></div>`,'intake');
   const form=document.querySelector('#intake-form');
+  const intakeUser=session?.user?.id, intakeWorkshop=workshop?.id, intakeDemo=demoMode;
+  const isCurrent=()=>form.isConnected && demoMode===intakeDemo && (intakeDemo || (session?.user?.id===intakeUser && workshop?.id===intakeWorkshop));
   if(!demoMode){
     form.querySelector('[name=phone]').nextElementSibling.textContent='Número de contacto del cliente.';
     form.querySelector('.upload').parentElement.querySelector('.hint').textContent='Hasta 5 fotos. Se comprimen y se guardan en un bucket privado.';
@@ -63,21 +69,23 @@ function intake() {
     hints[hints.length-1].textContent='* Campos obligatorios. Las fotografías solo están disponibles para miembros del taller.';
   }
   document.querySelector('#photo-input').onchange=async event=>{
-    const input=event.target, button=form.querySelector('[type=submit]'); button.disabled=true;
-    try { const files=[...input.files]; if(files.length+photos.length>5) throw new Error('Puedes adjuntar un máximo de 5 fotos.'); const converted=[]; for(const file of files) converted.push(await compressPhoto(file)); photos.push(...converted); document.querySelector('#photo-preview').innerHTML=photos.map((src,index)=>`<figure style="margin:0"><img src="${src}" alt="Foto de ingreso ${index+1}"><button type="button" class="quiet small" data-remove-photo="${index}" aria-label="Quitar foto ${index+1}">Quitar</button></figure>`).join(''); document.querySelector('#form-error').textContent=''; }
-    catch(error){document.querySelector('#form-error').textContent=error.message;}
-    finally{input.value='';button.disabled=false;}
+    const input=event.target, button=form.querySelector('[type=submit]'); button.disabled=true;input.disabled=true;
+    try { const files=[...input.files]; if(files.length+photos.length>5) throw new Error('Puedes adjuntar un máximo de 5 fotos.'); const converted=[]; for(const file of files) converted.push(await compressPhoto(file)); if(!isCurrent())return;photos.push(...converted); form.querySelector('#photo-preview').innerHTML=photos.map((src,index)=>`<figure style="margin:0"><img src="${src}" alt="Foto de ingreso ${index+1}"><button type="button" class="quiet small" data-remove-photo="${index}" aria-label="Quitar foto ${index+1}">Quitar</button></figure>`).join(''); form.querySelector('#form-error').textContent=''; }
+    catch(error){if(isCurrent())form.querySelector('#form-error').textContent=error.message;}
+    finally{input.value='';button.disabled=false;input.disabled=false;}
   };
-  form.addEventListener('click',event=>{const button=event.target.closest('[data-remove-photo]');if(button){photos.splice(Number(button.dataset.removePhoto),1);button.parentElement.remove();document.querySelectorAll('[data-remove-photo]').forEach((b,i)=>b.dataset.removePhoto=i);}});
+  form.addEventListener('click',event=>{const button=event.target.closest('[data-remove-photo]');if(button){photos.splice(Number(button.dataset.removePhoto),1);button.parentElement.remove();form.querySelectorAll('[data-remove-photo]').forEach((b,i)=>b.dataset.removePhoto=i);}});
   form.onsubmit=async event=>{
     event.preventDefault(); const button=form.querySelector('[type=submit]');button.disabled=true; const data=new FormData(form), values=Object.fromEntries(data.entries());
     try {validateIntake(values); const now=new Date().toISOString(); const order={number:nextOrderNumber(orders),customer:values.customer.trim(),phone:values.phone,device:values.device,model:values.model.trim(),serial:values.serial.trim(),issue:values.issue.trim(),condition:values.condition.trim(),accessories:data.getAll('accessories'),status:'received',quote:0,notes:'',message:'Recibimos tu equipo. Pronto iniciaremos la revisión.',created:now,photos:[...photos],events:[{status:'received',at:now}]}; if(!demoMode){
-      const saved=await backend.create(workshop.id,requestId,order);
       const items=photos.map(src=>{if(!photoIds.has(src))photoIds.set(src,crypto.randomUUID());return {src,id:photoIds.get(src)};});
-      try{await backend.upload(saved.id,items);}catch{throw new Error('La orden GT-'+saved.number+' se guardó, pero faltan fotos. Pulsa Crear orden otra vez sin salir para reintentar; no se duplicará.');}
-      orders=await backend.load(workshop.id);location.hash='/orders/'+saved.number;notify('Orden guardada en el taller.');
+      const saved=await backend.receive(intakeWorkshop,requestId,order,items);
+      if(!isCurrent())return;
+      const loaded=await backend.load(intakeWorkshop);
+      if(!isCurrent())return;
+      orders=loaded;location.hash='/orders/'+saved.number;notify('Orden guardada en el taller.');
     }else if(persist([...orders,order])){location.hash=`/orders/${order.number}`;notify(`Orden GT-${order.number} creada. Ya puedes compartir su seguimiento.`);} }
-    catch(error){document.querySelector('#form-error').textContent=friendly(error);}
+    catch(error){if(isCurrent())form.querySelector('#form-error').textContent=friendly(error);}
     finally{button.disabled=false;}
   };
 }
@@ -91,7 +99,9 @@ function detail(number) {
   document.querySelector('#print-order').onclick=()=>window.print();
   if(!demoMode) enhanceDetail(order);
   else document.querySelector('#copy-link').onclick=async()=>{try{await navigator.clipboard.writeText(`${location.href.split('#')[0]}#/track/${number}`);notify('Enlace copiado. Solo contiene datos en este navegador.');}catch{notify('No se pudo copiar. Abre la vista del cliente y copia la dirección.');}};
-  document.querySelector('#update-form').onsubmit=async event=>{event.preventDefault();const saveButton=event.target.querySelector('[type=submit]');saveButton.disabled=true;const data=new FormData(event.target);try{const status=data.get('status');if(!statuses.some(([key])=>key===status))throw new Error('Selecciona un estado válido.');const changes={status,quote:parseAmount(data.get('quote')),notes:data.get('notes').trim(),message:data.get('message').trim(),events:status!==order.status?[...order.events,{status,at:new Date().toISOString()}]:order.events};if(!changes.message)throw new Error('Escribe un mensaje para el cliente.');if(await updateOrder(number,changes)){detail(number);notify('Cambios guardados. El seguimiento ya está actualizado.');}}catch(error){document.querySelector('#update-error').textContent=friendly(error);}finally{saveButton.disabled=false;}};
+  const detailForm=document.querySelector('#update-form'), detailUser=session?.user?.id, detailWorkshop=workshop?.id, detailDemo=demoMode;
+  const isCurrent=()=>detailForm.isConnected && demoMode===detailDemo && (detailDemo || (session?.user?.id===detailUser && workshop?.id===detailWorkshop));
+  detailForm.onsubmit=async event=>{event.preventDefault();const saveButton=event.target.querySelector('[type=submit]');saveButton.disabled=true;const data=new FormData(event.target);try{const status=data.get('status');if(!statuses.some(([key])=>key===status))throw new Error('Selecciona un estado válido.');const changes={status,quote:parseAmount(data.get('quote')),notes:data.get('notes').trim(),message:data.get('message').trim(),events:status!==order.status?[...order.events,{status,at:new Date().toISOString()}]:order.events};if(!changes.message)throw new Error('Escribe un mensaje para el cliente.');if(await updateOrder(order,changes,isCurrent)){detail(number);notify('Cambios guardados. El seguimiento ya está actualizado.');}}catch(error){if(isCurrent())detailForm.querySelector('#update-error').textContent=friendly(error);}finally{saveButton.disabled=false;}};
 }
 function safePhoto(value){return /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value)?value:'';}
 function tracking(number,remote=null) {
@@ -184,9 +194,9 @@ function enhanceDetail(order){
   const emptyNote=display.parentElement.querySelector('.hint');if(emptyNote)emptyNote.textContent=order.photoRecords.some(photo=>photo.state==='pending')?'Hay fotos pendientes de confirmar. Reintenta desde la recepción original.':order.photoRecords.length?'Fotos privadas · Acceso temporal de 5 minutos':'Sin fotos de ingreso.';
   document.querySelector('#copy-link').onclick=async event=>{
     const button=event.currentTarget;button.disabled=true;
-    try{const url=await backend.trackingLink(order);viewer.href=url;viewer.hidden=false;const input=document.querySelector('#tracking-url');input.value=url;input.hidden=false;try{await navigator.clipboard.writeText(url);notify('Enlace privado copiado.');}catch{input.select();notify('Enlace creado. Puedes copiarlo del campo.');}}catch(error){notify(friendly(error));}finally{button.disabled=false;}
+    try{const url=await backend.trackingLink(order);if(!actions.isConnected)return;viewer.href=url;viewer.hidden=false;const input=actions.querySelector('#tracking-url');input.value=url;input.hidden=false;try{await navigator.clipboard.writeText(url);if(actions.isConnected)notify('Enlace privado copiado.');}catch{if(actions.isConnected){input.select();notify('Enlace creado. Puedes copiarlo del campo.');}}}catch(error){if(actions.isConnected)notify(friendly(error));}finally{button.disabled=false;}
   };
-  document.querySelector('#revoke-link').onclick=async()=>{try{await backend.revoke(order);viewer.hidden=true;document.querySelector('#tracking-url').hidden=true;document.querySelector('#tracking-url').value='';notify('Enlace revocado.');}catch(error){notify(friendly(error));}};
+  document.querySelector('#revoke-link').onclick=async()=>{try{await backend.revoke(order);if(!actions.isConnected)return;viewer.hidden=true;actions.querySelector('#tracking-url').hidden=true;actions.querySelector('#tracking-url').value='';notify('Enlace revocado.');}catch(error){if(actions.isConnected)notify(friendly(error));}};
   document.querySelector('#update-form .form-actions .hint').textContent='Cambios guardados en tu taller';
 }
 async function render(){

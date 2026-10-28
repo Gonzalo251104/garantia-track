@@ -28,3 +28,32 @@ test('backend mutation errors are surfaced instead of a local fallback',async()=
   const backend=await connect({},()=>({rpc:async()=>({data:null,error:new Error('Access denied')})}));
   await assert.rejects(backend.create('workshop','request',{}),/Access denied/);
 });
+test('intake snapshots its photo batch before an order request completes',async()=>{
+  let finishCreate,started;
+  const creating=new Promise(resolve=>{started=resolve;});
+  const barrier=new Promise(resolve=>{finishCreate=resolve;});
+  const fake={rpc:async(name)=>{
+    if(name==='create_repair_order'){started();await barrier;return {data:{id:'first-order',number:1042},error:null};}
+    return {data:null,error:null};
+  }};
+  const backend=await connect({},()=>fake),uploaded=[];
+  backend.upload=async(id,photos)=>uploaded.push({id,photos});
+  const photos=[{id:'first-photo',src:'first-intake'}];
+  const saving=backend.receive('first-workshop','stable-request',{model:'First controller'},photos);
+  await creating;
+  photos[0].src='second-intake';photos.push({id:'second-photo',src:'unrelated'});
+  finishCreate();await saving;
+  assert.deepEqual(uploaded,[{id:'first-order',photos:[{id:'first-photo',src:'first-intake'}]}]);
+});
+test('order RPC does not transmit evidence or client-forged event history',async()=>{
+  let submitted;
+  const backend=await connect({},()=>({rpc:async(name,args)=>{submitted=args.p_order;return {data:{number:1042},error:null};}}));
+  await backend.create('workshop','request',{customer:'QA',accessories:['USB'],photos:['large-data-url'],events:[{status:'delivered'}]});
+  assert.equal('photos' in submitted,false);assert.equal('events' in submitted,false);
+  assert.deepEqual(submitted.accessories,['USB']);
+});
+test('a partial intake upload reports the already-created order without duplicating it',async()=>{
+  const backend=await connect({},()=>({rpc:async()=>({data:{id:'order',number:1042},error:null})}));
+  backend.upload=async()=>{throw new Error('Disconnected');};
+  await assert.rejects(backend.receive('workshop','request',{},[]),/La orden GT-1042 se guardó/);
+});

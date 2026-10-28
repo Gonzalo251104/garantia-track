@@ -21,7 +21,7 @@ test('database authorization, transactions and private storage',async t=>{
     grant select,insert,update,delete on storage.objects to authenticated,anon;
     insert into auth.users values('${alice}'),('${bob}');
   `);
-  await db.exec(await readFile(new URL('../supabase/migrations/202610280001_workshop_backend.sql',import.meta.url),'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/20261028060929_workshop_backend.sql',import.meta.url),'utf8'));
   const asUser=async(id,fn,role='authenticated')=>{await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id||'']);await db.exec(`set role ${role}`);try{return await fn();}finally{await db.exec('reset role');}};
   const value=async(sql,params=[])=>Object.values((await db.query(sql,params)).rows[0])[0];
   let wa,wb,order,photo;

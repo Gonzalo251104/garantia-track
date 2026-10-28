@@ -4,7 +4,7 @@
 
 Create or select a Supabase project under your account. No paid services are required for a small development environment. Do not point the integration at an unrelated production database.
 
-Apply `supabase/migrations/202610280001_workshop_backend.sql` once in the project's SQL Editor, or use the Supabase CLI linked to the intended project:
+Apply `supabase/migrations/20261028060929_workshop_backend.sql` once in the project's SQL Editor, or use the Supabase CLI linked to the intended project:
 
 ```sh
 npx supabase login

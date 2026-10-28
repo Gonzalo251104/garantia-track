@@ -13,6 +13,11 @@
 ### Changed
 - Local demo now requires explicit selection and never acts as a backend failure fallback.
 - Documented setup and the stacked PR dependency on the unmerged prototype.
+- Scoped photos to each intake and captured upload batches before network waits, preventing unrelated forms from sharing evidence.
+- Ignored stale async callbacks after navigation or identity changes; order updates retain the version shown in the form.
+- Omitted photo data and client event history from order-creation RPC payloads.
+- Aligned the initial migration filename with the already-applied remote version 20261028060929 without changing its SQL.
+- Reran PR CI on base-branch edits and documented the ordered Gitflow integration.
 
 ### Pending environment verification
 - Development project configured on the free plan; initial migration applied remotely.

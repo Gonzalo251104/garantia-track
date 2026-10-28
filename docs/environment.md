@@ -38,8 +38,8 @@ References: [anonymous definer advisory](https://supabase.com/docs/guides/databa
 Remote: https://github.com/Gonzalo251104/garantia-track
 
 - PR #1: prototype -> develop.
-- Draft PR #2: Supabase integration -> prototype feature branch.
-- Initial checks passed on both; PRs remain open and unmerged.
+- PR #2: Supabase integration -> develop, retargeted after PR #1 merged.
+- PR #1 was merged first. PR #2 integrates after review corrections and successful CI; check the PR URL for its current status.
 - Permanent branches contain only initialization. No application code was pushed directly to them.
 
 The terminal Git credential helper could not authenticate. The connected GitHub API uploaded exact local Git blobs and matching source trees; local branch history was aligned to those commits only after tree equality was verified. Original local commits remain reachable through refs/backups/pre-github. No source files were discarded.

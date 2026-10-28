@@ -1,6 +1,7 @@
 name: Application CI
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
     branches: [main, develop, 'feature/**']
 permissions:
   contents: read

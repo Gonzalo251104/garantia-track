@@ -11,7 +11,7 @@ export async function connect(config,clientFactory) {
   const createClient=clientFactory||(await import('./vendor/supabase.js')).createClient;
   const client=createClient(config.supabaseUrl,config.supabaseKey,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const rpc=async(name,args)=>{const {data,error}=await client.rpc(name,args);if(error)throw error;return data;};
-  return {
+  const api = {
     client,
     async workshop(){
       const {data,error}=await client.from('workshops').select('id,name').order('created_at').limit(1).maybeSingle();
@@ -22,7 +22,17 @@ export async function connect(config,clientFactory) {
       const {data,error}=await client.from('repair_orders').select('*,order_events(status,at),order_photos(id,path,state)').eq('workshop_id',workshop).order('number',{ascending:false}).limit(500);
       if(error)throw error;return data.map(toOrder);
     },
-    async create(workshop,request,order){return toOrder(await rpc('create_repair_order',{p_workshop:workshop,p_request:request,p_order:order}));},
+    async create(workshop,request,order){
+      const {customer,phone,device,model,serial,issue,condition,accessories}=order;
+      return toOrder(await rpc('create_repair_order',{p_workshop:workshop,p_request:request,p_order:{customer,phone,device,model,serial,issue,condition,accessories}}));
+    },
+    async receive(workshop,request,order,photos){
+      // Capture each intake before awaiting the network; another view may open meanwhile.
+      const draft=structuredClone(order),evidence=photos.map(photo=>({...photo}));
+      const saved=await api.create(workshop,request,draft);
+      try{await api.upload(saved.id,evidence);}catch{throw new Error('La orden GT-'+saved.number+' se guardó, pero faltan fotos. Pulsa Crear orden otra vez sin salir para reintentar; no se duplicará.');}
+      return saved;
+    },
     async update(order,changes){return toOrder(await rpc('update_repair_order',{p_id:order.id,p_version:order.version,p_status:changes.status,p_quote:changes.quote,p_notes:changes.notes,p_message:changes.message}));},
     async upload(orderId,items){
       for(const item of items){
@@ -48,4 +58,5 @@ export async function connect(config,clientFactory) {
     revoke:order=>rpc('revoke_tracking_link',{p_order:order.id}),
     tracking:token=>rpc('get_order_tracking',{p_token:token})
   };
+  return api;
 }
