@@ -2,11 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import QRCode from 'qrcode';
 import jsQR from 'jsqr';
-import { receiptData, receiptMarkup, trackingReceiptUrl, qrSvg, paperProfiles, receiptPageStyle, createReceiptLinks } from '../dist/receipt.js';
+import { receiptData, receiptMarkup, trackingReceiptUrl, qrSvg, paperProfiles, receiptPageStyle, createReceiptLinks, whatsappReceiptUrl } from '../dist/receipt.js';
 
 const origin = 'https://garantiatrack-console-workshop.gonzaloacd.chatgpt.site/';
 const url = `${origin}#/tracking/${'ab'.repeat(32)}`;
 const order = { number: 1043, created: '2026-10-28T18:12:00Z', device: 'controller', model: 'DualSense', customer: 'Fictional QA', serial: 'QA-ONLY', accessories: ['Cable USB'], issue: 'Stick drift', condition: 'QA illustration', phone: 'PRIVATE-CONTACT', notes: 'PRIVATE-NOTE', quote: 9511, photos: ['PRIVATE-PHOTO'], events: ['PRIVATE-HISTORY'] };
+
+test('WhatsApp message shares only the receipt reference and validated existing link', () => {
+  const link = new URL(whatsappReceiptUrl(receiptData(order, 'Taller & Co'), url, origin));
+  assert.equal(link.origin, 'https://wa.me');
+  const message = link.searchParams.get('text');
+  assert.ok(message.includes(url)); assert.ok(message.includes('GT-1043')); assert.ok(message.includes('Taller & Co'));
+  for (const secret of ['PRIVATE-CONTACT', 'PRIVATE-NOTE', 'PRIVATE-PHOTO', 'QA-ONLY', '9511']) assert.ok(!message.includes(secret));
+  assert.throws(() => whatsappReceiptUrl(receiptData(order, 'QA'), url.replace('gonzaloacd', 'attacker'), origin));
+  assert.throws(() => whatsappReceiptUrl(receiptData(order, 'QA'), `http://localhost/#/tracking/${'a'.repeat(64)}`, 'http://localhost/'));
+});
 
 test('receipt projection includes intake evidence but excludes internal and financial fields', () => {
   const data = receiptData(order, 'QA Workshop');

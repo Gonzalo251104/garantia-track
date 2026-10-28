@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0] - 2026-10-28
+
+### Added
+- Generate customer receipt PDFs locally with the existing tracking QR and clickable link.
+- Share a PDF through the device share sheet or download it for manual attachment; share a tracking message through WhatsApp.
+- Document current product flows and pilot priorities.
+
 ## [0.4.0] - 2026-10-28
 
 ### Added
