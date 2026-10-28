@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] - 0.2.0
+## [0.2.0] - 2026-10-28
 
 ### Added
 - Supabase Auth login, email registration, password recovery and workshop onboarding.
@@ -19,11 +19,11 @@
 - Aligned the initial migration filename with the already-applied remote version 20261028060929 without changing its SQL.
 - Reran PR CI on base-branch edits and documented the ordered Gitflow integration.
 
-### Pending environment verification
-- Development project configured on the free plan; initial migration applied remotely.
-- Live anonymous API smoke and rolled-back tenant isolation checks passed.
-- Prototype and Supabase PRs opened; initial remote CI passed.
-- Auth redirect setup, email flows and authenticated photo upload still require a live user test.
+### Release preparation
+- Added a PR-gated Gitflow release process, main-only GitHub tag/release workflow and deployment/rollback runbook.
+- Updated CI actions and covered release/hotfix PR targets.
+- Added a public version/commit build marker and an opt-in guard against unconfigured production builds.
+- Verified local authenticated intake, private photo persistence and customer tracking with fictional data.
 
 ## [0.1.0] - 2026-10-27
 
@@ -35,4 +35,4 @@
 - Local persistence, reset confirmation and printable intake record.
 - Domain tests, PR template and CI configuration.
 
-This is an unreleased prototype on a feature branch, not a production release.
+Internal prototype milestone; no public v0.1.0 release was published.

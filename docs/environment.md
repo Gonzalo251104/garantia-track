@@ -16,12 +16,12 @@ The owner reports that Auth callback URLs are configured, and authenticated appl
 
 https://supabase.com/dashboard/project/rtfhogdqsxlqfwvzisoo/auth/url-configuration
 
-Set Site URL to http://127.0.0.1:4173 and add these exact redirect URLs:
+For local development, the original Site URL was http://127.0.0.1:4173. On publication, replace Site URL with the actual HTTPS deployment origin and add its exact root/recovery callbacks as described in deployment.md. Preserve these local redirect URLs:
 
 - http://127.0.0.1:4173/
 - http://127.0.0.1:4173/?auth=recovery
 
-Email confirmation remains enabled. Register a separate GarantiaTrack application account from the local login screen; a Supabase dashboard account is not automatically an application user. Use your own email and password; never share the password in chat. A custom SMTP service may be necessary for email delivery to users outside the project's team. See supabase-setup.md.
+Email confirmation remains enabled. The owner already registered a GarantiaTrack account; a Supabase dashboard account is not automatically an application user. Use your own email and password; never share the password in chat. A custom SMTP service may be necessary for email delivery to users outside the project's team. See supabase-setup.md.
 
 ## Verification
 
@@ -39,7 +39,7 @@ Remote: https://github.com/Gonzalo251104/garantia-track
 
 - PR #1: prototype -> develop.
 - PR #2: Supabase integration -> develop, retargeted after PR #1 merged.
-- PR #1 was merged first. PR #2 integrates after review corrections and successful CI; check the PR URL for its current status.
-- Permanent branches contain only initialization. No application code was pushed directly to them.
+- Both PRs were merged after review corrections and successful CI.
+- Application source entered develop through those PRs. The v0.2.0 release enters main through a separate release PR and returns through a backmerge PR.
 
 The terminal Git credential helper could not authenticate. The connected GitHub API uploaded exact local Git blobs and matching source trees; local branch history was aligned to those commits only after tree equality was verified. Original local commits remain reachable through refs/backups/pre-github. No source files were discarded.

@@ -52,7 +52,7 @@ A password recovery flow is included. Use the same browser that requested a reco
 - Browser Auth sessions are managed by the official SDK. No privileged credentials are shipped to the browser.
 - Tracking tokens contain 256 random bits, remain in URL fragments and are stored only as SHA-256 hashes in PostgreSQL. The RPC returns an explicit field allowlist.
 - The connected mode does not import local demo data.
-- JWT validation, SMTP, HTTP upload behavior and the deployed Supabase environment still require live integration verification.
+- Local authenticated intake, private HTTP photo uploads and tracking have passed live verification. Production-origin callbacks and device testing are separate deployment checks.
 
 ## Current boundaries
 
@@ -73,13 +73,13 @@ Before collecting real customer information, verify SMTP, email confirmation, ac
 - `docs/`: setup, architecture, review plan and verification results.
 - `dist/vendor/`, `dist/config.js`: generated, ignored build outputs.
 
-## Gitflow status
+## Releases and hosting
 
-The remote is [Gonzalo251104/garantia-track](https://github.com/Gonzalo251104/garantia-track). [PR #1](https://github.com/Gonzalo251104/garantia-track/pull/1) introduces the prototype into develop; [PR #2](https://github.com/Gonzalo251104/garantia-track/pull/2) adds the Supabase integration. PR #1 was reviewed and merged first with its feature ancestry preserved; PR #2 then targets develop. Application changes enter develop through PRs. Main remains the release branch and does not receive these development merges.
+The remote is [Gonzalo251104/garantia-track](https://github.com/Gonzalo251104/garantia-track). PR #1 and PR #2 were reviewed and merged into develop in order. The first published pilot is v0.2.0: release/0.2.0 enters main through a PR, and main returns to develop through a second PR. No source changes are pushed directly to permanent branches. See [Gitflow](docs/workflow.md), [release notes](docs/releases/v0.2.0.md) and [deployment and rollback](docs/deployment.md).
 
-The Supabase development project is configured locally and its migration is applied. See [environment status](docs/environment.md) for live verification and the remaining Auth dashboard setup. The ignored .env contains only public client configuration. CI covers PRs into permanent and feature branches for stacked review.
+The static frontend is published with Sites from a mirror of the approved GitHub source. Access to the URL is public; workshops sign in with GarantiaTrack. Supabase Auth, PostgreSQL and private Storage provide the backend. The ignored .env contains only public client configuration. dist/version.json identifies the deployed version and canonical GitHub commit. No paid plan is required for the pilot.
 
-The old Sites manifest records a private project identity, not a deployment. Local-only development continues; no Site publication or direct push to main is performed.
+The initial migration is already applied on the connected free Supabase project. Do not rerun it as a new migration. See [environment status](docs/environment.md) and the deployment runbook for exact Auth redirect configuration.
 
 ## License
 
