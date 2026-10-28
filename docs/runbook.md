@@ -27,6 +27,15 @@ Run npm ci only on the first checkout or after dependency/lockfile changes. The 
 
 Only one instance can listen on port 4173. If EADDRINUSE appears, the existing server is already running: open its URL rather than starting another instance. The assistant has currently started a server for this test session.
 
+For a separate preview when the default port is occupied:
+
+```powershell
+$env:PORT = '4180'
+npm run dev
+```
+
+Open http://127.0.0.1:4180. Each origin has its own Auth session. Stop this server with Ctrl+C and clear the override with Remove-Item Env:PORT when finished.
+
 ## Configuration
 
 The existing ignored .env contains the Supabase project URL and public publishable key. Do not replace it with a service_role or secret key. Do not commit .env. Restart the server after changing it.

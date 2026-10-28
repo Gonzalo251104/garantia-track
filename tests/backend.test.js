@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {singleRow,toOrder,connect} from '../dist/backend.js';
+
+test('new QR links use the canonical app origin and keep the existing token rotation RPC',async()=>{
+  const calls=[];
+  const backend=await connect({publicAppUrl:'https://app.example'},()=>({rpc:async(name,args)=>{calls.push({name,args});return {data:null,error:null};}}));
+  const first=await backend.trackingLink({id:'order-id'}),second=await backend.trackingLink({id:'order-id'});
+  assert.match(first,/^https:\/\/app\.example\/#\/tracking\/[a-f0-9]{64}$/);
+  assert.notEqual(first,second);assert.equal(calls[0].name,'rotate_tracking_link');
+  assert.equal(calls[0].args.p_order,'order-id');assert.ok(first.endsWith(calls[0].args.p_token));
+});
 test('composite RPC responses handle object and singleton collection encodings',()=>{
   const row={id:'order',number:'1041',created_at:'2026-10-28T00:00:00Z',order_events:[{status:'ready',at:'2026-10-29T00:00:00Z'},{status:'received',at:'2026-10-28T00:00:00Z'}]};
   assert.equal(toOrder([row]).number,1041);

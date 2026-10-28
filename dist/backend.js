@@ -54,7 +54,7 @@ export async function connect(config,clientFactory) {
       }
       return urls;
     },
-    async trackingLink(order){const token=Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');await rpc('rotate_tracking_link',{p_order:order.id,p_token:token});return `${location.origin}${location.pathname}#/tracking/${token}`;},
+    async trackingLink(order){const token=Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');await rpc('rotate_tracking_link',{p_order:order.id,p_token:token});return `${config.publicAppUrl?config.publicAppUrl+'/':location.origin+location.pathname}#/tracking/${token}`;},
     revoke:order=>rpc('revoke_tracking_link',{p_order:order.id}),
     tracking:token=>rpc('get_order_tracking',{p_token:token})
   };

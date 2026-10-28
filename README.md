@@ -42,6 +42,10 @@ npm run build
 
 A password recovery flow is included. Use the same browser that requested a recovery link because Auth uses PKCE.
 
+## Thermal receipts
+
+Open an order and select Ticket de recepción · QR to prepare an 80 mm or 58 mm intake ticket. Copies reuse the active QR; renewal explicitly invalidates earlier tickets. Links are only retained in tab memory, so a full reload requires deliberate renewal. See [receipt and printing guide](docs/receipts.md) for driver settings, privacy and hardware verification.
+
 ## Data and security
 
 - PostgreSQL RLS isolates workshops. API table grants are SELECT-only for authenticated users.
@@ -56,7 +60,7 @@ A password recovery flow is included. Use the same browser that requested a reco
 
 ## Current boundaries
 
-The workshop list loads at most 500 recent orders; search and CSV export cover that loaded set. Member invitation UI, billing, payment verification, state transition restrictions, QR printing, offline sync and automatic WhatsApp notifications remain out of scope. CSV and printing remain available.
+The workshop list loads at most 500 recent orders; search and CSV export cover that loaded set. Member invitation UI, billing, payment verification, state transition restrictions, offline sync and automatic WhatsApp notifications remain out of scope. CSV and printing remain available.
 
 Leaving intake discards an unsaved draft or pending local photo retries. Pending reservations can be reviewed by a project administrator; no automatic cleanup job is shipped. Images are decoded and recompressed by the browser. Bucket MIME restrictions are not a substitute for a future server-side content inspection pipeline.
 
@@ -75,7 +79,7 @@ Before collecting real customer information, verify SMTP, email confirmation, ac
 
 ## Releases and hosting
 
-The remote is [Gonzalo251104/garantia-track](https://github.com/Gonzalo251104/garantia-track). PR #1 and PR #2 were reviewed and merged into develop in order. The first published pilot is v0.2.0: release/0.2.0 enters main through a PR, and main returns to develop through a second PR. No source changes are pushed directly to permanent branches. See [Gitflow](docs/workflow.md), [release notes](docs/releases/v0.2.0.md) and [deployment and rollback](docs/deployment.md).
+The remote is [Gonzalo251104/garantia-track](https://github.com/Gonzalo251104/garantia-track). PR #1 and PR #2 were reviewed and merged into develop in order. The first published pilot was v0.2.0. The thermal receipt feature ships in v0.3.0 through the same Gitflow process: release/* enters main through a PR, and main returns to develop through a second PR. No source changes are pushed directly to permanent branches. See [Gitflow](docs/workflow.md), [release notes](docs/releases/v0.2.0.md) and [deployment and rollback](docs/deployment.md).
 
 The static frontend is published with Sites from a mirror of the approved GitHub source. Access to the URL is public; workshops sign in with GarantiaTrack. Supabase Auth, PostgreSQL and private Storage provide the backend. The ignored .env contains only public client configuration. dist/version.json identifies the deployed version and canonical GitHub commit. No paid plan is required for the pilot.
 
