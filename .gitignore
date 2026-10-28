@@ -7,3 +7,4 @@ node_modules/
 coverage/
 dist/vendor/
 dist/config.js
+dist/version.json
