@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.0] - 2026-10-28
 
 ### Added
 - Encrypted receipt token recovery with Supabase Vault and member-only transactional RPCs.
