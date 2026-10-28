@@ -22,9 +22,9 @@
 
 ## Not yet verified
 
-No live Supabase project was configured. The SQL migration was executed in embedded PostgreSQL with fixture Auth/Storage schemas and roles, not against Supabase HTTP services. Registration, email confirmation, password recovery, real JWT verification, object upload, signed downloads and cross-device tracking still need a target-project smoke test.
+The real project now has the migration applied. A rolled-back transaction on the live database checked authenticated workshop creation, idempotency, cross-workshop denial and anonymous tracking field restrictions. No fixture accounts or orders were retained.
 
-The Supabase integration is available for installation/connection but is not confirmed connected. The repository has no remote. No remote migration, PR or CI run is claimed.
+The live smoke script passed against Auth settings, anonymous Data API restrictions, unknown tracking tokens and anonymous Storage upload denial. Auth registration/confirmation/recovery, authenticated upload, signed downloads and cross-device end-to-end tracking still need a real test account. The Supabase connection is active; PR #1 and draft PR #2 are open with successful initial CI runs. See environment.md for configuration details and intentional advisor findings.
 
 ## Local state
 

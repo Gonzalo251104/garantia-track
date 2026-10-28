@@ -15,8 +15,10 @@
 - Documented setup and the stacked PR dependency on the unmerged prototype.
 
 ### Pending environment verification
-- No Supabase project configuration has been supplied or migration applied remotely.
-- Live Auth, SMTP, Storage HTTP and remote PR checks remain pending.
+- Development project configured on the free plan; initial migration applied remotely.
+- Live anonymous API smoke and rolled-back tenant isolation checks passed.
+- Prototype and Supabase PRs opened; initial remote CI passed.
+- Auth redirect setup, email flows and authenticated photo upload still require a live user test.
 
 ## [0.1.0] - 2026-10-27
 

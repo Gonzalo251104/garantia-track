@@ -8,7 +8,8 @@
     "build": "node --env-file-if-exists=.env scripts/build.mjs",
     "test": "node --test",
     "check": "node scripts/check.mjs",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "smoke:supabase": "node --env-file=.env scripts/smoke-supabase.mjs"
   },
   "engines": { "node": ">=22" },
   "dependencies": { "@supabase/supabase-js": "2.118.0" },

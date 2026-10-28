@@ -17,7 +17,7 @@ Constrain reads with RLS and perform writes through transactional membership-che
 - Domain/configuration tests and executable PostgreSQL tests with two isolated workshop identities.
 - Cross-workshop denial, direct-write denial, atomic history, idempotency, stale versions, upload paths, photo limits and token expiry/rotation/revocation.
 - Local browser verification recorded separately in qa-results.md.
-- Live Supabase Auth, email, Storage HTTP and remote CI remain pending project configuration.
+- Initial remote CI passed. Migration applied to the live development project; anonymous API smoke tests and rolled-back live tenant/RPC checks passed. User email flows and authenticated Storage uploads remain pending.
 
 ## Checklist
 
@@ -26,9 +26,10 @@ Constrain reads with RLS and perform writes through transactional membership-che
 - [x] RLS and RPC permissions are tested in embedded PostgreSQL
 - [x] Demo remains explicitly separate from connected data
 - [x] Setup and operational limitations are documented
-- [ ] Target Supabase migration applied and live smoke test passed
-- [ ] Remote repository configured and actual PR opened
-- [ ] Remote CI passed
+- [x] Target Supabase migration applied and anonymous API smoke test passed
+- [x] Remote repository configured and draft PR #2 opened
+- [x] Initial remote CI passed
+- [ ] Auth email flows and authenticated photo upload passed end to end
 
 ## Review sequence
 

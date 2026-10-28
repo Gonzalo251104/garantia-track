@@ -73,7 +73,9 @@ Before collecting real customer information, verify SMTP, email confirmation, ac
 
 ## Gitflow status
 
-`feature/supabase-integration` depends on the unmerged `feature/navigable-prototype`. No permanent branch was modified. No remote repository is configured, so no real PR has been created. See [workflow](docs/workflow.md) and the prepared [PR description](docs/pr-supabase.md). CI covers PRs into permanent and feature branches for stacked review.
+`feature/supabase-integration` depends on the unmerged `feature/navigable-prototype`. The remote is [Gonzalo251104/garantia-track](https://github.com/Gonzalo251104/garantia-track). [PR #1](https://github.com/Gonzalo251104/garantia-track/pull/1) proposes the prototype into develop; [draft PR #2](https://github.com/Gonzalo251104/garantia-track/pull/2) proposes the Supabase integration onto the prototype branch. Neither PR is merged. Both initial CI runs passed. Permanent branches contain only the repository initialization marker.
+
+The Supabase development project is configured locally and its migration is applied. See [environment status](docs/environment.md) for live verification and the remaining Auth dashboard setup. The ignored .env contains only public client configuration. CI covers PRs into permanent and feature branches for stacked review.
 
 The old Sites manifest records a private project identity, not a deployment. Local-only development continues; no Site publication or direct push to main is performed.
 
