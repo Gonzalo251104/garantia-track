@@ -1,0 +1,2 @@
+[hidden]{display:none!important}.auth-links{display:flex;gap:4px;flex-wrap:wrap;margin-top:15px}.auth-links button{padding:8px;font-size:11px}.tracker-top button{font-size:12px}.actions-stack input[readonly]{font-size:11px;word-break:break-all}.tracker-body .tracker-top{min-height:76px}
+@media(max-width:760px){.topbar .avatar,.topbar .demo-pill{display:none}.topbar-right{flex-shrink:0}}
