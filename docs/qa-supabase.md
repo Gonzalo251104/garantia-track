@@ -20,11 +20,17 @@
 - Leaving demo returned to the access/setup screen.
 - At 390 × 844, the access screen had a 390 px document width and no horizontal overflow. The temporary viewport override was reset.
 
-## Not yet verified
+## Live authenticated end-to-end verification
 
 The real project now has the migration applied. A rolled-back transaction on the live database checked authenticated workshop creation, idempotency, cross-workshop denial and anonymous tracking field restrictions. No fixture accounts or orders were retained.
 
-The live smoke script passed against Auth settings, anonymous Data API restrictions, unknown tracking tokens and anonymous Storage upload denial. Auth registration/confirmation/recovery, authenticated upload, signed downloads and cross-device end-to-end tracking still need a real test account. The Supabase connection is active; PR #1 and draft PR #2 are open with successful initial CI runs. See environment.md for configuration details and intentional advisor findings.
+The owner created and signed into an application account. In that session, workshop GarantiaTrack QA and fictional controller order GT-1042 were created through the interface. One generated 800 x 500 PNG fixture was compressed and uploaded as private evidence. Its signed image URL rendered successfully before and after a full reload.
+
+The order was updated to diagnosing with PEN 85.50, an internal QA note and a separate customer message. Customer tracking displayed the updated state/message without the contact, serial, internal note or photo. A separate SDK client with no Auth session returned exactly the allowed tracking fields and was denied direct download of the actual evidence object.
+
+Rotating the tracking link invalidated the first URL. Revoking the second link made it inaccessible anonymously. A final valid link was generated for the owner. Bearer URLs were not committed or included in this report. The fake order and its photo remain available for manual testing; no real customer data was entered by the assistant.
+
+Password recovery, session expiry, and a separate physical device were not exercised. The prior rolled-back SQL checks and the 19 automated tests remain separate verification layers. See environment.md for intentional advisor findings.
 
 ## Local state
 

@@ -13,6 +13,8 @@ npm run dev
 
 Open http://127.0.0.1:4173. The server binds to loopback only. Leave it running while testing. The SDK is bundled locally; no CDN or browser-side package installation is required.
 
+For startup, verification commands and troubleshooting, see [local runbook](docs/runbook.md). The authenticated receipt/photo/tracking test passed on 2026-10-28 with fictional order GT-1042.
+
 Without Supabase configuration the application shows a setup screen. **Explorar con datos ficticios** explicitly enters the isolated local demo. Missing configuration or backend failures never silently save workshop records into demo storage.
 
 ## Connect Supabase

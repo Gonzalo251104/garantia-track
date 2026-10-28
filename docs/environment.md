@@ -8,11 +8,11 @@
 - API: https://rtfhogdqsxlqfwvzisoo.supabase.co
 - Initial workshop_backend migration applied successfully.
 - Client configuration is in ignored .env; no privileged key is used or committed.
-- No customer data or permanent QA users were inserted.
+- The owner created their application account. A fictional QA workshop/order/photo now exist for testing; the assistant did not create a separate account or handle the owner's password.
 
-## Remaining Auth dashboard setup
+## Auth dashboard setup
 
-The connector does not expose Auth URL configuration and the browser dashboard requires the owner's sign-in. Open:
+The owner reports that Auth callback URLs are configured, and authenticated application access has been verified. The settings are managed at:
 
 https://supabase.com/dashboard/project/rtfhogdqsxlqfwvzisoo/auth/url-configuration
 
@@ -27,7 +27,7 @@ Email confirmation remains enabled. Register a separate GarantiaTrack applicatio
 
 Run npm run smoke:supabase for non-destructive live checks: Auth endpoint reachability, unknown tracking token rejection, denied anonymous order reads and denied anonymous photo uploads. This script creates no objects or users.
 
-A transaction with rollback on the live database additionally verified transactional workshop creation, request idempotency, tenant isolation and the tracking allowlist under the actual authenticated/anon roles. These role-based SQL checks do not replace JWT/login and authenticated upload HTTP tests.
+A transaction with rollback on the live database additionally verified transactional workshop creation, request idempotency, tenant isolation and the tracking allowlist under the actual authenticated/anon roles. The subsequent authenticated browser test passed receipt creation, private photo upload/download, reload persistence, status updates and tracking. A separate anonymous SDK client confirmed field restrictions, private photo denial, rotation and revocation. See qa-supabase.md.
 
 The Supabase security advisor reports intentional SECURITY DEFINER exposure for the tightly granted membership-checked RPCs and the anonymous token-limited tracking RPC. It also notes RLS with no policies on tracking_links, which is deliberately inaccessible through table grants; only functions access it. These are documented design decisions, not a claim of a warning-free security review.
 
