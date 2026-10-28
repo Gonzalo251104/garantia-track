@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Dedicated intake receipt preview with 58/80 mm thermal profiles, monochrome QR and browser printing/PDF support.
+- In-memory tracking URL reuse, explicit renewal confirmation and live pre-print validation without automatic token rotation.
+- Optional canonical APP_PUBLIC_URL, independent SVG QR decoding tests and printing documentation.
+- Configurable local PORT for parallel preview servers.
+
+
 ## [0.2.0] - 2026-10-28
 
 ### Added

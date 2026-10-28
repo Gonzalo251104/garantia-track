@@ -42,6 +42,10 @@ npm run build
 
 A password recovery flow is included. Use the same browser that requested a recovery link because Auth uses PKCE.
 
+## Thermal receipts
+
+Open an order and select Ticket de recepción · QR to prepare an 80 mm or 58 mm intake ticket. Copies reuse the active QR; renewal explicitly invalidates earlier tickets. Links are only retained in tab memory, so a full reload requires deliberate renewal. See [receipt and printing guide](docs/receipts.md) for driver settings, privacy and hardware verification.
+
 ## Data and security
 
 - PostgreSQL RLS isolates workshops. API table grants are SELECT-only for authenticated users.
@@ -56,7 +60,7 @@ A password recovery flow is included. Use the same browser that requested a reco
 
 ## Current boundaries
 
-The workshop list loads at most 500 recent orders; search and CSV export cover that loaded set. Member invitation UI, billing, payment verification, state transition restrictions, QR printing, offline sync and automatic WhatsApp notifications remain out of scope. CSV and printing remain available.
+The workshop list loads at most 500 recent orders; search and CSV export cover that loaded set. Member invitation UI, billing, payment verification, state transition restrictions, offline sync and automatic WhatsApp notifications remain out of scope. CSV and printing remain available.
 
 Leaving intake discards an unsaved draft or pending local photo retries. Pending reservations can be reviewed by a project administrator; no automatic cleanup job is shipped. Images are decoded and recompressed by the browser. Bucket MIME restrictions are not a substitute for a future server-side content inspection pipeline.
 

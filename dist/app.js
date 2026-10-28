@@ -1,6 +1,9 @@
 import {statuses,statusLabel,money,escapeHtml as e,parseAmount,nextOrderNumber,publicOrder,validateIntake,seedOrders} from './domain.js';
 
 import {connect} from './backend.js';
+import {createReceiptLinks} from './receipt.js';
+import {showReceipt,confirmTrackingRenewal} from './receipt-view.js';
+const receiptLinks = createReceiptLinks();
 const config = window.GARANTIATRACK_CONFIG || {};
 const configured = Boolean(config.supabaseUrl && config.supabaseKey);
 let demoMode = sessionStorage.getItem('garantiatrack.mode') === 'demo';
@@ -96,7 +99,8 @@ async function compressPhoto(file) {
 function detail(number) {
   const order=orders.find(o=>o.number===number); if(!order) return notFound();
   shell(`<a class="back" href="#/orders">← Todas las reparaciones</a><div class="eyebrow">EXPEDIENTE DE REPARACIÓN</div><div class="heading-row"><div><h1>GT-${order.number} <span style="color:#a4af9b;font-weight:400">/</span> ${e(order.model)}</h1><p class="subtitle">Recibido el ${date(order.created)}</p></div>${badge(order.status)}</div><div class="detail-layout"><div><section class="panel"><div class="panel-head"><div><h2>Recepción del equipo</h2><p>Lo que recibimos, tal como quedó registrado.</p></div><div class="device-art">${icon(order.device)}</div></div><div class="section"><dl class="detail-grid"><div><dt>Cliente</dt><dd>${e(order.customer)}</dd></div><div><dt>Celular</dt><dd>${e(order.phone)}</dd></div><div><dt>Serie</dt><dd>${e(order.serial||'Sin registrar')}</dd></div><div><dt>Accesorios</dt><dd>${order.accessories.map(e).join(', ')||'Sin accesorios'}</dd></div><div class="full"><dt>Falla reportada</dt><dd>${e(order.issue)}</dd></div><div class="full"><dt>Estado físico</dt><dd>${e(order.condition||'Sin observaciones')}</dd></div></dl>${order.photos.length?`<div class="photo-grid">${order.photos.map((src,i)=>`<img src="${safePhoto(src)}" alt="Evidencia de ingreso ${i+1}">`).join('')}</div>`:'<p class="hint">Esta orden de ejemplo no tiene fotos. Puedes añadirlas al crear una recepción.</p>'}</div></section><form class="panel" id="update-form" style="margin-top:20px"><div class="panel-head"><div><h2>Actualiza la reparación</h2><p>El cliente verá el estado y el mensaje público.</p></div></div><div class="section"><div class="field-grid"><label class="field">Estado<select name="status">${statuses.map(([key,label])=>`<option value="${key}" ${order.status===key?'selected':''}>${label}</option>`).join('')}</select></label><label class="field">Presupuesto (S/)<input name="quote" type="number" min="0" max="999999.99" step="0.01" required value="${(order.quote/100).toFixed(2)}"></label><label class="field full">Notas internas<textarea name="notes" maxlength="2000">${e(order.notes)}</textarea><span class="hint">Solo aparecen en el panel del taller.</span></label><label class="field full">Mensaje para el cliente<textarea name="message" maxlength="600" required>${e(order.message)}</textarea><span class="hint">Visible en el seguimiento. No incluyas información sensible.</span></label></div><p class="error" id="update-error" role="alert"></p></div><div class="form-actions"><span class="hint">Cambios de demostración</span><button class="primary" type="submit">Guardar cambios</button></div></form></div><aside><section class="panel"><div class="section"><div class="eyebrow">ENLACE DE SEGUIMIENTO</div><h2 style="margin-top:12px">Sin llamadas de más.</h2><p class="subtitle">Tu cliente consulta el estado desde su navegador.</p><div class="actions-stack" style="margin-top:20px"><a class="primary" style="padding:13px;text-align:center;border-radius:8px;font-size:12px" href="#/track/${order.number}">Abrir vista del cliente ↗</a><button id="copy-link">Copiar enlace de demo</button><button id="print-order" class="secondary">Imprimir recepción</button></div><p class="hint">El enlace solo funciona con los datos de este navegador. No es un seguimiento compartido real.</p></div></section><section class="panel" style="margin-top:20px"><div class="section"><h2>Historial del equipo</h2><ol class="timeline">${order.events.map(event=>`<li>${statusLabel(event.status)}<small>${date(event.at)}</small></li>`).join('')}</ol></div></section></aside></div>`);
-  document.querySelector('#print-order').onclick=()=>window.print();
+  document.querySelector('#print-order').textContent='Ticket de recepción · QR';
+  document.querySelector('#print-order').onclick=()=>{location.hash=`/ticket/${number}`;};
   if(!demoMode) enhanceDetail(order);
   else document.querySelector('#copy-link').onclick=async()=>{try{await navigator.clipboard.writeText(`${location.href.split('#')[0]}#/track/${number}`);notify('Enlace copiado. Solo contiene datos en este navegador.');}catch{notify('No se pudo copiar. Abre la vista del cliente y copia la dirección.');}};
   const detailForm=document.querySelector('#update-form'), detailUser=session?.user?.id, detailWorkshop=workshop?.id, detailDemo=demoMode;
@@ -112,7 +116,12 @@ function tracking(number,remote=null) {
 function notFound(client=false){if(client){root.innerHTML='<main class="tracker-main" id="main"><h1>Orden no disponible</h1><p>El enlace no existe en este navegador o los datos fueron restablecidos.</p><a class="row-link" href="#/orders">Volver al taller de demo →</a></main>';}else shell('<div class="empty"><h1>No encontramos esta página</h1><p>La orden puede haber sido restablecida.</p><a href="#/orders" class="row-link">Volver a reparaciones →</a></div>');}
 function showReset(){const dialog=document.createElement('dialog');dialog.innerHTML='<h2>¿Restablecer la demo?</h2><p>Se eliminarán las órdenes y fotos creadas en este navegador y volverán los cinco ejemplos iniciales.</p><div class="dialog-actions"><button id="cancel-reset">Cancelar</button><button class="primary" id="confirm-reset">Restablecer</button></div>';document.body.append(dialog);dialog.showModal();dialog.querySelector('#cancel-reset').onclick=()=>dialog.close();dialog.querySelector('#confirm-reset').onclick=()=>{if(persist(seedOrders())){dialog.close();dashboard();notify('Datos ficticios restablecidos.');}};dialog.addEventListener('close',()=>dialog.remove());}
 function exportOrders(){const cell=value=>`"${String(value??'').replace(/^[=+@\-\t\r]/,'\'$&').replaceAll('"','""')}"`;const rows=[['order_number','customer','phone','model','status','quote_pen','created_at'],...orders.map(o=>[`GT-${o.number}`,o.customer,o.phone,o.model,o.status,(o.quote/100).toFixed(2),o.created])];const url=URL.createObjectURL(new Blob(['\uFEFF'+rows.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='garantiatrack-demo-orders.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('Exportación de demostración descargada.');}
-function renderScreen(){const route=location.hash.slice(1)||'/orders';if(route==='/orders')dashboard();else if(route==='/intake')intake();else if(/^\/orders\/\d+$/.test(route))detail(Number(route.split('/').at(-1)));else if(/^\/track\/\d+$/.test(route))tracking(Number(route.split('/').at(-1)));else notFound();window.scrollTo(0,0);}
+function ticket(number){
+  const order=orders.find(item=>item.number===number);if(!order)return notFound();
+  const userId=session?.user?.id,workshopId=workshop?.id,ticketDemo=demoMode,version=renderVersion;
+  showReceipt({root,order,workshopName:demoMode?'Pixel Lab':workshop.name,demo:demoMode,links:receiptLinks,backend,applicationUrl:config.publicAppUrl?`${config.publicAppUrl}/`:`${location.origin}${location.pathname}`,isCurrent:()=>renderVersion===version && demoMode===ticketDemo && (ticketDemo || (session?.user?.id===userId && workshop?.id===workshopId))});
+}
+function renderScreen(){const route=location.hash.slice(1)||'/orders';if(route==='/orders')dashboard();else if(route==='/intake')intake();else if(/^\/orders\/\d+$/.test(route))detail(Number(route.split('/').at(-1)));else if(/^\/ticket\/\d+$/.test(route))ticket(Number(route.split('/').at(-1)));else if(/^\/track\/\d+$/.test(route))tracking(Number(route.split('/').at(-1)));else notFound();window.scrollTo(0,0);}
 window.addEventListener('hashchange',()=>render());
 document.querySelector('.skip-link').addEventListener('click',event=>{event.preventDefault();document.querySelector('#main')?.focus();});
 window.addEventListener('storage',event=>{if(event.key===storageKey){notify('Los datos cambiaron en otra pestaña. Recarga antes de editar.');}});
@@ -137,6 +146,7 @@ async function initializeConnection(){
       session=next;
       if(event==='PASSWORD_RECOVERY')recovery=true;
       if(changed||event==='PASSWORD_RECOVERY'){
+        receiptLinks.clear();
         orders=[];workshop=null;renderVersion++;
         setTimeout(()=>{if(!demoMode)render();},0);
       }
@@ -146,6 +156,7 @@ async function initializeConnection(){
 }
 async function signOut(){
   if(!demoMode){const {error}=await backend.client.auth.signOut({scope:'local'});if(error){notify(friendly(error));return;}}
+  receiptLinks.clear();
   sessionStorage.removeItem('garantiatrack.mode');demoMode=false;session=null;workshop=null;orders=[];recovery=false;
   clearTimeout(toastTimer);document.querySelector('#toast').textContent='';document.querySelector('#toast').classList.remove('visible');
   location.hash='/orders';render();
@@ -153,7 +164,7 @@ async function signOut(){
 function accessScreen(mode='login'){
   const titles={login:'Bienvenido a tu taller.',register:'Crea tu acceso.',reset:'Recupera tu acceso.',recovery:'Elige una nueva contraseña.'};
   root.innerHTML=`<div class="tracker-body"><header class="tracker-top">${brand}<span class="demo-pill">ACCESO AL TALLER</span></header><main class="tracker-main" id="main" tabindex="-1"><div class="tracker-intro"><div class="eyebrow">TU TALLER, EN ORDEN</div><h1>${titles[mode]}</h1><p>El mismo mostrador. Ahora con tus datos protegidos.</p></div><section class="panel"><div class="section">${configured?`<form id="auth-form" class="actions-stack">${mode!=='recovery'?'<label class="field">Correo electrónico<input name="email" type="email" autocomplete="email" required maxlength="254"></label>':''}${mode!=='reset'?`<label class="field">Contraseña<input name="password" type="password" autocomplete="${mode==='login'?'current-password':'new-password'}" required minlength="${mode==='login'?1:12}" maxlength="128"></label>`:''}<p id="auth-error" class="error" role="alert"></p><p id="auth-info" class="hint" role="status"></p><button type="submit" class="primary">${{login:'Entrar al taller',register:'Crear cuenta',reset:'Enviar enlace de recuperación',recovery:'Guardar contraseña'}[mode]}</button></form><div class="auth-links"><button class="quiet small" data-auth="login">Iniciar sesión</button><button class="quiet small" data-auth="register">Crear cuenta</button><button class="quiet small" data-auth="reset">Olvidé mi contraseña</button></div>`:'<h2>Conectemos tu Supabase</h2><p class="subtitle">Falta configurar la URL del proyecto y su clave pública. Consulta docs/supabase-setup.md y reinicia el servidor después de completar .env.</p><p class="hint">El acceso a datos reales permanece cerrado hasta configurar el servicio.</p>'}<hr style="border:0;border-top:1px solid var(--line);margin:24px 0"><button id="enter-demo" class="secondary" style="width:100%">Explorar con datos ficticios</button><p class="hint">La demo es independiente. No importa datos ni simula una sesión autenticada.</p></div></section></main></div>`;
-  document.querySelector('#enter-demo').onclick=()=>{sessionStorage.setItem('garantiatrack.mode','demo');demoMode=true;loadDemo();location.hash='/orders';render();};
+  document.querySelector('#enter-demo').onclick=()=>{receiptLinks.clear();sessionStorage.setItem('garantiatrack.mode','demo');demoMode=true;loadDemo();location.hash='/orders';render();};
   document.querySelectorAll('[data-auth]').forEach(button=>button.onclick=()=>accessScreen(button.dataset.auth));
   const form=document.querySelector('#auth-form');if(!form)return;
   form.onsubmit=async event=>{
@@ -183,20 +194,32 @@ function onboarding(){
 }
 function enhanceDetail(order){
   const actions=document.querySelector('.detail-layout aside .actions-stack'),viewer=actions.querySelector('a');
+  const userId=session?.user?.id,workshopId=workshop?.id,generation=receiptLinks.generation();
+  const current=()=>actions.isConnected && !demoMode && session?.user?.id===userId && workshop?.id===workshopId && receiptLinks.generation()===generation;
   viewer.hidden=true;
-  actions.querySelector('#copy-link').textContent='Crear / renovar enlace privado';
-  actions.insertAdjacentHTML('beforeend','<input id="tracking-url" readonly aria-label="Enlace privado de seguimiento" hidden><button id="revoke-link" class="quiet">Revocar enlace anterior</button>');
-  actions.parentElement.querySelector('.hint').textContent='Crear un enlace invalida el anterior. Caduca a los 30 días. Cualquiera que lo reciba puede consultar el estado, sin notas internas ni fotos.';
+  actions.querySelector('#copy-link').textContent='Crear enlace privado';
+  actions.insertAdjacentHTML('beforeend','<input id="tracking-url" readonly aria-label="Enlace privado de seguimiento" hidden><button id="renew-link" class="quiet" hidden>Renovar enlace / QR</button><button id="revoke-link" class="quiet">Revocar enlace anterior</button>');
+  actions.parentElement.querySelector('.hint').textContent='El QR conserva el enlace al imprimir copias. Renovarlo invalida los tickets anteriores. Caduca a los 30 días. El enlace solo se conserva en memoria durante esta pestaña.';
+  const showLink=url=>{viewer.href=url;viewer.hidden=false;const input=actions.querySelector('#tracking-url');input.value=url;input.hidden=false;actions.querySelector('#copy-link').textContent='Copiar enlace activo';actions.querySelector('#renew-link').hidden=false;};
+  const cached=receiptLinks.get(order.id);if(cached)showLink(cached);
+  const busy=value=>actions.querySelectorAll('button').forEach(button=>{button.disabled=value;});
   const display=document.querySelector('.detail-grid');
   display.insertAdjacentHTML('afterend','<div id="cloud-photos" class="photo-grid" aria-live="polite"></div>');
   const photoContainer=document.querySelector('#cloud-photos');
   backend.photos(order).then(urls=>{if(photoContainer.isConnected)photoContainer.innerHTML=urls.map((src,index)=>`<img src="${e(src)}" alt="Foto privada de ingreso ${index+1}" referrerpolicy="no-referrer">`).join('');}).catch(()=>{if(photoContainer.isConnected)photoContainer.textContent='No se pudieron cargar las fotos. Recarga para reintentar.';});
   const emptyNote=display.parentElement.querySelector('.hint');if(emptyNote)emptyNote.textContent=order.photoRecords.some(photo=>photo.state==='pending')?'Hay fotos pendientes de confirmar. Reintenta desde la recepción original.':order.photoRecords.length?'Fotos privadas · Acceso temporal de 5 minutos':'Sin fotos de ingreso.';
-  document.querySelector('#copy-link').onclick=async event=>{
-    const button=event.currentTarget;button.disabled=true;
-    try{const url=await backend.trackingLink(order);if(!actions.isConnected)return;viewer.href=url;viewer.hidden=false;const input=actions.querySelector('#tracking-url');input.value=url;input.hidden=false;try{await navigator.clipboard.writeText(url);if(actions.isConnected)notify('Enlace privado copiado.');}catch{if(actions.isConnected){input.select();notify('Enlace creado. Puedes copiarlo del campo.');}}}catch(error){if(actions.isConnected)notify(friendly(error));}finally{button.disabled=false;}
-  };
-  document.querySelector('#revoke-link').onclick=async()=>{try{await backend.revoke(order);if(!actions.isConnected)return;viewer.hidden=true;actions.querySelector('#tracking-url').hidden=true;actions.querySelector('#tracking-url').value='';notify('Enlace revocado.');}catch(error){if(actions.isConnected)notify(friendly(error));}};
+  async function shareLink(renew=false){
+    busy(true);
+    try{
+      let url=renew?null:receiptLinks.get(order.id);
+      if(!url){if(!await confirmTrackingRenewal(actions)||!current())return;url=await backend.trackingLink(order);if(!current())return;receiptLinks.set(order.id,url);}
+      if(!current())return;showLink(url);
+      try{await navigator.clipboard.writeText(url);if(current())notify('Enlace privado copiado.');}catch{if(current()){actions.querySelector('#tracking-url').select();notify('Puedes copiar el enlace del campo.');}}
+    }catch(error){if(current())notify(friendly(error));}finally{if(current())busy(false);}
+  }
+  document.querySelector('#copy-link').onclick=()=>shareLink();
+  document.querySelector('#renew-link').onclick=()=>shareLink(true);
+  document.querySelector('#revoke-link').onclick=async()=>{busy(true);try{await backend.revoke(order);if(!current())return;receiptLinks.remove(order.id);viewer.hidden=true;actions.querySelector('#tracking-url').hidden=true;actions.querySelector('#tracking-url').value='';actions.querySelector('#copy-link').textContent='Crear enlace privado';actions.querySelector('#renew-link').hidden=true;notify('Enlace revocado.');}catch(error){if(current())notify(friendly(error));}finally{if(current())busy(false);}};
   document.querySelector('#update-form .form-actions .hint').textContent='Cambios guardados en tu taller';
 }
 async function render(){
