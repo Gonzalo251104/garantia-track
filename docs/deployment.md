@@ -22,6 +22,8 @@ For the hosting mirror, set RELEASE_COMMIT to the canonical GitHub release commi
 
 ## Supabase Auth URLs
 
+For the persistent QR frontend, apply the additive 20261028212715_persistent_receipt_tracking migration before publication. Confirm Vault is available and review member-only function grants. Existing links are preserved. Frontend rollback can retain this compatible migration; do not drop encrypted capabilities. See receipts.md for key-preserving backup and restore.
+
 After deployment, copy its exact HTTPS origin from the successful deployment result. In Authentication > URL Configuration set Site URL to that origin. Preserve local development redirects and add these four exact entries, replacing PRODUCTION_ORIGIN with the actual origin:
 
 - http://127.0.0.1:4173/

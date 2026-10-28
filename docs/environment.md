@@ -7,6 +7,7 @@
 - Region: sa-east-1 (Sao Paulo).
 - API: https://rtfhogdqsxlqfwvzisoo.supabase.co
 - Initial workshop_backend migration applied successfully.
+- Persistent receipt migration 20261028212715 applied; Supabase Vault 0.3.1 and pgcrypto 1.3 are installed. Existing hashes/expiry/revocation states were preserved.
 - Client configuration is in ignored .env; no privileged key is used or committed.
 - The owner created their application account. A fictional QA workshop/order/photo now exist for testing; the assistant did not create a separate account or handle the owner's password.
 
@@ -32,6 +33,8 @@ A transaction with rollback on the live database additionally verified transacti
 The Supabase security advisor reports intentional SECURITY DEFINER exposure for the tightly granted membership-checked RPCs and the anonymous token-limited tracking RPC. It also notes RLS with no policies on tracking_links, which is deliberately inaccessible through table grants; only functions access it. These are documented design decisions, not a claim of a warning-free security review.
 
 References: [anonymous definer advisory](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable), [authenticated definer advisory](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [RLS without policies](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+
+Receipt recovery adds three intentionally member-only SECURITY DEFINER RPCs with fixed search paths, explicit workshop membership and per-order locks. Their authenticated-function advisory findings are expected and reviewed; no anonymous recovery/creation/import grant or direct Vault read was added. Live encrypted lifecycle and membership probes passed with fixture changes rolled back. The advisor also reports pre-existing disabled leaked-password protection; see [password protection guidance](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). Auth settings were not changed by this feature.
 
 ## GitHub
 

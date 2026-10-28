@@ -44,7 +44,7 @@ A password recovery flow is included. Use the same browser that requested a reco
 
 ## Thermal receipts
 
-Open an order and select Ticket de recepción · QR to prepare an 80 mm or 58 mm intake ticket. Copies reuse the active QR; renewal explicitly invalidates earlier tickets. Links are only retained in tab memory, so a full reload requires deliberate renewal. See [receipt and printing guide](docs/receipts.md) for driver settings, privacy and hardware verification.
+Open an order and select Ticket de recepción · QR to prepare an 80 mm or 58 mm intake ticket. Copies and reloads retrieve the same active QR from encrypted server storage. Renewal explicitly invalidates earlier tickets; legacy tickets can be adopted without rotation using their existing URL. See [receipt and printing guide](docs/receipts.md) for driver settings, privacy and hardware verification.
 
 ## Data and security
 
@@ -54,7 +54,7 @@ Open an order and select Ticket de recepción · QR to prepare an 80 mm or 58 mm
 - Photos require a reserved database path and membership. The bucket restricts uploads to JPEG and 2 MiB. Uploads cannot overwrite evidence.
 - Signed photo URLs last five minutes and are not exposed on tracking pages. A previously issued URL can remain valid until it expires after sign-out.
 - Browser Auth sessions are managed by the official SDK. No privileged credentials are shipped to the browser.
-- Tracking tokens contain 256 random bits, remain in URL fragments and are stored only as SHA-256 hashes in PostgreSQL. The RPC returns an explicit field allowlist.
+- Tracking tokens contain 256 random bits, remain in URL fragments and are checked through SHA-256 hashes in PostgreSQL. Recoverable receipt tokens are encrypted in Supabase Vault and returned only to authorized workshop members. The RPC returns an explicit field allowlist.
 - The connected mode does not import local demo data.
 - Local authenticated intake, private HTTP photo uploads and tracking have passed live verification. Production-origin callbacks and device testing are separate deployment checks.
 

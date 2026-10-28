@@ -1,3 +1,5 @@
+import {trackingReceiptUrl} from './receipt.js';
+
 export function singleRow(data) {
   const row=Array.isArray(data)?data.length===1?data[0]:null:data;
   if(!row || typeof row!=='object')throw new Error('Respuesta de datos no válida. Recarga y vuelve a intentar.');
@@ -11,6 +13,13 @@ export async function connect(config,clientFactory) {
   const createClient=clientFactory||(await import('./vendor/supabase.js')).createClient;
   const client=createClient(config.supabaseUrl,config.supabaseKey,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const rpc=async(name,args)=>{const {data,error}=await client.rpc(name,args);if(error)throw error;return data;};
+  const applicationUrl=()=>config.publicAppUrl?config.publicAppUrl+'/':location.origin+location.pathname;
+  const receiptResult=data=>{
+    const record=singleRow(data);
+    if(!['missing','active','legacy','expired','revoked','unavailable'].includes(record.state))throw new Error('No pudimos recuperar el seguimiento de esta orden.');
+    if(record.state==='active'&&!/^[a-f0-9]{64}$/.test(record.token))throw new Error('El seguimiento recuperado no es válido.');
+    return {state:record.state,expiresAt:record.expires_at||null,...(record.state==='active'?{url:`${applicationUrl()}#/tracking/${record.token}`}:{})};
+  };
   const api = {
     client,
     async workshop(){
@@ -54,7 +63,9 @@ export async function connect(config,clientFactory) {
       }
       return urls;
     },
-    async trackingLink(order){const token=Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');await rpc('rotate_tracking_link',{p_order:order.id,p_token:token});return `${config.publicAppUrl?config.publicAppUrl+'/':location.origin+location.pathname}#/tracking/${token}`;},
+    receiptLink:async(order,create=false)=>receiptResult(await rpc(create?'ensure_receipt_tracking':'get_receipt_tracking',{p_order:order.id})),
+    async importReceiptLink(order,url){const checked=trackingReceiptUrl(url,applicationUrl());return receiptResult(await rpc('import_receipt_tracking',{p_order:order.id,p_token:new URL(checked.url).hash.split('/').at(-1)}));},
+    async trackingLink(order){const token=Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');await rpc('rotate_tracking_link',{p_order:order.id,p_token:token});return `${applicationUrl()}#/tracking/${token}`;},
     revoke:order=>rpc('revoke_tracking_link',{p_order:order.id}),
     tracking:token=>rpc('get_order_tracking',{p_token:token})
   };

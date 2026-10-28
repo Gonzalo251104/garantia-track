@@ -2,6 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {singleRow,toOrder,connect} from '../dist/backend.js';
 
+test('receipt retrieval and idempotent creation never call token rotation',async()=>{
+  const calls=[],token='a'.repeat(64);
+  const backend=await connect({publicAppUrl:'https://app.example'},()=>({rpc:async(name,args)=>{calls.push({name,args});return {data:{state:'active',token,expires_at:'2026-11-01T00:00:00Z'},error:null};}}));
+  const first=await backend.receiptLink({id:'one'}),again=await backend.receiptLink({id:'one'},true);
+  assert.deepEqual(first,again);assert.equal(first.url,`https://app.example/#/tracking/${token}`);
+  assert.deepEqual(calls.map(call=>call.name),['get_receipt_tracking','ensure_receipt_tracking']);
+  assert.ok(calls.every(call=>!('p_token' in call.args)));
+});
+
+test('legacy import validates the application URL and sends only its token to the scoped RPC',async()=>{
+  const calls=[],token='b'.repeat(64);
+  const backend=await connect({publicAppUrl:'https://app.example'},()=>({rpc:async(name,args)=>{calls.push({name,args});return {data:{state:'active',token},error:null};}}));
+  await assert.rejects(backend.importReceiptLink({id:'one'},`https://attacker.example/#/tracking/${token}`));assert.equal(calls.length,0);
+  const imported=await backend.importReceiptLink({id:'one'},`https://app.example/#/tracking/${token}`);
+  assert.equal(imported.state,'active');assert.deepEqual(calls,[{name:'import_receipt_tracking',args:{p_order:'one',p_token:token}}]);
+});
+
+test('inactive and corrupted receipt responses never become printable URLs',async()=>{
+  let result={state:'revoked'};
+  const backend=await connect({publicAppUrl:'https://app.example'},()=>({rpc:async()=>({data:result,error:null})}));
+  for(const state of ['missing','legacy','expired','revoked','unavailable']){result={state};assert.equal((await backend.receiptLink({id:'one'})).url,undefined);}
+  result={state:'active',token:'not-a-token'};await assert.rejects(backend.receiptLink({id:'one'}));
+  result={state:'unknown'};await assert.rejects(backend.receiptLink({id:'one'}));
+});
+
 test('new QR links use the canonical app origin and keep the existing token rotation RPC',async()=>{
   const calls=[];
   const backend=await connect({publicAppUrl:'https://app.example'},()=>({rpc:async(name,args)=>{calls.push({name,args});return {data:null,error:null};}}));
