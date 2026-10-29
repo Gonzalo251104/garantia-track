@@ -30,6 +30,8 @@ The destination `repair-photos` bucket was verified private with the expected JP
 
 No source data, Vault secrets, root key, photo objects or application accounts have been copied to the destination yet. The connector's destination `postgres` role can read but cannot insert into `vault.secrets`; the local `supabase_admin` method is not available through this connection. The owner authenticated the CLI and it can list both projects. A request to inspect project API keys was rejected by automated approval review because the command could expose a sensitive service key; do not work around that decision. A provider-supported key/secret and Storage transfer method remains needed before the hosted restore can be attempted. Do not paste any access token, database password, service key or tracking URL into chat or Git. A successful hosted restore and recovery after loss remain unverified; keep real customer data out of the pilot.
 
+The owner later reported downloading and opening one fictional photo. A read-only check confirmed that fictional order GT-1044 has one ready photo with a matching Storage object, and an active tracking record with a Vault reference. Before a destination upload, the lab was checked to contain zero orders, Storage objects and Vault secrets; its photo bucket remained private. This confirms the source records and the user's manual download, not a matching checksum, restored object, restored order or recovered QR. The outstanding review rejection remains in effect, and a provider-supported Vault restoration procedure is still unverified.
+
 ## What must be recoverable
 
 1. Database schema, order data, workshop memberships, Auth users and migration history.

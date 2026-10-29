@@ -8,6 +8,7 @@
 - Record the partial local backup rehearsal and the unresolved Vault restoration failure.
 - Record a separate two-instance fictional restore of encrypted Vault data and a private Storage object, including its hosted-project limitations.
 - Document the isolated Free-plan hosted recovery lab, its security checks and the remaining authentication and Vault transfer limitations.
+- Record the user's fictional photo download and the read-only hosted recovery preflight.
 
 ## [0.5.0] - 2026-10-28
 
