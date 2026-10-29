@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Documentation
+- Add mobile acceptance steps and explicit pilot readiness gates for email, recovery, access and operations.
+
 ## [0.5.0] - 2026-10-28
 
 ### Added
