@@ -12,6 +12,16 @@ The official CLI produced local roles, schema and data dumps. Inspection found t
 
 The test files contain fictional data and a fictional token and remain outside the repository. No restore was attempted against the hosted database.
 
+## Two-instance local rehearsal on 2026-10-29
+
+Two separately initialized Supabase CLI 2.122.0 instances were run on loopback-only Docker networks, with the application's migrations applied to each. The source contained the fictional order and JPEG created in the earlier rehearsal; the destination started with no Vault secrets. The destination is an independent local stack, not a hosted project.
+
+The official CLI exported source `auth` and `public` data; it did not include Vault secrets or Storage object bytes. A separate data-only dump of the fictional `vault.secrets` table was restored using `supabase_admin` **inside the local containers**. This required local superuser access: the hosted `postgres` role and the ordinary CLI dump must not be assumed to provide the same capability. The destination used the local development configuration; no root-key export, transfer, rotation or recovery from a lost key was exercised. The copied encrypted secret decrypted successfully in this specific local setup, and its hash matched the restored tracking row.
+
+The Auth/application data dump was imported into the initialized destination in a transaction with triggers temporarily disabled by the local administrator, following the provider's documented restore pattern. The fixture JPEG was then uploaded separately through the destination Storage API. A fictional workshop member signed in and recovered the same tracking token and original expiration; an anonymous client retrieved the expected order through that token. The downloaded private JPEG matched its original SHA-256. Anonymous and a second fictional workshop were denied the photo; the second workshop was also denied the order and receipt token. No production records, keys, credentials or tracking URLs were copied.
+
+**Limit:** This demonstrates a local two-stack recovery of one fictional order, ciphertext and object, not a supported backup of the hosted Free project. In particular, the local `supabase_admin` operation and compatible development keys do not demonstrate hosted Vault-table export, root-key portability to a different hosted project, future recovery after source loss, complete Storage migration or a tested production backup schedule. The hosted pilot remains gated on a supported method and an isolated end-to-end hosted restore. See [Supabase's CLI migration guide](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore) and [Vault key portability](https://supabase.com/docs/guides/database/vault).
+
 ## What must be recoverable
 
 1. Database schema, order data, workshop memberships, Auth users and migration history.
