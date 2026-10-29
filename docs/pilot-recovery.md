@@ -22,6 +22,14 @@ The Auth/application data dump was imported into the initialized destination in 
 
 **Limit:** This demonstrates a local two-stack recovery of one fictional order, ciphertext and object, not a supported backup of the hosted Free project. In particular, the local `supabase_admin` operation and compatible development keys do not demonstrate hosted Vault-table export, root-key portability to a different hosted project, future recovery after source loss, complete Storage migration or a tested production backup schedule. The hosted pilot remains gated on a supported method and an isolated end-to-end hosted restore. See [Supabase's CLI migration guide](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore) and [Vault key portability](https://supabase.com/docs/guides/database/vault).
 
+## Hosted recovery lab — 2026-10-29
+
+The isolated destination `garantiatrack-recovery-lab` (project `rtmswfvohwlklnswisst`, region `sa-east-1`) was created in the owner's existing Free organization. It is independent of the production project `rtfhogdqsxlqfwvzisoo`. Both application migrations were applied through the provider connector; their destination migration-history versions are `20261029155303` and `20261029155308`, which differ from the source filenames and must be reconciled before any CLI migration push. Never run a blind migration push against this destination.
+
+The destination `repair-photos` bucket was verified private with the expected JPEG/2 MiB limits. Live anonymous smoke checks denied order reads, unreserved photo uploads and receipt token recovery/creation/import. The security advisor reports the same intentionally exposed, membership-checked RPC and token-limited public tracking warnings as the existing application; those require continued review, not blanket dismissal.
+
+No source data, Vault secrets, root key, photo objects or application accounts have been copied to the destination yet. The connector's destination `postgres` role can read but cannot insert into `vault.secrets`; the local `supabase_admin` method is not available through this connection. The Supabase CLI reported no access token. Authentication and a provider-supported key/secret and Storage transfer method are needed before the hosted restore can be attempted. Do not paste any access token, database password, service key or tracking URL into chat or Git. A successful hosted restore and recovery after loss remain unverified; keep real customer data out of the pilot.
+
 ## What must be recoverable
 
 1. Database schema, order data, workshop memberships, Auth users and migration history.
