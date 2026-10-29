@@ -32,6 +32,8 @@ No source data, Vault secrets, root key, photo objects or application accounts h
 
 The owner later reported downloading and opening one fictional photo. A read-only check confirmed that fictional order GT-1044 has one ready photo with a matching Storage object, and an active tracking record with a Vault reference. Before a destination upload, the lab was checked to contain zero orders, Storage objects and Vault secrets; its photo bucket remained private. This confirms the source records and the user's manual download, not a matching checksum, restored object, restored order or recovered QR. The outstanding review rejection remains in effect, and a provider-supported Vault restoration procedure is still unverified.
 
+The owner subsequently uploaded that fictional image manually as `recovery-check.jpg` to the root of the lab's private bucket. Read-only metadata confirmed the destination object exists as JPEG, and its length and ETag matched the local file's length and MD5 respectively. An anonymous download attempt returned `NoSuchKey` rather than the object. This is an independent test copy: it is not linked to GT-1044, and the ETag match alone is not a SHA-256 comparison of bytes downloaded from the destination. Ask the owner to download the lab copy and compare SHA-256 locally before recording byte-for-byte verification. Vault, order metadata and the original object path remain unrestored.
+
 ## What must be recoverable
 
 1. Database schema, order data, workshop memberships, Auth users and migration history.
