@@ -1,6 +1,16 @@
 # Pilot recovery procedure
 
-Status: **not yet implemented or tested**. This is a plan for a small pilot, not evidence of a usable backup. Assign an operator and agree on an encrypted, access-controlled backup location and retention before collecting real data. Use fictional records during the first drill.
+Status: **complete recovery has not been verified**. This is a plan for a small pilot, not evidence of a usable hosted-project backup. Assign an operator and agree on an encrypted, access-controlled backup location and retention before collecting real data. Use fictional records during drills.
+
+## Local rehearsal on 2026-10-29
+
+An isolated local Supabase stack applied both project migrations. A local fictional user created an order, private JPEG and Vault-backed tracking link. The Storage API returned the original image bytes, which were copied separately. No hosted project data or credentials were used.
+
+A raw full PostgreSQL dump failed to restore an internal Realtime function because the local `postgres` role could not set `log_min_messages`. A schema-scoped dump restored the fictional order and photo metadata in a separate local database, but its Vault data restore failed with permission denied on `vault.secrets`; the tracking-link foreign key therefore could not be restored. This was a **partial restore**, not a successful recovery of the tracking link or photo object in a destination service.
+
+The official CLI produced local roles, schema and data dumps. Inspection found the order and Auth/Storage metadata in its data dump but no `vault.secrets` entries. The independent JPEG copy matched the original bytes. These observations are specific to this local CLI/version and configuration; do not rely on those files alone for Vault recovery. The provider documents why raw PostgreSQL dumps can include unsupported internal objects and prescribes a filtered CLI process. A separate provider-compatible Vault and Storage recovery drill remains required.
+
+The test files contain fictional data and a fictional token and remain outside the repository. No restore was attempted against the hosted database.
 
 ## What must be recoverable
 
