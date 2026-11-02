@@ -12,6 +12,7 @@
 - Record the manually uploaded fictional photo and its initial privacy and metadata checks.
 - Verify the manually downloaded recovery-lab photo matches the original with SHA-256.
 - Record a rolled-back hosted probe of importing a known fictional QR without extending its expiry.
+- Record the partial manual copy of fictional GT-1044 and tracking-hash checks into the recovery lab.
 
 ## [0.5.0] - 2026-10-28
 
