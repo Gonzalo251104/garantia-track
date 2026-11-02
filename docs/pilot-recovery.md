@@ -2,6 +2,8 @@
 
 Status: **complete recovery has not been verified**. This is a plan for a small pilot, not evidence of a usable hosted-project backup. Assign an operator and agree on an encrypted, access-controlled backup location and retention before collecting real data. Use fictional records during drills.
 
+For the proposed independent backup components and measurable restore gates, see [independent-backup-plan.md](independent-backup-plan.md).
+
 ## Local rehearsal on 2026-10-29
 
 An isolated local Supabase stack applied both project migrations. A local fictional user created an order, private JPEG and Vault-backed tracking link. The Storage API returned the original image bytes, which were copied separately. No hosted project data or credentials were used.

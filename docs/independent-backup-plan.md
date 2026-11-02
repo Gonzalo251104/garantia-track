@@ -1,0 +1,33 @@
+# Independent backup and recovery plan
+
+Status: **proposed; independent hosted recovery is not verified**. Use fictional data only until every recovery gate below passes. This procedure does not authorize overwriting the live project or replacing a Vault key. The historical drill and its limitations are in [pilot-recovery.md](pilot-recovery.md).
+
+## Scope and operating targets
+
+The initial target is a daily backup, at least seven independently retained daily versions and a monthly restore drill. These are proposed targets, not existing automation or measured recovery objectives. Record actual start and completion times, data age and failures. Pause writes during a backup or document and reconcile differences between database and object snapshots; a database dump and a file copy are not automatically a consistent snapshot.
+
+The backup operator needs a protected, encrypted location outside the project and a second independent encrypted copy. Verify that encryption keys can be recovered separately, and test access to both copies. Never put customer data, database dumps, private object names, tracking URLs, credentials or encryption keys in Git, CI artifacts, chat or routine logs. This plan assumes the operator supplies and manages that secure storage; its availability and cost have not been verified.
+
+## Backup components
+
+1. **Database and Auth:** follow Supabase's current [CLI backup guide](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore) for roles, schema and data, with credentials entered privately by the operator. Include migration history and inventory what the export actually contains. Check successful exit status and preserve encrypted copies; the prior local CLI data dump omitted Vault secrets. A successful dump is not a restore test.
+2. **Photo bytes:** copy each private `repair-photos` object separately through a provider-supported Storage interface, retaining bucket, complete object path, size, MIME type and a SHA-256 digest in a protected manifest. A database export contains object metadata, not object bytes. Verify an independent copy against the manifest. Do not make the bucket public or rely on an ETag as a universal content hash. Avoid dumping credentials or signed URLs to logs.
+3. **Vault and existing QR links:** define and validate a way to recover both the required encrypted records and the matching root encryption key after the source becomes unavailable. The key is separate from the database, and copying ciphertext to a project with a different key is insufficient. The local CLI previously omitted Vault rows and hosted `postgres` lacked direct insert permission; the manually imported GT-1044 QR is not an independent backup. Provider documentation describes root-key portability for active projects, but this alone does not establish safe off-site retention, a supported Vault-row restore, or recovery after deletion. Do not replace the existing lab key: it would jeopardize its current secrets. Obtain a supported, authorized method and test it first with fictional secrets in a disposable destination.
+4. **Configuration:** retain a nonsecret inventory of application release, migration versions, private bucket settings and policies, Auth URLs, SMTP configuration, deployment settings and operator recovery contacts. Store any secrets separately in an approved secrets manager. Project-specific settings and object bytes require separate restoration.
+
+## Isolated restore acceptance test
+
+- Identify the exact backup set, timestamp, source and destination before starting. Use only a separately initialized local stack or a disposable free hosted project after confirming quota. Never target production. Do not overwrite the existing lab or its Vault key.
+- Restore the selected database and Auth set using the provider's compatible process, and confirm migration history, membership and application data. Record any privilege or compatibility failure; do not claim complete recovery from a partial restore.
+- Restore the Vault component using the approved, independently retained key and records. With a fictional preexisting token absent from the operator's input, verify inside the destination that its hash, expiration and order match the backup and that tracking resolves correctly. Do not log or display the token. Importing an available original QR is a different test and does not satisfy this gate.
+- Restore each photo through the Storage API with its original bucket and path, preserving relevant metadata. Download independently and compare SHA-256 and counts with the protected manifest. Confirm the intended photo visually if practical; visual similarity alone does not prove byte equality. Check missing and orphaned objects.
+- Test a real signed-in member's access and a separate real nonmember's denial through the application or Storage API, as well as anonymous denial. Check the private bucket configuration and RLS. Verify public tracking exposes only intended fields and the QR resolves against the test destination, not the live origin.
+- Record pass/fail, duration, backup age, exclusions, versions and remediation without secrets. Repeat with the second encrypted copy. Keep the pilot restricted to fictional data if any gate fails.
+
+## Current known evidence and next actions
+
+The hosted lab contains a manually reconstructed GT-1044 and its manually imported original QR. Its displayed photo was confirmed by the owner, but the source object's bytes and path were not recovered exactly. The outsider authorization check was a database role simulation, not a second signed-in HTTP session. The earlier byte-matched `recovery-check.jpg` belonged to GT-1043, not GT-1044. The lab UI generates links to the live origin; it cannot by itself prove an anonymous request against the lab.
+
+Next, select the operator-controlled encrypted backup destination and separately resolve the supported Vault export, key retention and restore privileges. In parallel, copy the exact fictional source Storage object through an approved interface, compare independently downloaded bytes, and verify the destination using an isolated application origin. Do not generate, retrieve or print privileged keys to work around a denied approval. The previous automatic review rejected a project API-key lookup because it could expose the service-role key; use only an independently approved method.
+
+References: [database backups](https://supabase.com/docs/guides/platform/backups), [Vault and key portability](https://supabase.com/docs/guides/database/vault), [download Storage objects](https://supabase.com/docs/guides/storage/management/download-objects).
