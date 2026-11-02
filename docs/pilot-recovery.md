@@ -34,6 +34,10 @@ The owner later reported downloading and opening one fictional photo. A read-onl
 
 The owner subsequently uploaded that fictional image manually as `recovery-check.jpg` to the root of the lab's private bucket. Read-only metadata confirmed the destination object exists as JPEG, and its length and ETag matched the local file's length and MD5 respectively. An anonymous download attempt returned `NoSuchKey` rather than the object. The owner downloaded the lab copy, and the two local files had identical SHA-256 digests and lengths. This verifies the manual photo round trip, but is an independent test copy: it is not linked to GT-1044. Vault, order metadata and the original object path remain unrestored.
 
+On 2026-11-01, a rolled-back transaction in the hosted lab used a completely fictional user, order and token to test the existing `import_receipt_tracking` RPC against an active tracking hash. The resulting Vault entry recovered the same test token, retained the original hash and expiration, and the customer tracking RPC resolved the fictional order. After rollback, the lab contained zero orders, tracking rows or Vault secrets and retained only the previously uploaded test photo. PostgreSQL sequences may advance despite rollback; this is not a restored production sequence.
+
+This verifies only an alternative for an already known active token after its order and tracking hash are available in a destination. It does not back up or restore Vault ciphertext, preserve or recover the original root key, prove recovery if the original QR/token is lost, or restore GT-1044. The public QR contains its original application origin; testing a destination requires its own safe application context and must not be mistaken for a scan against the source. A supported hosted backup and independent restore are still required before using real customer data.
+
 ## What must be recoverable
 
 1. Database schema, order data, workshop memberships, Auth users and migration history.
