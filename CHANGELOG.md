@@ -14,6 +14,7 @@
 - Record a rolled-back hosted probe of importing a known fictional QR without extending its expiry.
 - Record the partial manual copy of fictional GT-1044 and tracking-hash checks into the recovery lab.
 - Verify the owner's manual QR import, encrypted Vault recovery, target tracking and unchanged expiration in the isolated lab.
+- Record the controlled lab-only photo attachment and its Storage and row-policy access checks.
 
 ## [0.5.0] - 2026-10-28
 
