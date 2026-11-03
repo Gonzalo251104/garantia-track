@@ -26,12 +26,12 @@ Keep a private operator note and copy only sanitized symptoms into GitHub.
 
 | Check | Result (pass/fail/blocked/pending) | Sanitized observation |
 | --- | --- | --- |
-| Two independent workshops can sign in | pending | |
-| Timed phone intake and photo persistence | pending | |
-| Status changes survive reload | pending | |
-| Signed-out customer sees latest status | pending | |
-| PDF share and original QR survive receipt reload | pending | |
-| Cross-workshop reads are denied both ways | pending | |
+| Two independent workshops can sign in | pass | Owner-created B account used the published app; owner tested A separately; memberships are independent. |
+| Timed phone intake and photo persistence | partial | Desktop GT-1045 intake/photo persistence passed; phone timing remains pending. |
+| Status changes survive reload | pass | GT-1045 diagnosing and repairing persisted during the desktop exercise. |
+| Signed-out customer sees latest status | partial | Owner opened the PDF link signed out; exact displayed label and private-field absence need confirmation. |
+| PDF share and original QR survive receipt reload | partial | PDF downloaded and private link survived reload; owner opened the PDF link signed out; new WhatsApp delivery remains pending. |
+| Cross-workshop reads are denied both ways | partial | Order detail routes denied both ways (operator B to A, owner-reported A to B); direct nonmember Storage HTTP check remains pending. |
 | Input and connectivity failures have usable recovery | pending | |
 | Physical print and QR scan | pending | |
 
@@ -47,6 +47,10 @@ Through the published app's actual reception form, the operator created fictiona
 
 The ticket showed Workshop B and GT-1045. A new QR was created for that order and its PDF was downloaded locally. Comparing the private link in browser memory before and after ticket reload returned equality; the token was redacted from printed observations and was not included in this report. No PDF was sent to a recipient. Actual customer tracking in a signed-out browser, Workshop A's denial when opening GT-1045, direct nonmember Storage HTTP denial and physical printing remain pending. The owner has been asked to perform the first two checks in separate sessions. Prior single-order mobile results do not fill these gaps.
 
+The owner then reported that opening GT-1045 from Workshop A displayed the generic not-found page, completing the two-direction order-detail route checks with mixed operator/owner evidence. They also reported opening the PDF's link in a signed-out account. Their wording for the status was "en preparacion"; a read-only source check confirmed GT-1045 remains `repairing` and its public message says the controller is being repaired. Do not silently interpret that wording as verified display equality. The exact signed-out status label and absence of contact details, internal notes and photos were not explicitly reconfirmed. The earlier pending signed-out opening and A-to-B route steps are superseded by this report; direct Storage HTTP denial and physical printing remain pending.
+
+Observed copy issue for the product backlog: the generic denied/missing-order page suggests that the order may have been reset. Consider clearer wording that covers an invalid route or missing access without revealing whether another workshop owns the order. No UI change or deployment was made during this exercise.
+
 The exact fictional GT-1044 photo passed encrypted PC/USB backup, extraction and private hosted-lab restore with matching SHA-256. Complete database/Auth recovery and independent Vault recovery remain unverified. The first hosted CLI backup attempt stopped with a generic error, without recording its cause. New diagnostics are covered by automated tests; this session does not require another live Vault retry. Keep recovery assigned to the operator and revisit before real customer data.
 
-External email confirmation/password recovery, second-account HTTP isolation and physical printing still need evidence. Plan the next feature branch and PR from session outcomes. Do not mark pending gates complete based on earlier single-account or role-simulation tests.
+External email confirmation/password recovery, direct nonmember photo HTTP denial and physical printing still need evidence. Second-account order-detail isolation has mixed operator/owner evidence as recorded above. Plan the next feature branch and PR from session outcomes. Do not mark pending gates complete based on earlier single-account or role-simulation tests.
