@@ -39,6 +39,28 @@ Measure intake time, failed uploads, duplicates and steps requiring help. Ask wh
 
 ## Open readiness tasks
 
+### Automated responsive exercise — 2026-11-03
+
+The owner reported the phone flow felt fast and declined manual stopwatch measurements, then authorized an automated timed run. Preserve that as qualitative feedback: no measured human intake duration, physical device model, browser, exact mobile order number or camera-image benchmark was supplied.
+
+An in-app Windows browser run used a temporary 390 x 844 viewport and the currently authenticated **GarantiaTrack QA** workshop. It created GT-1047 with one fictional controller illustration (14,907-byte input), not a real camera photo. Database metadata confirmed one ready photo; after reload, its DOM load state became complete with a nonzero natural width. The first image check after the detail controls appeared was still loading. The customer-view document width was 375 px against the 390 px viewport in the DOM measurement, with no observed horizontal overflow in that view. The viewport was reset afterward.
+
+| Segment | Observed wall time | Interpretation |
+| --- | --- | --- |
+| Scripted text/control entry | 2.118 s | Automated entry; not a human typing benchmark. |
+| File-chooser/attachment flow | 108.110 s | Excluded from app-performance conclusions: includes selector and automation transfer overhead. |
+| Save to detail | unavailable | Completion selector wait failed even though the order saved; do not retry submission or report a save duration. |
+| Reload to detail controls | 1.691 s | Controls ready; image was not yet loaded at that instant. |
+| Open ticket to create-QR control | 1.100 s | Single automated observation including interaction/transport overhead. |
+| Create QR to PDF-download control | 3.290 s | Single automated observation, not isolated backend latency. |
+| PDF click to completed download event | 181.395 s | Excluded from app-performance conclusions: automation/download path delay cannot be attributed to PDF generation. |
+
+Times were measured with runtime wall-clock timestamps around actions, excluding model reasoning pauses between segments. The test did not emulate physical CPU, touch keyboard, camera or cellular network. It is not an end-to-end human benchmark, a statistical latency result or evidence of app slowness. Do not add the segments into a total intake time.
+
+The 11,934-byte ticket PDF downloaded, and the customer link opened the correct GT-1047 received state and public message. This customer-view check used the existing authenticated browser context, not a fresh anonymous session; the earlier owner-reported signed-out GT-1045 check remains separate evidence. No PDF was sent by WhatsApp. No token or signed photo URL is included in this report.
+
+Observed improvement hypotheses for a later product PR: identify the active workshop in the authenticated header (only the product name and sign-out control are currently shown), and review the extra create-QR action before first PDF download. These were visible interaction steps, not owner-reported confusion. The earlier missing-order copy issue remains relevant. No runtime/UI code or deployment changed during this exercise.
+
 ### Recorded exercise — 2026-11-03
 
 The owner created and signed in to a second fictional workshop, Pilot Workshop B. Read-only database checks confirmed it has a different owner and no shared memberships with the workshop owning GT-1044. In the signed-in browser session later proven to create Workshop B's order, opening the existing Workshop A route for GT-1044 returned the generic not-found page without order details or photos.
