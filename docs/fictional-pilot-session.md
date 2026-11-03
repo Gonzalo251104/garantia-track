@@ -39,6 +39,14 @@ Measure intake time, failed uploads, duplicates and steps requiring help. Ask wh
 
 ## Open readiness tasks
 
+### Recorded exercise — 2026-11-03
+
+The owner created and signed in to a second fictional workshop, Pilot Workshop B. Read-only database checks confirmed it has a different owner and no shared memberships with the workshop owning GT-1044. In the signed-in browser session later proven to create Workshop B's order, opening the existing Workshop A route for GT-1044 returned the generic not-found page without order details or photos.
+
+Through the published app's actual reception form, the operator created fictional GT-1045 for Workshop B with an explicitly fictional controller illustration containing no customer data. A read-only database check confirmed B's ownership and one ready photo. Browser reload retained the first status change to diagnosing; later re-entry retained the second change to repairing, the private note and public message. The image's DOM load state confirmed it loaded successfully. Intake was operated from the in-app desktop browser, not a new mobile test, and no manual-entry time benchmark was recorded.
+
+The ticket showed Workshop B and GT-1045. A new QR was created for that order and its PDF was downloaded locally. Comparing the private link in browser memory before and after ticket reload returned equality; the token was redacted from printed observations and was not included in this report. No PDF was sent to a recipient. Actual customer tracking in a signed-out browser, Workshop A's denial when opening GT-1045, direct nonmember Storage HTTP denial and physical printing remain pending. The owner has been asked to perform the first two checks in separate sessions. Prior single-order mobile results do not fill these gaps.
+
 The exact fictional GT-1044 photo passed encrypted PC/USB backup, extraction and private hosted-lab restore with matching SHA-256. Complete database/Auth recovery and independent Vault recovery remain unverified. The first hosted CLI backup attempt stopped with a generic error, without recording its cause. New diagnostics are covered by automated tests; this session does not require another live Vault retry. Keep recovery assigned to the operator and revisit before real customer data.
 
 External email confirmation/password recovery, second-account HTTP isolation and physical printing still need evidence. Plan the next feature branch and PR from session outcomes. Do not mark pending gates complete based on earlier single-account or role-simulation tests.
