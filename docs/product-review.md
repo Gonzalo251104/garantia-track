@@ -11,6 +11,8 @@ The public static application is hosted on OpenAI Sites at https://garantiatrack
 - Workshop members print 58 mm or 80 mm intake tickets. The active QR survives reloads and reprints. Older QR links can be imported once using the original URL. PDF sharing uses the device share sheet or manual download and attachment; WhatsApp text sharing opens a prefilled message. The user selects the recipient and sends manually.
 - Demo users can explore fictional local data without a shared QR. Demo and connected records are separate.
 
+See [pilot-runbook.md](pilot-runbook.md) for concrete acceptance steps, outstanding operational gates and a workshop observation plan.
+
 ## Priorities before broader launch
 
 1. Validate intake, status updates, customer tracking and WhatsApp handoff with real console/controller workshops; measure time saved and willingness to pay.

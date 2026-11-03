@@ -1,5 +1,29 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.5.1] - 2026-11-03
+
+### Fixed
+- Show the active workshop name in the responsive workspace header and give neutral guidance for unavailable orders without revealing another workshop's records.
+
+### Documentation
+- Add mobile acceptance steps and explicit pilot readiness gates for email, recovery, access and operations.
+- Record the user's fictional mobile acceptance results and prepare an isolated backup and restoration procedure.
+- Record the partial local backup rehearsal and the unresolved Vault restoration failure.
+- Record a separate two-instance fictional restore of encrypted Vault data and a private Storage object, including its hosted-project limitations.
+- Document the isolated Free-plan hosted recovery lab, its security checks and the remaining authentication and Vault transfer limitations.
+- Record the user's fictional photo download and the read-only hosted recovery preflight.
+- Record the manually uploaded fictional photo and its initial privacy and metadata checks.
+- Verify the manually downloaded recovery-lab photo matches the original with SHA-256.
+- Record a rolled-back hosted probe of importing a known fictional QR without extending its expiry.
+- Record the partial manual copy of fictional GT-1044 and tracking-hash checks into the recovery lab.
+- Verify the owner's manual QR import, encrypted Vault recovery, target tracking and unchanged expiration in the isolated lab.
+- Record the controlled lab-only photo attachment and its Storage and row-policy access checks.
+- Correct the lab photo attribution: the test illustration came from GT-1043, so GT-1044's photo remains unverified and the incorrect association is pending.
+- Record the owner's replacement photo and renewed access checks; source-object byte equality remains unverified.
+- Record the owner's confirmation that the expected replacement photo renders in the lab.
+
 ## [0.5.0] - 2026-10-28
 
 ### Added
