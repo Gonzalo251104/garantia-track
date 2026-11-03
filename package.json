@@ -23,6 +23,7 @@
     "@electric-sql/pglite": "^0.3.0",
     "esbuild": "0.28.2",
     "eslint": "10.13.0",
-    "jsqr": "1.4.0"
+    "jsqr": "1.4.0",
+    "pg": "8.23.1"
   }
 }

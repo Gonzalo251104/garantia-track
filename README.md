@@ -85,6 +85,8 @@ The static frontend is published with Sites from a mirror of the approved GitHub
 
 The initial migration is already applied on the connected free Supabase project. Do not rerun it as a new migration. See [environment status](docs/environment.md) and the deployment runbook for exact Auth redirect configuration.
 
+For the scoped operator-only encrypted Vault backup drill, see [logical Vault recovery](docs/vault-logical-recovery.md). It requires separate private terminal input and has not yet passed a hosted cross-project restore.
+
 ## License
 
 All rights reserved. No redistribution license has been selected.
