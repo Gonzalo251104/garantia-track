@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Show the active workshop name in the responsive workspace header and give neutral guidance for unavailable orders without revealing another workshop's records.
+
 ### Documentation
 - Add mobile acceptance steps and explicit pilot readiness gates for email, recovery, access and operations.
 - Record the user's fictional mobile acceptance results and prepare an isolated backup and restoration procedure.
