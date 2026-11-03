@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-03
+
 ### Fixed
 - Show the active workshop name in the responsive workspace header and give neutral guidance for unavailable orders without revealing another workshop's records.
 
