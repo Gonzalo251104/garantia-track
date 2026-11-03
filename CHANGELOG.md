@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Documentation
+- Record physical-phone acceptance of v0.5.1 and publish a standalone fictional pilot evidence sheet with validation checks, pending CSV/failure tests and small operator sessions.
+
 ## [0.5.1] - 2026-11-03
 
 ### Fixed
