@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+- Add safe recovery-stage diagnostics and a controlled fictional pilot session with two-workshop acceptance checks.
+- Add an operator-only encrypted logical Vault recovery CLI scoped to fictional GT-1044, with verified TLS, hidden secret prompts and transactional destination guards. Hosted end-to-end validation remains pending.
+
 ### Documentation
 - Add mobile acceptance steps and explicit pilot readiness gates for email, recovery, access and operations.
 - Record the user's fictional mobile acceptance results and prepare an isolated backup and restoration procedure.
