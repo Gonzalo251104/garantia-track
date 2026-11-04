@@ -36,9 +36,9 @@ npm run build
 2. Create the workshop after authentication. Existing staff memberships are provisioned by the project administrator, not by user-editable metadata.
 3. Receive an equipment item. The server allocates its number and writes the initial event in one transaction.
 4. Compressed JPEG evidence is uploaded to a private bucket. Five reserved slots per order prevent concurrent over-allocation.
-5. If an upload fails, retry the same intake form: request and photo identifiers are reused. An already committed order is not recreated.
+5. If an upload fails, retry the same intake or reopen its saved order and select the original image again for the pending slot. Recovery preserves the order and confirmed photos; missing unreserved evidence can be completed within the five-photo limit. See [saved-order photo recovery](docs/order-photo-recovery.md) for scope and release status.
 6. Update status, quote and notes. Stale edits are rejected; reload before trying again.
-7. Create a customer tracking link from the order. Creating another link invalidates the previous one. Copy it to another browser to test anonymous access.
+7. Retrieve or create the active customer tracking link from the order. Reopening, copying and reprinting preserve it; explicit renewal or revocation invalidates previous copies. Use a separate browser to test customer access.
 8. Revoke the link when needed. Valid links expire after 30 days. Tracking never exposes customer contact, internal notes, serial number, quotes or photos.
 9. Sign out to clear the workshop view.
 

@@ -42,7 +42,7 @@ The project owner coordinates these sessions and retains sanitized findings. Agr
 ## Daily flow
 
 1. Workshop A receives one fictional controller with accessories, condition and reported fault. Time intake, attach the test photo and record the generated order number.
-2. If photo upload fails after the order is saved, keep the original reception form open and press its create-order button again without reloading or navigating away. After success, reload on the phone and confirm order data and photo persist with no duplicate order. The existing detail page cannot replace a lost intake file.
+2. If photo upload fails after the order is saved, retry in the original form or, after the saved-order recovery release, reopen the order and select the original image again for its pending slot. After success, reload on the phone and confirm the same order and photo. See [order-photo-recovery.md](order-photo-recovery.md); the application does not reconstruct a source file lost from the device.
 3. Perform two permitted status changes, reloading after each. Open customer tracking in a signed-out browser and check the correct order and latest status, with no contact details, serial, internal notes or photos.
 4. Share the receipt PDF to the consenting test recipient. Scan its QR on another device. Reload the workshop receipt and reprint/download it; confirm the original PDF link still works without renewing its token.
 5. In Workshop B's browser, open Workshop A's order-detail route. Confirm A's data and photos cannot be read. Do not transfer sessions or signed photo URLs between testers. Record the actual HTTP/application result; database-role simulations are separate evidence.
