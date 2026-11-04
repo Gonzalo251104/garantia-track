@@ -2,12 +2,16 @@
 
 ## [Unreleased]
 
+### Fixed
+- Show a confirmed saved-order/pending-photo badge after partial intake failure; retain the draft label when order creation fails and clear pending wording after photos succeed.
+
 ### Tests
 - Add an isolated loopback HTTP fixture and actual-SDK regression for a failed photo upload followed by a same-form retry, without duplicate order, photo or initial event.
 
 ### Documentation
 - Record owner acceptance of the published v0.5.2 CSV on a phone and the assisted responsive browser photo-retry exercise, distinguishing local HTTP evidence from hosted/device gaps.
 - Clarify that a partially saved reception must be retried in its original form before reload or navigation.
+- Record the owner-operated hosted GT-1049 retry and read-only final duplicate checks without contact values or private links.
 
 ## [0.5.2] - 2026-11-03
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {singleRow,toOrder,connect} from '../dist/backend.js';
+import {singleRow,toOrder,connect,PendingIntakePhotosError} from '../dist/backend.js';
 
 test('receipt retrieval and idempotent creation never call token rotation',async()=>{
   const calls=[],token='a'.repeat(64);
@@ -89,7 +89,22 @@ test('order RPC does not transmit evidence or client-forged event history',async
 test('a partial intake upload reports the already-created order without duplicating it',async()=>{
   const backend=await connect({},()=>({rpc:async()=>({data:{id:'order',number:1042},error:null})}));
   backend.upload=async()=>{throw new Error('Disconnected');};
-  await assert.rejects(backend.receive('workshop','request',{},[]),/La orden GT-1042 se guardó/);
+  await assert.rejects(backend.receive('workshop','request',{},[]),error=>{
+    assert.ok(error instanceof PendingIntakePhotosError);
+    assert.equal(error.orderNumber,1042);
+    assert.match(error.message,/La orden GT-1042 se guardó/);
+    return true;
+  });
+});
+
+test('a failed order creation is never classified as a saved intake with pending photos',async()=>{
+  const backend=await connect({},()=>({rpc:async()=>({data:null,error:new Error('Fictional creation failure')})}));
+  await assert.rejects(backend.receive('workshop','request',{},[]),error=>{
+    assert.equal(error instanceof PendingIntakePhotosError,false);
+    assert.equal(error.orderNumber,undefined);
+    assert.equal(error.message,'Fictional creation failure');
+    return true;
+  });
 });
 
 test('retrying a failed intake upload preserves request/photo identities and can finish successfully',async()=>{

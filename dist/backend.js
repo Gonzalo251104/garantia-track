@@ -1,5 +1,13 @@
 import {trackingReceiptUrl} from './receipt.js';
 
+export class PendingIntakePhotosError extends Error {
+  constructor(orderNumber) {
+    super('La orden GT-'+orderNumber+' se guardó, pero faltan fotos. Pulsa Crear orden otra vez sin salir para reintentar; no se duplicará.');
+    this.name='PendingIntakePhotosError';
+    this.orderNumber=orderNumber;
+  }
+}
+
 export function singleRow(data) {
   const row=Array.isArray(data)?data.length===1?data[0]:null:data;
   if(!row || typeof row!=='object')throw new Error('Respuesta de datos no válida. Recarga y vuelve a intentar.');
@@ -39,7 +47,7 @@ export async function connect(config,clientFactory) {
       // Capture each intake before awaiting the network; another view may open meanwhile.
       const draft=structuredClone(order),evidence=photos.map(photo=>({...photo}));
       const saved=await api.create(workshop,request,draft);
-      try{await api.upload(saved.id,evidence);}catch{throw new Error('La orden GT-'+saved.number+' se guardó, pero faltan fotos. Pulsa Crear orden otra vez sin salir para reintentar; no se duplicará.');}
+      try{await api.upload(saved.id,evidence);}catch{throw new PendingIntakePhotosError(saved.number);}
       return saved;
     },
     async update(order,changes){return toOrder(await rpc('update_repair_order',{p_id:order.id,p_version:order.version,p_status:changes.status,p_quote:changes.quote,p_notes:changes.notes,p_message:changes.message}));},

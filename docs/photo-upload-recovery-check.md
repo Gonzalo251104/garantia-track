@@ -54,9 +54,35 @@ The test observer initially waited for a heading containing only the model; the 
 
 Observed copy issue: the intake badge remains `Borrador sin guardar` after a partial save, while the error correctly says the order was saved. Track a product improvement separately. No application runtime fix was needed to complete this same-form retry case.
 
+## Hosted owner exercise — GT-1049
+
+The owner reported the hosted exercise produced the saved-order/pending-photo message for GT-1049. After disabling the browser request block and retrying, the photo remained visible after reload. This is owner-operated browser evidence against hosted Supabase. The exact device/browser and first-attempt request log were not independently captured; do not label it a physical-phone test or an independently observed provider outage.
+
+A read-only scoped check, reconfirmed on 2026-11-04, found GT-1049 in Pilot Workshop B with the expected fictional test serial. No contact values, credentials, object paths, sessions or tracking URLs were selected into the evidence report.
+
+| Final hosted state | Count/result |
+| --- | --- |
+| Order with the test number | 1 |
+| Orders with the same workshop/request identity | 1 |
+| Orders with the expected workshop/test serial | 1 |
+| Photo records / ready / pending | 1 / 1 / 0 |
+| Stored objects under the order / linked to its photo | 1 / 1 |
+| Initial received events | 1 |
+| Photo bucket remains private | Yes |
+
+The final snapshot shows no duplicate order, photo or stored object for this case. It does not reconstruct both attempts or prove unchanged photo/request identifiers from independently captured before/after hosted snapshots. The earlier local fixture evidence has its own before/after identifier checks.
+
+### Partial-save label correction
+
+The feature branch replaces the stale draft label with `Orden GT-… guardada · Fotos pendientes` when the backend reports a confirmed order creation followed by failed photo work. A typed `PendingIntakePhotosError` carries only the confirmed order number; the view does not infer a saved order by matching a provider error message. The existing context guard and text-only DOM update remain in use.
+
+The initial form and failed order-creation paths retain the draft label. A successful receive updates the badge to `Orden GT-… guardada` before reloading the list, so a later list-load failure does not keep claiming photos are pending. Request/photo identities and retry behavior are unchanged. This source change requires the normal release flow before owner acceptance on the public site.
+
+Local correction QA on 2026-11-04 used the unchanged failure fixture with the updated app: the fresh form displayed the draft label; after HTTP 503 it displayed the new pending-photo label and kept its photo preview and enabled retry. DOM checks showed no horizontal overflow at 320 px (305 px client/document width) or 900 px (885 px client/document width). The same-form retry opened local GT-9001; its one 80-pixel image loaded again after reload. Fixture counters confirmed one order, photo, object and initial event, two uploads and stable request/photo identities. The viewport was reset and the fixture stopped. Adapter coverage distinguishes failed creation from confirmed creation with pending photos; this does not replace hosted acceptance of the new label.
+
 ## Remaining hosted/device checks
 
-- A real interruption against hosted Supabase and a physical-phone retry remain unverified by this fixture. Do not mark them passed based on this document.
+- GT-1049 adds owner-reported hosted request-block/retry evidence and a verified final database/Storage snapshot. A physical-phone retry and an independently observed provider outage remain unverified. Do not infer them from this case or the local fixture.
 - For a controlled hosted desktop exercise, an operator may use browser developer tools to block only `*/storage/v1/object/repair-photos/*` in that browser, receive a new fictional case, confirm the partial-save message, remove that rule and retry in the same form. Disable the rule afterward. Do not change backend policies, credentials or global network settings, and do not inspect/copy request authorization headers. Compare only that test case's identifiers/counts.
 - Turning the whole device offline before submitting can fail order creation before any photo request. That is a different case and must not be recorded as a verified partial-photo upload failure.
 - Recovery after leaving/reloading the failed intake is not provided by this exercise: the source image and request identifiers are held by that form. Do not promise that the existing order-detail page can reattach a lost file; it currently directs pending-photo recovery back to the original reception.
