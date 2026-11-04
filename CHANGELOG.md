@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-04
+
 ### Added
 - Recover pending intake photos from a saved order after leaving the original form, reusing reservations and preserving confirmed images, order/history and tracking capabilities.
 - Complete unreserved intake evidence from the order within the existing five-photo limit; preserve unsaved repair edits and guard async recovery against view/account changes.

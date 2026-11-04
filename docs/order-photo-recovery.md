@@ -45,4 +45,4 @@ Windows in-app browser, fictional fixture, temporary responsive viewports: the o
 
 DOM measurements found no horizontal overflow at 320 px (305 px client/document width) and 900 px (885 px client/document width). Fixture counters matched the values above. The viewport was reset, the local tab closed and the owned server stopped. These are assisted desktop/local HTTP observations, not a physical-phone run or a hosted two-session authorization test. Final status-copy and target-metadata checks are also covered by code review/automated checks.
 
-No live hosted orders, photos, tracking secrets, Auth settings or policies were changed for this implementation. Public v0.5.3 does not include this feature until a later release is deployed.
+No live hosted orders, photos, tracking secrets, Auth settings or policies were changed for the original implementation exercise. The feature is included in v0.6.0. The GitHub release records actual deployment and hosted test evidence separately from the local observations above.

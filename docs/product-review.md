@@ -29,7 +29,7 @@ The existing flow can support a guided observation with a technician using inven
 
 ### Next product work
 
-[Saved-order photo recovery](order-photo-recovery.md) is implemented in its feature branch, pending release. It lets an authorized member reselect an image after the original intake was closed, preserving the order and tracking capability. Validate its deployed operator flow before claiming physical-device acceptance; it does not reconstruct lost image bytes.
+[Saved-order photo recovery](order-photo-recovery.md) is included in v0.6.0. It lets an authorized member reselect an image after the original intake was closed, preserving the order and tracking capability. Validate its deployed operator flow before claiming physical-device acceptance; it does not reconstruct lost image bytes.
 
 Then select one change from workshop observations. Candidate needs are technician invitations/roles when multiple people operate the workshop, customer quote approval, and warranty/re-entry history. Pagination/search beyond the currently loaded list and cleanup/abuse controls should follow measured use. Keep the simple architecture and existing free hosting until workload justifies a change.
 
