@@ -6,7 +6,7 @@ Purpose: validate the daily workshop flow and identify the next product improvem
 
 The owner confirmed on their physical phone that the published v0.5.2 authenticated CSV uses the correct filename and notification. No device/browser details or new CSV content audit were supplied. The earlier v0.5.1 acceptance below remains separate evidence.
 
-See [photo-upload-recovery-check.md](photo-upload-recovery-check.md) for the assisted responsive browser recovery exercise against a local HTTP contract fixture: intentional upload failure, retained form, successful same-form retry, stable identifiers and one photo visible after reload. It does not certify a hosted Supabase interruption or physical-phone recovery. The unchanged partial-save draft badge is tracked as a copy issue.
+See [photo-upload-recovery-check.md](photo-upload-recovery-check.md) for the assisted responsive browser recovery exercise against a local HTTP contract fixture and the later owner-operated hosted GT-1049 exercise. The owner reported the partial-photo error, successful same-form retry after removing the browser block, and photo persistence after reload. A read-only hosted snapshot reconfirmed on 2026-11-04 found one matching order, one ready photo, no pending photo, one linked stored object and one initial event; the bucket remains private. No first-attempt hosted snapshot or precise device/browser was captured. Physical-phone recovery and a provider outage remain unverified. The stale partial-save badge is corrected in the current feature branch, pending release.
 
 Published release: v0.5.1, canonical commit `52f79fa6b9004d9b07641bb1fe4040c22375d1c3`, existing public Sites origin. The owner confirmed on their physical phone that the active workshop appears in the header and the new neutral unavailable-order message appears when opening another workshop's order. This is owner-reported acceptance; device/browser details were not supplied. The two improvements supersede the header and missing-order copy observations recorded below.
 
@@ -60,7 +60,7 @@ Keep a private operator note and copy only sanitized symptoms into GitHub.
 | Signed-out customer sees latest status | pass (owner-reported) | Owner confirmed GT-1045 is En reparación without phone, serial, internal notes or photos. |
 | PDF share and original QR survive receipt reload | partial | PDF downloaded and private link survived reload; owner opened the PDF link signed out; new WhatsApp delivery remains pending. |
 | Cross-workshop reads are denied both ways | partial | Order detail routes denied both ways (operator B to A, owner-reported A to B); direct nonmember Storage HTTP check remains pending. |
-| Input and connectivity failures have usable recovery | partial | Invalid intake rejection, adapter retry and assisted real-browser retry against a local HTTP fixture passed; hosted interruption and physical-phone retry remain pending. |
+| Input and connectivity failures have usable recovery | partial | Invalid intake rejection, adapter/local HTTP retry and owner-operated hosted GT-1049 retry passed for their recorded scope; physical-phone and other failure cases remain pending. |
 | Physical print and QR scan | pending | |
 
 Measure intake time, failed uploads, duplicates and steps requiring help. Ask which step is confusing and whether this would replace the workshop's current process. Choose one improvement from observed friction. A tenant-isolation failure stops the session and requires a fix.
