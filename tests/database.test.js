@@ -64,6 +64,7 @@ test('database authorization, transactions and private storage',async t=>{
       for(let i=0;i<4;i++)await asUser(alice,()=>db.query('select public.reserve_order_photo($1,$2)',[order.id,crypto.randomUUID()]));
       await assert.rejects(asUser(alice,()=>db.query('select public.reserve_order_photo($1,$2)',[order.id,crypto.randomUUID()])),/five photos/i);
       await assert.rejects(asUser(bob,()=>db.query('select public.reserve_order_photo($1,$2)',[order.id,crypto.randomUUID()])),/access denied/i);
+      await assert.rejects(asUser(bob,()=>db.query('select public.complete_order_photo($1)',[photo.id])),/access denied/i);
     });
     await t.test('anonymous tracking exposes only an allowlist and supports rotation, expiry and revocation',async()=>{
       const token='a'.repeat(64),next='b'.repeat(64);

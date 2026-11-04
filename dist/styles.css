@@ -5,3 +5,5 @@
 @media print{.sidebar,.topbar,.mobile-nav,.footer,.back,.heading-row .actions-stack,.detail-layout>aside,button,.demo-note,#toast{display:none!important}.shell,.detail-layout{display:block}.page{padding:0}.panel{border:1px solid #ddd;margin-top:14px}.print-only{display:block}.heading-row{margin:0}.panel{break-inside:avoid}body{background:white}}
 
 .intake-heading{flex-wrap:wrap}#intake-save-state{max-width:100%;white-space:normal;line-height:1.5}
+
+.photo-recovery{border-top:1px solid var(--line);margin-top:20px;padding-top:20px}.photo-recovery[hidden]{display:none}.photo-recovery fieldset{min-width:0;border:1px solid var(--line);border-radius:9px;padding:14px;margin:12px 0}.photo-recovery legend{font-size:12px;font-weight:600;padding:0 5px}.photo-recovery input{max-width:100%;width:100%;font-size:12px}.photo-recovery .photo-grid{margin:12px 0}.photo-recovery button{max-width:100%;white-space:normal}

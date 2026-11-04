@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+- Recover pending intake photos from a saved order after leaving the original form, reusing reservations and preserving confirmed images, order/history and tracking capabilities.
+- Complete unreserved intake evidence from the order within the existing five-photo limit; preserve unsaved repair edits and guard async recovery against view/account changes.
+
 ### Tests
 - Add an optional known-fictional-photo HTTP probe for anonymous download and signed-URL denial, without credentials or object paths in output.
 - Add an operator console helper and classification/redaction tests for a future actual-session owner/nonmember photo exercise; these tests do not claim hosted acceptance.

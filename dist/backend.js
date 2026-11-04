@@ -2,7 +2,7 @@ import {trackingReceiptUrl} from './receipt.js';
 
 export class PendingIntakePhotosError extends Error {
   constructor(orderNumber) {
-    super('La orden GT-'+orderNumber+' se guardó, pero faltan fotos. Pulsa Crear orden otra vez sin salir para reintentar; no se duplicará.');
+    super('La orden GT-'+orderNumber+' se guardó, pero faltan fotos. Pulsa Crear orden otra vez para reintentar o abre la orden guardada para completar sus fotos.');
     this.name='PendingIntakePhotosError';
     this.orderNumber=orderNumber;
   }
@@ -21,6 +21,14 @@ export async function connect(config,clientFactory) {
   const createClient=clientFactory||(await import('./vendor/supabase.js')).createClient;
   const client=createClient(config.supabaseUrl,config.supabaseKey,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const rpc=async(name,args)=>{const {data,error}=await client.rpc(name,args);if(error)throw error;return data;};
+  const uploadReserved=async(photo,src)=>{
+    if(photo.state==='ready')return;
+    if(await rpc('complete_order_photo',{p_photo:photo.id}))return;
+    const blob=await (await fetch(src)).blob();
+    const {error}=await client.storage.from('repair-photos').upload(photo.path,blob,{contentType:'image/jpeg',upsert:false});
+    if(error && !await rpc('complete_order_photo',{p_photo:photo.id}))throw error;
+    if(!await rpc('complete_order_photo',{p_photo:photo.id}))throw new Error('La foto no se confirmó. Reintenta desde esta orden.');
+  };
   const applicationUrl=()=>config.publicAppUrl?config.publicAppUrl+'/':location.origin+location.pathname;
   const receiptResult=data=>{
     const record=singleRow(data);
@@ -36,7 +44,7 @@ export async function connect(config,clientFactory) {
     },
     createWorkshop:name=>rpc('create_workshop',{p_name:name}),
     async load(workshop){
-      const {data,error}=await client.from('repair_orders').select('*,order_events(status,at),order_photos(id,path,state)').eq('workshop_id',workshop).order('number',{ascending:false}).limit(500);
+      const {data,error}=await client.from('repair_orders').select('*,order_events(status,at),order_photos(id,path,state,slot)').eq('workshop_id',workshop).order('number',{ascending:false}).limit(500);
       if(error)throw error;return data.map(toOrder);
     },
     async create(workshop,request,order){
@@ -54,14 +62,20 @@ export async function connect(config,clientFactory) {
     async upload(orderId,items){
       for(const item of items){
         const photo=singleRow(await rpc('reserve_order_photo',{p_order:orderId,p_photo:item.id}));
-        if(photo.state==='ready')continue;
         // Complete first on retries: a previous upload may have succeeded despite a lost response.
-        if(await rpc('complete_order_photo',{p_photo:item.id}))continue;
-        const blob=await (await fetch(item.src)).blob();
-        const {error}=await client.storage.from('repair-photos').upload(photo.path,blob,{contentType:'image/jpeg',upsert:false});
-        if(error && !await rpc('complete_order_photo',{p_photo:item.id})) throw error;
-        if(!await rpc('complete_order_photo',{p_photo:item.id}))throw new Error('La foto no se confirmó. Reintenta sin salir del formulario.');
+        await uploadReserved(photo,item.src);
       }
+    },
+    async photoRecords(orderId){
+      const {data,error}=await client.from('order_photos').select('id,path,state,slot').eq('order_id',orderId).order('slot');
+      if(error)throw error;return data;
+    },
+    async retryPhoto(orderId,photoId,src){
+      const {data,error}=await client.from('order_photos').select('id,path,state,slot').eq('order_id',orderId).eq('id',photoId).maybeSingle();
+      if(error)throw error;
+      if(!data || !['pending','ready'].includes(data.state))throw new Error('La foto no está disponible en esta orden. Revisa tu acceso al taller.');
+      // Never reserve a new slot when recovering an existing pending photo.
+      await uploadReserved(singleRow(data),src);
     },
     async photos(order){
       const urls=[];

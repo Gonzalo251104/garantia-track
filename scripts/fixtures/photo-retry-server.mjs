@@ -10,7 +10,8 @@ const workshop = { id: '00000000-0000-4000-8000-000000000001', name: 'Photo Retr
 const user = { id: '00000000-0000-4000-8000-000000000002', aud: 'authenticated', role: 'authenticated', email: 'operator@example.test' };
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' };
 
-export async function startPhotoRetryFixture(port = 0) {
+export async function startPhotoRetryFixture(port = 0, {failures=1} = {}) {
+  if(!Number.isInteger(failures) || failures<0 || failures>5)throw new Error('Fixture failures must be between 0 and 5.');
   const orders = new Map(), photos = new Map(), objects = new Map();
   const calls = { requests: [], reservations: [], uploadAttempts: 0, failedUploads: 0, imageReads: 0 };
   const summary = () => ({
@@ -47,6 +48,11 @@ export async function startPhotoRetryFixture(port = 0) {
       if (route === '/auth/v1/logout') return json(response, 200, {});
       if (route === '/rest/v1/workshops') return json(response, 200, workshop);
       if (route === '/rest/v1/repair_orders') return json(response, 200, [...orders.values()].map(order => ({ ...order, order_photos: [...photos.values()].filter(p => p.order_id === order.id) })));
+      if (route === '/rest/v1/order_photos') {
+        const orderId=url.searchParams.get('order_id')?.replace(/^eq\./,''),photoId=url.searchParams.get('id')?.replace(/^eq\./,'');
+        const rows=[...photos.values()].filter(photo=>(!orderId || photo.order_id===orderId) && (!photoId || photo.id===photoId)).sort((a,b)=>a.slot-b.slot);
+        return json(response,200,request.headers.accept?.includes('object+json')?rows[0]||null:rows);
+      }
       if (route.startsWith('/rest/v1/rpc/')) {
         const args = JSON.parse(body.toString() || '{}'), name = route.split('/').at(-1);
         if (name === 'create_repair_order') {
@@ -58,7 +64,7 @@ export async function startPhotoRetryFixture(port = 0) {
         }
         if (name === 'reserve_order_photo') {
           calls.reservations.push(args.p_photo);
-          if (!photos.has(args.p_photo)) photos.set(args.p_photo, { id: args.p_photo, order_id: args.p_order, state: 'pending', path: `${workshop.id}/${args.p_order}/${args.p_photo}.jpg` });
+          if (!photos.has(args.p_photo)) photos.set(args.p_photo, { id: args.p_photo, order_id: args.p_order, slot: photos.size+1, state: 'pending', path: `${workshop.id}/${args.p_order}/${args.p_photo}.jpg` });
           return json(response, 200, photos.get(args.p_photo));
         }
         if (name === 'complete_order_photo') {
@@ -73,7 +79,7 @@ export async function startPhotoRetryFixture(port = 0) {
       if (request.method === 'POST' && route.startsWith(uploadPrefix)) {
         const objectPath = route.slice(uploadPrefix.length);
         calls.uploadAttempts++;
-        if (calls.uploadAttempts === 1) {
+        if (calls.uploadAttempts <= failures) {
           calls.failedUploads++;
           return json(response, 503, { statusCode: '503', error: 'ServiceUnavailable', message: 'Intentional local upload failure' });
         }
@@ -112,7 +118,9 @@ export async function startPhotoRetryFixture(port = 0) {
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const port = Number(process.env.PORT || 4192);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT must be between 1 and 65535.');
-  const fixture = await startPhotoRetryFixture(port);
+  const failures=Number(process.env.PHOTO_RETRY_FAILURES || 1);
+  const fixture = await startPhotoRetryFixture(port,{failures});
   console.log(`Local photo-retry fixture: ${fixture.origin}/#/intake`);
   console.log('Use only invented sign-in values. State is in memory; stop the process to discard it.');
+  console.log(`Intentional upload failures: ${failures}`);
 }
