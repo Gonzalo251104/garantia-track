@@ -4,9 +4,11 @@
 
 ### Tests
 - Add an optional known-fictional-photo HTTP probe for anonymous download and signed-URL denial, without credentials or object paths in output.
+- Add an operator console helper and classification/redaction tests for a future actual-session owner/nonmember photo exercise; these tests do not claim hosted acceptance.
 
 ### Documentation
 - Record hosted two-workshop database role checks, anonymous HTTP results, existing security advisor categories and the remaining actual-session Storage check; retain deferred Android acceptance as unverified.
+- Provide two-profile Storage test instructions and distinguish supervised fictional observation, real-data pilot gates and the next product priorities.
 
 ## [0.5.3] - 2026-11-04
 

@@ -50,6 +50,7 @@ See [environment.md](environment.md) for the design rationale. Review references
 
 ## Remaining acceptance
 
+- Follow [authenticated-photo-access-guide.md](authenticated-photo-access-guide.md) for the actual-session two-profile exercise and summary-only console helper. Its unit tests are separate from hosted evidence.
 - Direct authenticated nonmember HTTP download and signed-URL creation still require evidence using the other workshop's actual session. Database role checks and anonymous HTTP denials do not replace that test.
 - Establish authorized owner access as a positive control, then use the other account to request the same fictional object through the authenticated Storage API. Expect no bytes and no newly issued signed URL. Keep sessions and authorization headers in their original browser/profile.
 - Do not use an owner-issued signed URL as a negative ownership test: that URL is an intentional time-limited bearer capability. Do not transfer it between testers.
