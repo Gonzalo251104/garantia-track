@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Tests
+- Add an optional known-fictional-photo HTTP probe for anonymous download and signed-URL denial, without credentials or object paths in output.
+
+### Documentation
+- Record hosted two-workshop database role checks, anonymous HTTP results, existing security advisor categories and the remaining actual-session Storage check; retain deferred Android acceptance as unverified.
+
 ## [0.5.3] - 2026-11-04
 
 ### Fixed
