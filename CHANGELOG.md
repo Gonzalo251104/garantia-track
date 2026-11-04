@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-11-03
+
+### Fixed
+- Use a neutral CSV filename and download notification for authenticated workshops while retaining demo labels in demo mode.
+
+### Documentation
+- Record physical-phone acceptance of v0.5.1 and publish a standalone fictional pilot evidence sheet with validation checks, CSV evidence, upload-retry coverage and small operator sessions.
+- Verify the owner-exported fictional Workshop B CSV against its current order set without recording contact values.
+
+### Tests
+- Exercise successful intake photo-upload retry after a temporary failure while preserving request and photo identifiers.
+
 ## [0.5.1] - 2026-11-03
 
 ### Fixed

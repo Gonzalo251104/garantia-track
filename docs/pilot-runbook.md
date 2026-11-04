@@ -6,6 +6,8 @@ User-reported mobile verification on 2026-10-29: fictional order GT-1044 was rec
 
 ## Mobile acceptance: fictional data only
 
+See [fictional-pilot-session.md](fictional-pilot-session.md) for the latest evidence and the next small sessions. The owner accepted the v0.5.1 active-workshop header and neutral unavailable-order message on a physical phone. Vault CLI work in draft PR #26 is tracked independently.
+
 Record date, device/browser, version and fictional order number. For each step record pass/fail and a concise symptom; do not paste the private tracking URL.
 
 1. Sign in and create a new console or controller order with fictional details and a harmless test photo. Record its number.
@@ -17,7 +19,7 @@ Record date, device/browser, version and fictional order number. For each step r
 ## Gates before inviting external workshops
 
 - **Email and recovery:** Verify actual Auth URLs and SMTP configuration in the dashboard. Supabase's default sender is restricted to project-team addresses; configure a verified sender with a suitable SMTP provider and test confirmation and password recovery with an external test account. Do not put SMTP credentials in the repository or chat. Keep email confirmation enabled. See [Supabase SMTP](https://supabase.com/docs/guides/auth/auth-smtp).
-- **Recovery:** Follow [pilot-recovery.md](pilot-recovery.md) to choose an owner and protected backup location, separate database and photo backups, preserve the Vault key, and perform an isolated restore drill. None has been verified yet.
+- **Recovery:** Follow [pilot-recovery.md](pilot-recovery.md) and [independent-backup-plan.md](independent-backup-plan.md). One exact fictional photo passed encrypted PC/USB backup, extraction and hosted-lab restore; complete database/Auth recovery and independent Vault recovery remain unverified. Retain the relevant key for ciphertext backups or verify a separately encrypted logical recovery path. Partial photo evidence is not complete project recovery.
 - **Access:** Repeat cross-workshop denial and anonymous tracking allowlist checks against the deployed project with two distinct test accounts. Keep Storage private, avoid privileged browser keys, and review [security advisor notices](https://supabase.com/docs/guides/database/database-linter); see `environment.md` for the existing intentional definer warnings and disabled leaked-password-protection warning. Do not mark a finding resolved without verifying it.
 - **Operations:** Assign an operator and support contact; review Supabase and hosting health, quotas and failure logs without recording tokens. Establish manual checks and incident response, including link revocation and rollback to the last known good release. Free projects can pause for inactivity; verify availability expectations with participants. No automated uptime alert is configured by this document.
 - **Pilot agreement:** Recruit 2–3 workshops, explain the experimental scope and how to report issues, define data handling and retention/deletion expectations, and agree on a fallback if the service is unavailable. Test with fictional data until the gates above are complete.
