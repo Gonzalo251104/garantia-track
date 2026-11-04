@@ -19,6 +19,8 @@ See [pilot-runbook.md](pilot-runbook.md) for concrete acceptance steps, outstand
 
 The existing flow can support a guided observation with a technician using invented cases in the dedicated test workshop, without real customer records or external self-service onboarding. Start with one or two consenting console/controller workshop operators, a small number of fictional intakes and their usual phone. Record steps needing explanation, photo failures, status questions, ticket handoff and whether they would replace their current process. Owner-operated accounts and technical regression tests do not supply independent market feedback.
 
+The [supervised observation kit](supervised-pilot-observation.md) provides the next session's task cards and decision sheet. No independent technician observation has been recorded there yet; select one product improvement only after observing the workflow.
+
 ### Before operational use with real customers
 
 1. Complete the [actual-session photo access exercise](authenticated-photo-access-guide.md). Anonymous HTTP checks and database role checks have evidence; actual authenticated nonmember HTTP access remains pending.
