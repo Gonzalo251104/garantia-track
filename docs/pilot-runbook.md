@@ -11,12 +11,14 @@ See [fictional-pilot-session.md](fictional-pilot-session.md) for the latest evid
 Record date, device/browser, version and fictional order number. For each step record pass/fail and a concise symptom; do not paste the private tracking URL.
 
 1. Sign in and create a new console or controller order with fictional details and a harmless test photo. Record its number.
-2. If upload partially fails, retry from the original intake form without reloading or navigating away. After success, reload, open the order and verify the same number, data and photo without duplicates. See [photo-upload-recovery-check.md](photo-upload-recovery-check.md) for local fixture evidence and the remaining hosted/device checks.
+2. If upload partially fails, retry from the original intake or use the saved-order photo recovery after that feature's release. After closing/reloading the intake, select the original image again from the saved order. After success, reload and verify the same order/photo without duplicates. See [order-photo-recovery.md](order-photo-recovery.md) for scope, local evidence and release status.
 3. Change the status twice, checking each saved state after reload. Open the customer link in a separate browser without a workshop session and verify the correct order and latest status; customer view must not expose photos, contact information or internal notes.
 4. Open the receipt, share its PDF to a trusted test recipient, and scan the QR or use the link inside the PDF. Verify the same order and latest state. Reload and confirm the QR still works. Do not renew or revoke the QR during this test.
 5. Record device-specific failures. Test paper output and camera scanning separately on the actual thermal printer before relying on it in a workshop.
 
 ## Gates before inviting external workshops
+
+See [pilot-photo-access-check.md](pilot-photo-access-check.md) for the latest hosted role/claim checks, anonymous HTTP denials and the remaining actual-session Storage test. These checks do not close every access or readiness gate.
 
 - **Email and recovery:** Verify actual Auth URLs and SMTP configuration in the dashboard. Supabase's default sender is restricted to project-team addresses; configure a verified sender with a suitable SMTP provider and test confirmation and password recovery with an external test account. Do not put SMTP credentials in the repository or chat. Keep email confirmation enabled. See [Supabase SMTP](https://supabase.com/docs/guides/auth/auth-smtp).
 - **Recovery:** Follow [pilot-recovery.md](pilot-recovery.md) and [independent-backup-plan.md](independent-backup-plan.md). One exact fictional photo passed encrypted PC/USB backup, extraction and hosted-lab restore; complete database/Auth recovery and independent Vault recovery remain unverified. Retain the relevant key for ciphertext backups or verify a separately encrypted logical recovery path. Partial photo evidence is not complete project recovery.

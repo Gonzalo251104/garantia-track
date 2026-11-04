@@ -1,6 +1,7 @@
 import {statuses,statusLabel,money,escapeHtml as e,parseAmount,nextOrderNumber,publicOrder,validateIntake,seedOrders} from './domain.js';
 
 import {connect,PendingIntakePhotosError} from './backend.js';
+import {mountPhotoRecovery} from './photo-recovery-view.js';
 import {workspaceIdentity,unavailableOrder} from './workspace-view.js';
 import {createReceiptLinks} from './receipt.js';
 import {showReceipt,confirmTrackingRenewal} from './receipt-view.js';
@@ -91,7 +92,12 @@ function intake() {
       orders=loaded;location.hash='/orders/'+saved.number;notify('Orden guardada en el taller.');
     }else if(persist([...orders,order])){location.hash=`/orders/${order.number}`;notify(`Orden GT-${order.number} creada. Ya puedes compartir su seguimiento.`);} }
     catch(error){if(isCurrent()){
-      if(error instanceof PendingIntakePhotosError)document.querySelector('#intake-save-state').textContent=`Orden GT-${error.orderNumber} guardada · Fotos pendientes`;
+      if(error instanceof PendingIntakePhotosError){
+        document.querySelector('#intake-save-state').textContent=`Orden GT-${error.orderNumber} guardada · Fotos pendientes`;
+        let link=form.querySelector('#open-saved-order');
+        if(!link){link=document.createElement('a');link.id='open-saved-order';link.className='row-link';form.querySelector('#form-error').after(link);}
+        link.href=`#/orders/${error.orderNumber}`;link.textContent=`Abrir orden GT-${error.orderNumber} y completar fotos →`;
+      }
       form.querySelector('#form-error').textContent=friendly(error);
     }}
     finally{button.disabled=false;}
@@ -208,10 +214,17 @@ function enhanceDetail(order){
   const showLink=url=>{viewer.href=url;viewer.hidden=false;const input=actions.querySelector('#tracking-url');input.value=url;input.hidden=false;actions.querySelector('#copy-link').textContent='Copiar enlace activo';actions.querySelector('#renew-link').hidden=false;};
   const busy=value=>actions.querySelectorAll('button').forEach(button=>{button.disabled=value;});
   const display=document.querySelector('.detail-grid');
-  display.insertAdjacentHTML('afterend','<div id="cloud-photos" class="photo-grid" aria-live="polite"></div>');
-  const photoContainer=document.querySelector('#cloud-photos');
-  backend.photos(order).then(urls=>{if(photoContainer.isConnected)photoContainer.innerHTML=urls.map((src,index)=>`<img src="${e(src)}" alt="Foto privada de ingreso ${index+1}" referrerpolicy="no-referrer">`).join('');}).catch(()=>{if(photoContainer.isConnected)photoContainer.textContent='No se pudieron cargar las fotos. Recarga para reintentar.';});
-  const emptyNote=display.parentElement.querySelector('.hint');if(emptyNote)emptyNote.textContent=order.photoRecords.some(photo=>photo.state==='pending')?'Hay fotos pendientes de confirmar. Reintenta desde la recepción original.':order.photoRecords.length?'Fotos privadas · Acceso temporal de 5 minutos':'Sin fotos de ingreso.';
+  display.insertAdjacentHTML('afterend','<div id="cloud-photos" class="photo-grid" aria-live="polite"></div><div id="photo-recovery" class="photo-recovery"></div>');
+  const photoContainer=document.querySelector('#cloud-photos'),recoveryContainer=document.querySelector('#photo-recovery');
+  const emptyNote=display.parentElement.querySelector('.hint');let photoVersion=0;
+  const photoCurrent=()=>photoContainer.isConnected && !demoMode && session?.user?.id===userId && workshop?.id===workshopId;
+  const loadPhotos=()=>{
+    const version=++photoVersion;
+    backend.photos(order).then(urls=>{if(photoCurrent() && photoVersion===version)photoContainer.innerHTML=urls.map((src,index)=>`<img src="${e(src)}" alt="Foto privada de ingreso ${index+1}" referrerpolicy="no-referrer">`).join('');}).catch(()=>{if(photoCurrent() && photoVersion===version)photoContainer.textContent='No se pudieron cargar las fotos. Recarga para reintentar.';});
+    if(emptyNote)emptyNote.textContent=order.photoRecords.some(photo=>photo.state==='pending')?'Hay fotos pendientes. Puedes completarlas aquí.':order.photoRecords.length?'Fotos privadas · Acceso temporal de 5 minutos':'Sin fotos de ingreso.';
+  };
+  loadPhotos();
+  mountPhotoRecovery({container:recoveryContainer,order,backend,compressPhoto,isCurrent:photoCurrent,onRecords:loadPhotos,onSaved:()=>notify('Foto disponible en la orden. El seguimiento se conserva.')});
   async function shareLink(renew=false){
     busy(true);
     try{

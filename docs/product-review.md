@@ -15,10 +15,24 @@ See [pilot-runbook.md](pilot-runbook.md) for concrete acceptance steps, outstand
 
 ## Priorities before broader launch
 
-1. Validate intake, status updates, customer tracking and WhatsApp handoff with real console/controller workshops; measure time saved and willingness to pay.
-2. Test 58 mm and 80 mm output and phone scanning on the actual target printer. Review recipient selection and privacy expectations with workshop owners.
-3. Configure production email delivery and recovery, monitoring and a tested backup/restore plan including Vault key material before inviting external workshops.
-4. Address operational limits identified in `architecture.md`: pagination/search, member management, image inspection, cleanup and abuse controls. Prioritize from observed demand.
-5. Define pricing, support and terms after pilot feedback. Sharing is a manual handoff, not an automated notification.
+### Supervised fictional observation
+
+The existing flow can support a guided observation with a technician using invented cases in the dedicated test workshop, without real customer records or external self-service onboarding. Start with one or two consenting console/controller workshop operators, a small number of fictional intakes and their usual phone. Record steps needing explanation, photo failures, status questions, ticket handoff and whether they would replace their current process. Owner-operated accounts and technical regression tests do not supply independent market feedback.
+
+### Before operational use with real customers
+
+1. Complete the [actual-session photo access exercise](authenticated-photo-access-guide.md). Anonymous HTTP checks and database role checks have evidence; actual authenticated nonmember HTTP access remains pending.
+2. Configure a verified sender/SMTP and test confirmation and password recovery with an external test address. The default Supabase sender is team-restricted. No domain or SMTP provider has been provisioned for this project; do not disable confirmation to work around delivery.
+3. Complete an independent database/Auth/Vault and photo backup/restore drill. One exact-photo recovery and known-ticket QR reconstruction are partial evidence, not complete independent project recovery. Keep draft recovery PR #26 separate until verified.
+4. Agree on a backup operator/schedule, support contact, quota/availability checks, retention/deletion handling, fallback and rollback. Document manual checks when free tooling lacks automated coverage. No uptime alarm or recovery guarantee is currently established.
+5. Test the actual 58/80 mm printer only if paper tickets are part of the agreed pilot. PDF-only observation does not certify thermal printing. Review recipient selection and privacy expectations with the workshop owner.
+
+### Next product work
+
+[Saved-order photo recovery](order-photo-recovery.md) is included in v0.6.0. It lets an authorized member reselect an image after the original intake was closed, preserving the order and tracking capability. Validate its deployed operator flow before claiming physical-device acceptance; it does not reconstruct lost image bytes.
+
+Then select one change from workshop observations. Candidate needs are technician invitations/roles when multiple people operate the workshop, customer quote approval, and warranty/re-entry history. Pagination/search beyond the currently loaded list and cleanup/abuse controls should follow measured use. Keep the simple architecture and existing free hosting until workload justifies a change.
+
+After observed repeated use, test willingness to pay, define a price hypothesis and agree on the support scope before adding billing. Sharing remains a manual WhatsApp handoff; automated notifications are a separate decision with their own service cost and consent requirements.
 
 Use feature branches and pull requests into develop; release branches target main and are merged back into develop. CI checks lint, syntax, tests and build. See the existing release and environment documentation for migration ordering and known security advisor notices.
