@@ -91,3 +91,24 @@ test('a partial intake upload reports the already-created order without duplicat
   backend.upload=async()=>{throw new Error('Disconnected');};
   await assert.rejects(backend.receive('workshop','request',{},[]),/La orden GT-1042 se guardó/);
 });
+
+test('retrying a failed intake upload preserves request/photo identities and can finish successfully',async()=>{
+  const requests=[],reservations=[];let attempts=0,uploaded=false;
+  const saved={id:'retry-order',number:1048};
+  const fake={rpc:async(name,args)=>{
+    if(name==='create_repair_order'){requests.push(args.p_request);return {data:saved,error:null};}
+    if(name==='reserve_order_photo'){reservations.push(args.p_photo);return {data:{id:args.p_photo,path:'workshop/retry-order/photo.jpg',state:'pending'},error:null};}
+    if(name==='complete_order_photo')return {data:uploaded,error:null};
+    throw new Error('Unexpected test RPC');
+  },storage:{from:()=>({upload:async()=>{
+    attempts++;if(attempts===1)return {error:new Error('Fictional temporary disconnect')};
+    uploaded=true;return {error:null};
+  }})}};
+  const backend=await connect({},()=>fake);
+  const photos=[{id:'retry-photo',src:'data:image/jpeg;base64,/9j/2Q=='}];
+  await assert.rejects(backend.receive('workshop','retry-request',{},photos),/La orden GT-1048 se guardó/);
+  const result=await backend.receive('workshop','retry-request',{},photos);
+  assert.equal(result.id,saved.id);assert.equal(attempts,2);
+  assert.deepEqual(requests,['retry-request','retry-request']);
+  assert.deepEqual(reservations,['retry-photo','retry-photo']);
+});
