@@ -2,9 +2,11 @@
 
 Purpose: validate the daily workshop flow and identify the next product improvement. Use fictional data. External onboarding and real-customer readiness remain gated by [pilot-runbook.md](pilot-runbook.md).
 
-## Current published acceptance — v0.5.2
+## Recorded published acceptance
 
-The public site is now v0.5.3. The owner reported Android label/retry success but the latest stored order still predated that release when checked, so the specific new-order/device evidence was not reconciled. The owner chose to defer that review; keep device-specific acceptance unverified. Continue with the separately attributed access evidence in [pilot-photo-access-check.md](pilot-photo-access-check.md).
+Release v0.6.0 includes [saved-order photo recovery](order-photo-recovery.md). Its GitHub release records publication and hosted checks; earlier owner/device evidence below remains separately attributed.
+
+Following the v0.5.3 deployment, the owner reported Android label/retry success but the latest stored order still predated that release when checked, so the specific new-order/device evidence was not reconciled. The owner chose to defer that review; keep device-specific acceptance unverified. Continue with the separately attributed access evidence in [pilot-photo-access-check.md](pilot-photo-access-check.md).
 
 The owner confirmed on their physical phone that the published v0.5.2 authenticated CSV uses the correct filename and notification. No device/browser details or new CSV content audit were supplied. The earlier v0.5.1 acceptance below remains separate evidence.
 
