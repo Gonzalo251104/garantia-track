@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-11-03
+
 ### Fixed
 - Use a neutral CSV filename and download notification for authenticated workshops while retaining demo labels in demo mode.
 
