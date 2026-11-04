@@ -28,6 +28,8 @@ See [pilot-photo-access-check.md](pilot-photo-access-check.md) for the latest ho
 
 ## Pilot observations
 
+Use [supervised-pilot-observation.md](supervised-pilot-observation.md) for the next 1–2 technician sessions: fictional task cards, a facilitator sequence, a blank evidence sheet and a rule for choosing one improvement. Preparation is not an invitation or a completed observation. Keep broader operational recruitment separate from this supervised exercise.
+
 With permission, observe intake and record time to register a device, number of status questions, failed uploads and whether customers open tracking. Ask what they currently use, what would make them switch, and their willingness to pay. Review after each workshop and choose the next feature from observed friction. Do not promise pricing, availability or automated WhatsApp notifications.
 
 ## Release and rollback
