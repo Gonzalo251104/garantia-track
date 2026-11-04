@@ -15,6 +15,8 @@ Open http://127.0.0.1:4173. The server binds to loopback only. Leave it running 
 
 For startup, verification commands and troubleshooting, see [local runbook](docs/runbook.md). The authenticated receipt/photo/tracking test passed on 2026-10-28 with fictional order GT-1042.
 
+For a free, isolated photo-upload failure and retry exercise, see [photo upload recovery check](docs/photo-upload-recovery-check.md). `npm run dev:photo-retry` uses fictional in-memory HTTP services and never connects to hosted Supabase.
+
 Without Supabase configuration the application shows a setup screen. **Explorar con datos ficticios** explicitly enters the isolated local demo. Missing configuration or backend failures never silently save workshop records into demo storage.
 
 ## Connect Supabase
