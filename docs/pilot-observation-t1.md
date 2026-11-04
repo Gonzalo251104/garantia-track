@@ -14,7 +14,20 @@ Recorded on 2026-11-04, America/Lima. Source: the project owner's report of a pa
 | Wants an Other equipment option | Technician request; current focus remains consoles/controllers. | Deferred until concrete recurring equipment examples justify domain/schema expansion. |
 | Many annotations use small text | Owner report; specific labels/screens not yet identified. Code includes 10–12 px helper/navigation text. | Improve the selected confirmation screen now; identify exact remaining examples before a broader typography change. |
 
-Only reception and its attached photo are reported complete. Photo persistence after reload, status persistence, PDF/QR handoff and signed-out tracking for GT-1051 remain unobserved in this report. No price acceptance, repeat-use outcome, market fit, physical-print or authenticated cross-workshop photo HTTP result is established.
+## Completed workflow — owner-relayed results
+
+After the initial feedback, the owner relayed these additional outcomes from the same technician/session. Each task was completed without assistance. These are physical-device observations reported by the owner, not direct agent verification or database/HTTP assertions.
+
+| Task | Reported outcome |
+| --- | --- |
+| Reopen GT-1051 and reload | Found the order without help; the uploaded photo remained visible. |
+| Save diagnosing and separate messages, then reload | Status, internal note and public message persisted; the technician understood which message was internal and which was customer-facing. |
+| Change to repairing and prepare the receipt PDF | Completed without help; the PDF was easy to prepare. |
+| Open customer tracking in a private browser | Displayed GT-1051 in repairing with the public message, without internal data or photos. The owner summarized the result without separately listing contact/serial exclusions; no capability or screenshot was shared. |
+
+The core observed workflow is complete. The earlier desktop hypothesis that first-time QR/PDF preparation might be confusing was not supported by this technician's report; keep that distinct from the registration/navigation complaints. Do not infer WhatsApp delivery, camera scanning of a QR, original-link expiry invariance after reprinting, physical printing, timed performance or failed-upload recovery from these results.
+
+Debrief on the technician's current process, intention to use the product on the next repair and single largest obstacle is pending. No price acceptance, repeated-use outcome, market fit or authenticated cross-workshop photo HTTP result is established.
 
 ## First improvement decision
 
