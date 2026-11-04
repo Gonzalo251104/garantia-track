@@ -18,6 +18,8 @@ Record date, device/browser, version and fictional order number. For each step r
 
 ## Gates before inviting external workshops
 
+See [pilot-photo-access-check.md](pilot-photo-access-check.md) for the latest hosted role/claim checks, anonymous HTTP denials and the remaining actual-session Storage test. These checks do not close every access or readiness gate.
+
 - **Email and recovery:** Verify actual Auth URLs and SMTP configuration in the dashboard. Supabase's default sender is restricted to project-team addresses; configure a verified sender with a suitable SMTP provider and test confirmation and password recovery with an external test account. Do not put SMTP credentials in the repository or chat. Keep email confirmation enabled. See [Supabase SMTP](https://supabase.com/docs/guides/auth/auth-smtp).
 - **Recovery:** Follow [pilot-recovery.md](pilot-recovery.md) and [independent-backup-plan.md](independent-backup-plan.md). One exact fictional photo passed encrypted PC/USB backup, extraction and hosted-lab restore; complete database/Auth recovery and independent Vault recovery remain unverified. Retain the relevant key for ciphertext backups or verify a separately encrypted logical recovery path. Partial photo evidence is not complete project recovery.
 - **Access:** Repeat cross-workshop denial and anonymous tracking allowlist checks against the deployed project with two distinct test accounts. Keep Storage private, avoid privileged browser keys, and review [security advisor notices](https://supabase.com/docs/guides/database/database-linter); see `environment.md` for the existing intentional definer warnings and disabled leaked-password-protection warning. Do not mark a finding resolved without verifying it.

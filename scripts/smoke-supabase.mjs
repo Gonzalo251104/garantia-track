@@ -4,6 +4,8 @@ import {publicConfig} from './config.mjs';
 
 const {supabaseUrl,supabaseKey}=publicConfig();
 assert.ok(supabaseUrl && supabaseKey,'Configure the public Supabase environment first.');
+const privatePhotoPath=process.env.SMOKE_PRIVATE_PHOTO_PATH;
+if(privatePhotoPath)assert.ok(/^[a-f0-9-]{36}\/[a-f0-9-]{36}\/[a-f0-9-]{36}\.jpg$/.test(privatePhotoPath),'Use only a known fictional workshop/order/photo JPEG path.');
 const client=createClient(supabaseUrl,supabaseKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 const response=await fetch(`${supabaseUrl}/auth/v1/settings`,{headers:{apikey:supabaseKey}});
 assert.equal(response.status,200,'Auth settings endpoint must be reachable.');
@@ -26,4 +28,13 @@ console.log('PASS: live Data API denies anonymous order reads.');
 const upload=await client.storage.from('repair-photos').upload('unreserved/smoke-test.jpg',new Uint8Array([255,216,255,217]),{contentType:'image/jpeg',upsert:false});
 assert.ok(upload.error,'Anonymous unreserved upload must be denied.');
 console.log('PASS: live Storage API denies anonymous uploads.');
+if(privatePhotoPath){
+  const file=await client.storage.from('repair-photos').download(privatePhotoPath);
+  assert.equal(Boolean(file.data),false,'Anonymous callers must not receive private photo bytes.');
+  assert.ok(file.error && [400,403,404].includes(Number(file.error.status)),'Expected an explicit private-photo HTTP denial, not a connectivity or authentication failure.');
+  const signed=await client.storage.from('repair-photos').createSignedUrl(privatePhotoPath,60);
+  assert.equal(Boolean(signed.data?.signedUrl),false,'Anonymous callers must not receive a private photo capability.');
+  assert.ok(signed.error && [400,403,404].includes(Number(signed.error.status)),'Expected an explicit signing denial, not a connectivity or authentication failure.');
+  console.log('PASS: live Storage API denies anonymous download and signed URL creation for the known fictional photo.');
+}else console.log('SKIP: known private-photo HTTP probe (SMOKE_PRIVATE_PHOTO_PATH is not set).');
 console.log(`Email confirmation required: ${!settings.mailer_autoconfirm}. No accounts, orders or objects were created.`);

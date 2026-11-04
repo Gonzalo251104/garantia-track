@@ -4,6 +4,8 @@ Purpose: validate the daily workshop flow and identify the next product improvem
 
 ## Current published acceptance — v0.5.2
 
+The public site is now v0.5.3. The owner reported Android label/retry success but the latest stored order still predated that release when checked, so the specific new-order/device evidence was not reconciled. The owner chose to defer that review; keep device-specific acceptance unverified. Continue with the separately attributed access evidence in [pilot-photo-access-check.md](pilot-photo-access-check.md).
+
 The owner confirmed on their physical phone that the published v0.5.2 authenticated CSV uses the correct filename and notification. No device/browser details or new CSV content audit were supplied. The earlier v0.5.1 acceptance below remains separate evidence.
 
 See [photo-upload-recovery-check.md](photo-upload-recovery-check.md) for the assisted responsive browser recovery exercise against a local HTTP contract fixture and the later owner-operated hosted GT-1049 exercise. The owner reported the partial-photo error, successful same-form retry after removing the browser block, and photo persistence after reload. A read-only hosted snapshot reconfirmed on 2026-11-04 found one matching order, one ready photo, no pending photo, one linked stored object and one initial event; the bucket remains private. No first-attempt hosted snapshot or precise device/browser was captured. Physical-phone recovery and a provider outage remain unverified. The stale partial-save badge is corrected in the current feature branch, pending release.
