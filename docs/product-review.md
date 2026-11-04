@@ -19,7 +19,7 @@ See [pilot-runbook.md](pilot-runbook.md) for concrete acceptance steps, outstand
 
 The existing flow can support a guided observation with a technician using invented cases in the dedicated test workshop, without real customer records or external self-service onboarding. Start with one or two consenting console/controller workshop operators, a small number of fictional intakes and their usual phone. Record steps needing explanation, photo failures, status questions, ticket handoff and whether they would replace their current process. Owner-operated accounts and technical regression tests do not supply independent market feedback.
 
-The [supervised observation kit](supervised-pilot-observation.md) provides the next session's task cards and decision sheet. No independent technician observation has been recorded there yet; select one product improvement only after observing the workflow.
+The [first technician session](pilot-observation-t1.md) records owner-relayed iPhone 15/Safari results: fictional GT-1051 reception/photo, reload, status/messages and PDF/private tracking were completed without assistance. The technician currently uses Excel/paper and expressed conditional interest when managing several repairs. Their closing priority was easier status changes with four daily labels: Recibido, En reparación, Listo para entregar, Entregado. These map to existing stored values; additional diagnosis/approval stages remain relevant to other workflows until tested. This is one person's feedback, not repeated use or willingness to pay. The [observation kit](supervised-pilot-observation.md) remains available for a second session.
 
 ### Before operational use with real customers
 
@@ -33,7 +33,7 @@ The [supervised observation kit](supervised-pilot-observation.md) provides the n
 
 [Saved-order photo recovery](order-photo-recovery.md) is included in v0.6.0. It lets an authorized member reselect an image after the original intake was closed, preserving the order and tracking capability. Validate its deployed operator flow before claiming physical-device acceptance; it does not reconstruct lost image bytes.
 
-Then select one change from workshop observations. Candidate needs are technician invitations/roles when multiple people operate the workshop, customer quote approval, and warranty/re-entry history. Pagination/search beyond the currently loaded list and cleanup/abuse controls should follow measured use. Keep the simple architecture and existing free hosting until workload justifies a change.
+The first observation produced a bounded registration-confirmation fix prepared in PR #43; it is not deployed yet. The next product hypothesis is a prominent status-change action with four primary stages and additional diagnosis/approval options. Preserve visibility of current additional states, all stored values/events, pending edits and server authorization. Navigation/loading, the misleading Taller destination, photo enlargement and readable annotations remain separate findings. Technician invitations/roles, customer quote approval, warranty/re-entry history, pagination/search and cleanup/abuse controls should follow further evidence. Keep the simple architecture and existing free hosting until workload justifies a change.
 
 After observed repeated use, test willingness to pay, define a price hypothesis and agree on the support scope before adding billing. Sharing remains a manual WhatsApp handoff; automated notifications are a separate decision with their own service cost and consent requirements.
 
