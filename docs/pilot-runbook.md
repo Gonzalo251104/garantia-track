@@ -11,7 +11,7 @@ See [fictional-pilot-session.md](fictional-pilot-session.md) for the latest evid
 Record date, device/browser, version and fictional order number. For each step record pass/fail and a concise symptom; do not paste the private tracking URL.
 
 1. Sign in and create a new console or controller order with fictional details and a harmless test photo. Record its number.
-2. Reload, open the order and verify the same number, data and photo. A partial upload must be reported and retried in the same intake without creating another order.
+2. If upload partially fails, retry from the original intake form without reloading or navigating away. After success, reload, open the order and verify the same number, data and photo without duplicates. See [photo-upload-recovery-check.md](photo-upload-recovery-check.md) for local fixture evidence and the remaining hosted/device checks.
 3. Change the status twice, checking each saved state after reload. Open the customer link in a separate browser without a workshop session and verify the correct order and latest status; customer view must not expose photos, contact information or internal notes.
 4. Open the receipt, share its PDF to a trusted test recipient, and scan the QR or use the link inside the PDF. Verify the same order and latest state. Reload and confirm the QR still works. Do not renew or revoke the QR during this test.
 5. Record device-specific failures. Test paper output and camera scanning separately on the actual thermal printer before relying on it in a workshop.
