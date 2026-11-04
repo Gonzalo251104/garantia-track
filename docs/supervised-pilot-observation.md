@@ -1,6 +1,6 @@
 # Supervised fictional workshop observation
 
-Prepared on 2026-11-04, America/Lima. Status: ready for owner coordination; no participant contacted, invited or scheduled, and no observation completed. This kit does not close the [real-data readiness gates](pilot-runbook.md).
+Prepared on 2026-11-04, America/Lima. Status: first technician feedback received through the owner; see [pilot-observation-t1.md](pilot-observation-t1.md). The templates below remain blank for subsequent sessions. This kit does not close the [real-data readiness gates](pilot-runbook.md).
 
 ## Purpose and boundaries
 

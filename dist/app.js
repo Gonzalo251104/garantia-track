@@ -3,6 +3,7 @@ import {statuses,statusLabel,money,escapeHtml as e,parseAmount,nextOrderNumber,p
 import {connect,PendingIntakePhotosError} from './backend.js';
 import {mountPhotoRecovery} from './photo-recovery-view.js';
 import {workspaceIdentity,unavailableOrder} from './workspace-view.js';
+import {registerAccount,registrationConfirmation} from './registration.js';
 import {createReceiptLinks} from './receipt.js';
 import {showReceipt,confirmTrackingRenewal} from './receipt-view.js';
 const receiptLinks = createReceiptLinks();
@@ -173,6 +174,11 @@ async function signOut(){
   location.hash='/orders';render();
 }
 function accessScreen(mode='login'){
+  if(mode==='confirmation'){
+    root.innerHTML=`<div class="tracker-body"><header class="tracker-top">${brand}<span class="demo-pill">ACCESO AL TALLER</span></header><main class="tracker-main" id="main" tabindex="-1">${registrationConfirmation()}</main></div>`;
+    root.querySelectorAll('[data-auth]').forEach(button=>button.onclick=()=>accessScreen(button.dataset.auth));
+    root.querySelector('#registration-title').focus();window.scrollTo(0,0);return;
+  }
   const titles={login:'Bienvenido a tu taller.',register:'Crea tu acceso.',reset:'Recupera tu acceso.',recovery:'Elige una nueva contraseña.'};
   root.innerHTML=`<div class="tracker-body"><header class="tracker-top">${brand}<span class="demo-pill">ACCESO AL TALLER</span></header><main class="tracker-main" id="main" tabindex="-1"><div class="tracker-intro"><div class="eyebrow">TU TALLER, EN ORDEN</div><h1>${titles[mode]}</h1><p>El mismo mostrador. Ahora con tus datos protegidos.</p></div><section class="panel"><div class="section">${configured?`<form id="auth-form" class="actions-stack">${mode!=='recovery'?'<label class="field">Correo electrónico<input name="email" type="email" autocomplete="email" required maxlength="254"></label>':''}${mode!=='reset'?`<label class="field">Contraseña<input name="password" type="password" autocomplete="${mode==='login'?'current-password':'new-password'}" required minlength="${mode==='login'?1:12}" maxlength="128"></label>`:''}<p id="auth-error" class="error" role="alert"></p><p id="auth-info" class="hint" role="status"></p><button type="submit" class="primary">${{login:'Entrar al taller',register:'Crear cuenta',reset:'Enviar enlace de recuperación',recovery:'Guardar contraseña'}[mode]}</button></form><div class="auth-links"><button class="quiet small" data-auth="login">Iniciar sesión</button><button class="quiet small" data-auth="register">Crear cuenta</button><button class="quiet small" data-auth="reset">Olvidé mi contraseña</button></div>`:'<h2>Conectemos tu Supabase</h2><p class="subtitle">Falta configurar la URL del proyecto y su clave pública. Consulta docs/supabase-setup.md y reinicia el servidor después de completar .env.</p><p class="hint">El acceso a datos reales permanece cerrado hasta configurar el servicio.</p>'}<hr style="border:0;border-top:1px solid var(--line);margin:24px 0"><button id="enter-demo" class="secondary" style="width:100%">Explorar con datos ficticios</button><p class="hint">La demo es independiente. No importa datos ni simula una sesión autenticada.</p></div></section></main></div>`;
   document.querySelector('#enter-demo').onclick=()=>{receiptLinks.clear();sessionStorage.setItem('garantiatrack.mode','demo');demoMode=true;loadDemo();location.hash='/orders';render();};
@@ -187,15 +193,16 @@ function accessScreen(mode='login'){
       if(mode==='login'){
         const {data,error}=await backend.client.auth.signInWithPassword({email,password});if(error)throw error;session=data.session;form.reset();render();
       }else if(mode==='register'){
-        const {data,error}=await backend.client.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;
-        form.reset();if(data.session){session=data.session;render();}else infoNode.textContent='Si el registro está disponible, recibirás un correo para confirmar tu cuenta. Después podrás iniciar sesión.';
+        const result=await registerAccount(backend.client.auth,{email,password,options:{emailRedirectTo:location.origin+location.pathname}},()=>form.isConnected);
+        if(result.state==='stale')return;
+        form.reset();if(result.state==='signed-in'){session=result.session;render();}else accessScreen('confirmation');
       }else if(mode==='reset'){
         const {error}=await backend.client.auth.resetPasswordForEmail(email,{redirectTo:redirect});if(error)throw error;
         infoNode.textContent='Si existe una cuenta con ese correo, recibirás las instrucciones de recuperación.';
       }else{
         const {error}=await backend.client.auth.updateUser({password});if(error)throw error;recovery=false;history.replaceState(null,'',location.pathname+'#/orders');render();notify('Contraseña actualizada.');
       }
-    }catch(error){errorNode.textContent=friendly(error);}finally{button.disabled=false;}
+    }catch(error){if(form.isConnected)errorNode.textContent=friendly(error);}finally{button.disabled=false;}
   };
 }
 function onboarding(){

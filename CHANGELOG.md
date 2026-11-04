@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+- Replace the small post-registration hint with a focused confirmation screen explaining the email step and offering sign-in or a different email, without claiming account existence or email delivery.
+
+### Documentation
+- Record owner-relayed technician feedback from fictional GT-1051 on iPhone 15/Safari and select registration feedback as the first bounded pilot improvement.
+
 ## [0.6.0] - 2026-11-04
 
 ### Added
