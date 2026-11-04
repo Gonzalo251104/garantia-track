@@ -1,7 +1,7 @@
 export const statuses = [
   ['received', 'Recibido'], ['diagnosing', 'En diagnóstico'],
   ['awaiting_approval', 'Por aprobar'], ['repairing', 'En reparación'],
-  ['ready', 'Listo para recoger'], ['delivered', 'Entregado']
+  ['ready', 'Listo para entregar'], ['delivered', 'Entregado']
 ];
 export const statusLabel = value => statuses.find(([key]) => key === value)?.[1] ?? value;
 export const money = cents => new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(cents / 100);

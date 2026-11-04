@@ -63,7 +63,7 @@ The first session's workflow and closing interview are complete. No price accept
 - Acceptance: a successful no-session signup displays the next step instead of the cleared form; provider failures stay errors; a late response does not replace another view. Reobserve comprehension on the phone after an approved release. Local automated/desktop checks do not certify external SMTP or physical Safari acceptance.
 - Deferred alternatives: the closing debrief prioritizes easier daily status changes as the next product hypothesis. Navigation/loading and the misleading Taller destination remain confirmed friction candidates. Enlarged photos, Other equipment and broad typography changes are separate scopes. Do not add all requests to this first change.
 
-Implementation is prepared on `feature/registration-confirmation` for review into develop. It is not published until the normal release, deployment and backmerge flow completes. The owner-deferred photo HTTP exercise and other real-data readiness gates remain unchanged.
+The registration implementation was merged through PR #43 into develop on 2026-11-04 at `596d5e1eb0439019765c129ba46cdf3713616471`. The owner then authorized the separate [status-change implementation](order-status-workflow.md), prepared on `feature/quick-order-status`. Neither change is published until the normal release, deployment and backmerge flow completes. The owner-deferred photo HTTP exercise and other real-data readiness gates remain unchanged.
 
 ## Prepared change validation
 
