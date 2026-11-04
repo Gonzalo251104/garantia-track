@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-11-04
+
 ### Fixed
 - Show a confirmed saved-order/pending-photo badge after partial intake failure; retain the draft label when order creation fails and clear pending wording after photos succeed.
 
