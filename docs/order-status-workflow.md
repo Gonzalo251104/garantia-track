@@ -1,6 +1,6 @@
 # Independent order status changes
 
-Prepared on `feature/quick-order-status` after the owner authorized the next improvement from [GT-1051 technician feedback](pilot-observation-t1.md). This is feature-branch implementation, not a deployed release or physical-phone acceptance. Public v0.6.0 remains the pilot baseline until a separate release is published and deployed.
+Implemented through PR #44, merged into develop at `fede8751cf24b3c50ff68823b0382b1860adaa46`, after the owner authorized the next improvement from [GT-1051 technician feedback](pilot-observation-t1.md). It is included in the v0.7.0 release candidate, not a deployed release or physical-phone acceptance. Public v0.6.0 remains the pilot baseline until a separate release is published and deployed.
 
 ## Operator behavior
 
