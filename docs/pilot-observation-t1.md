@@ -33,17 +33,26 @@ The owner relayed the technician's closing answers:
 
 - Current process: Excel and/or handwritten notes.
 - Intention to use: yes, provided there are several repair orders to manage. This is conditional stated interest, not a commitment to adopt, repeat use or pay. No useful workload threshold was specified.
-- Largest desired change: make changing an equipment's repair status easier, possibly with fewer types of status. The proposed reduction was tentative; the technician did not yet identify which states are unnecessary.
+- Largest desired change: make changing an equipment's repair status easier, possibly with fewer types of status. In the follow-up, the technician named four daily stages: Recibido, En reparación, Listo para entregar, Entregado.
+
+| Technician's daily label | Existing stored value | Current application label |
+| --- | --- | --- |
+| Recibido | `received` | Recibido |
+| En reparación | `repairing` | En reparación |
+| Listo para entregar | `ready` | Listo para recoger |
+| Entregado | `delivered` | Entregado |
+
+These labels map to existing values; this participant's preference does not establish that diagnosing or approval are unnecessary for every workshop. No account or data migration is implied. The ready-stage wording can be tested separately for technician/customer comprehension.
 
 The reported flow was completed without assistance, but the technician still identified repeated status work as the largest obstacle. Prioritize investigating that daily task over expanding equipment categories or adding the full feature list. This does not change the already prepared registration fix's scope.
 
 Code inspection: changing only the status currently uses the full repair update form alongside quote, internal note and public message. Six statuses are shared by the interface, stored orders/events and customer tracking. The existing update RPC preserves membership checks, version checks and transactional events; do not bypass it or remove stored states based on one tentative suggestion.
 
-Proposed next experiment, not an implemented change: make the current status and an explicit status-change action prominent near the order heading, with a clear save result. Preserve unsaved quote/message/note edits and the existing server checks. Ask the technician to name their real daily states before deciding whether the selector should show fewer primary options or optional stages. Any compact presentation must preserve access to existing diagnosing/approval values and historical records. This hypothesis does not impose a mandatory transition sequence or automatically notify customers.
+Proposed next experiment, not an implemented change: make the current status and an explicit status-change action prominent near the order heading, with a clear save result. Offer the four reported daily stages as primary options and keep diagnosing/approval in additional options. Preserve visibility of any current additional state, historical records, unsaved quote/message/note edits and the existing server checks. No stored state is deleted or silently remapped. This hypothesis does not impose a mandatory transition sequence or automatically notify customers.
 
 Acceptance for that future experiment: on a fictional order, the technician finds and changes the status without help, sees confirmation, and observes the same state after reload and in private customer tracking. Record interactions and confusion; do not claim a measured speed improvement without timings. Keep it in a separate feature PR after reviewing the scope; do not fold it into the registration fix.
 
-No price acceptance, repeated-use outcome, market fit or authenticated cross-workshop photo HTTP result is established. Independent second-technician feedback and a real repeated-use session remain future evidence, not prerequisites for recording this first session.
+The first session's workflow and closing interview are complete. No price acceptance, repeated-use outcome, market fit or authenticated cross-workshop photo HTTP result is established. Independent second-technician feedback and a repeated-use fictional session remain future evidence, not prerequisites for recording this first session.
 
 ## First improvement decision
 
