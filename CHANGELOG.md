@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+- Open saved-order intake photos in a responsive modal from labeled thumbnails on mobile and desktop. Show the full image with close-button, Escape and backdrop dismissal, restoring thumbnail focus.
+- Reuse the current private image URL without signing another link, preserve pending repair drafts, and close/clear the enlarged image on navigation, authentication changes or gallery refresh.
+
 ## [0.8.0] - 2026-11-05
 
 ### Added
