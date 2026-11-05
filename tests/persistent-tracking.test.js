@@ -32,6 +32,7 @@ test('persistent receipt capabilities preserve old tickets and enforce tenant bo
     original=(await db.query('select token_hash,expires_at from public.tracking_links where order_id=$1',[legacy.id])).rows[0];
     await db.exec(await readFile(new URL('./fixtures/vault-contract.sql',import.meta.url),'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/20261028212715_persistent_receipt_tracking.sql',import.meta.url),'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/20261105031213_workshop_name_settings.sql',import.meta.url),'utf8'));
 
     await t.test('migration and ensure leave a pre-existing QR and expiry unchanged',async()=>{
       assert.equal((await asUser(alice,()=>call('get_receipt_tracking',legacy.id))).state,'legacy');
@@ -67,6 +68,14 @@ test('persistent receipt capabilities preserve old tickets and enforce tenant bo
         assert.deepEqual(await asUser(alice,()=>call('ensure_receipt_tracking',fresh.id)),first);
       }
       assert.equal(await value('select count(*)::integer from vault.secrets'),2);
+    });
+    await t.test('renaming the workshop updates public display without changing capabilities, Vault or orders',async()=>{
+      const snapshot=async()=>({links:(await db.query('select * from public.tracking_links order by order_id')).rows,secrets:(await db.query('select * from vault.secrets order by id')).rows,orders:(await db.query('select * from public.repair_orders order by id')).rows,events:(await db.query('select * from public.order_events order by id')).rows});
+      const before=await snapshot(),receipt=await asUser(alice,()=>call('get_receipt_tracking',fresh.id));
+      await asUser(alice,()=>db.query("select public.rename_workshop($1,'Persistent QA','Renamed QA')",[wa]));
+      assert.deepEqual(await snapshot(),before);
+      assert.deepEqual(await asUser(alice,()=>call('get_receipt_tracking',fresh.id)),receipt);
+      assert.equal((await asUser(null,()=>value('select public.get_order_tracking($1)',[receipt.token]),'anon')).workshop,'Renamed QA');
     });
     await t.test('revocation cannot be undone by reload, import or ensure; explicit renewal is separate',async()=>{
       await asUser(alice,()=>db.query('select public.revoke_tracking_link($1)',[legacy.id]));

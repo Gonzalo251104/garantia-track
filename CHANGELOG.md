@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+- Open workshop settings from Taller on mobile and desktop; owners can save a validated workshop name and see it update in the workspace immediately.
+- Rename through a guarded RPC with current owner/membership checks and expected-name conflict detection. Technicians have a read-only view; table write grants remain closed.
+
+### Tests
+- Cover owner/technician/foreign/anonymous permissions, stale-name retries, escaped names, late responses and actual-SDK local HTTP persistence. Verify that renaming preserves orders, tracking expiry and Vault references in the local database contract.
+
 ## [0.7.1] - 2026-11-04
 
 ### Fixed
