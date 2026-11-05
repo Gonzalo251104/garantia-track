@@ -18,7 +18,9 @@ The connection screen remains appropriate for initial session setup. Internal na
 
 ## Validation and limits
 
-### Follow-up: retained transitions after v0.9.0
+### Follow-up: retained transitions prepared for v0.9.1
+
+Implemented through PR #56, merged into develop at `1ea6a921cf79a79b868a7accbc6c8a191f916e7e`. The [v0.9.1 release candidate](releases/v0.9.1.md) records publication and rollback steps. Public v0.9.0 remains deployed during preparation; release preparation does not publish the frontend.
 
 The v0.7.1 scoped reads reduced unnecessary data downloads, but internal routes still replaced the page with a loading heading. The follow-up keeps the actual authorized page DOM visible until the fresh destination is ready. A small fixed status and top progress line indicate the requested destination; desktop/mobile navigation and sign-out remain available. The previous main content is inert and marked busy, so it cannot submit a form or open a stale order while navigation is pending. The active section continues to describe the displayed page; the pending destination has its own outline. The completed destination receives focus when ready; the existing route scroll-to-top behavior is preserved.
 
