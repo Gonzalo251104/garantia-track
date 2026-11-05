@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-04
+
+### Fixed
+- Avoid downloading the recent order list for an empty reception; fetch only the requested workshop-scoped order for detail and ticket routes.
+- Run fresh membership and required order reads concurrently when a workshop is known, discarding obsolete results after navigation, account or workshop changes.
+- Keep workspace navigation visible during internal loading instead of replacing every screen with the initial connection view. Hide incomplete list totals on direct entry.
+
+### Tests
+- Cover route-specific reads, membership-gated concurrency, changed/removed access, stale responses and provider failures; verify scoped single-order reads and nested evidence with the actual SDK over local HTTP.
+
+### Documentation
+- Record isolated delayed-response and responsive-browser evidence, remaining physical-phone acceptance, publication checks and the verified v0.7.0 frontend rollback target.
+
 ## [0.7.0] - 2026-11-04
 
 ### Fixed

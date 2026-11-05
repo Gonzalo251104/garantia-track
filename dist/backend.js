@@ -47,6 +47,10 @@ export async function connect(config,clientFactory) {
       const {data,error}=await client.from('repair_orders').select('*,order_events(status,at),order_photos(id,path,state,slot)').eq('workshop_id',workshop).order('number',{ascending:false}).limit(500);
       if(error)throw error;return data.map(toOrder);
     },
+    async loadOne(workshop,number){
+      const {data,error}=await client.from('repair_orders').select('*,order_events(status,at),order_photos(id,path,state,slot)').eq('workshop_id',workshop).eq('number',number).maybeSingle();
+      if(error)throw error;return data?toOrder(data):null;
+    },
     async create(workshop,request,order){
       const {customer,phone,device,model,serial,issue,condition,accessories}=order;
       return toOrder(await rpc('create_repair_order',{p_workshop:workshop,p_request:request,p_order:{customer,phone,device,model,serial,issue,condition,accessories}}));

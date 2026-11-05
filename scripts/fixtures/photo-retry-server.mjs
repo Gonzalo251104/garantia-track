@@ -10,9 +10,11 @@ const workshop = { id: '00000000-0000-4000-8000-000000000001', name: 'Photo Retr
 const user = { id: '00000000-0000-4000-8000-000000000002', aud: 'authenticated', role: 'authenticated', email: 'operator@example.test' };
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' };
 
-export async function startPhotoRetryFixture(port = 0, {failures=1} = {}) {
+export async function startPhotoRetryFixture(port = 0, {failures=1,readDelayMs=0} = {}) {
   if(!Number.isInteger(failures) || failures<0 || failures>5)throw new Error('Fixture failures must be between 0 and 5.');
+  if(!Number.isInteger(readDelayMs)||readDelayMs<0||readDelayMs>5000)throw new Error('Fixture read delay must be between 0 and 5000 ms.');
   const orders = new Map(), photos = new Map(), objects = new Map();
+  const navigationReads=[];
   const calls = { requests: [], reservations: [], uploadAttempts: 0, failedUploads: 0, imageReads: 0 };
   const summary = () => ({
     orders: orders.size, photos: photos.size, readyPhotos: [...photos.values()].filter(p => p.state === 'ready').length,
@@ -33,6 +35,11 @@ export async function startPhotoRetryFixture(port = 0, {failures=1} = {}) {
         body = Buffer.concat([body, chunk]);
       }
       if (route === '/__fixture/status') return json(response, 200, summary());
+      if (route === '/__fixture/navigation') return json(response,200,navigationReads);
+      if (['/rest/v1/workshops','/rest/v1/repair_orders'].includes(route)) {
+        navigationReads.push({resource:route.split('/').at(-1),number:url.searchParams.get('number')});
+        if(readDelayMs)await new Promise(resolve=>setTimeout(resolve,readDelayMs));
+      }
       if (route === '/config.js') {
         response.writeHead(200, { 'Content-Type': 'text/javascript', 'Cache-Control': 'no-store' });
         return response.end(`window.GARANTIATRACK_CONFIG=${JSON.stringify({ supabaseUrl: origin, supabaseKey: 'sb_publishable_local_fixture_only' })};`);
@@ -47,7 +54,11 @@ export async function startPhotoRetryFixture(port = 0, {failures=1} = {}) {
       if (route === '/auth/v1/user') return json(response, 200, user);
       if (route === '/auth/v1/logout') return json(response, 200, {});
       if (route === '/rest/v1/workshops') return json(response, 200, workshop);
-      if (route === '/rest/v1/repair_orders') return json(response, 200, [...orders.values()].map(order => ({ ...order, order_photos: [...photos.values()].filter(p => p.order_id === order.id) })));
+      if (route === '/rest/v1/repair_orders') {
+        const workshopId=url.searchParams.get('workshop_id')?.replace(/^eq\./,''),number=url.searchParams.get('number')?.replace(/^eq\./,'');
+        const rows=[...orders.values()].filter(order=>(!workshopId||order.workshop_id===workshopId)&&(!number||order.number===Number(number))).map(order=>({...order,order_photos:[...photos.values()].filter(p=>p.order_id===order.id)}));
+        return json(response,200,request.headers.accept?.includes('object+json')?rows[0]||null:rows);
+      }
       if (route === '/rest/v1/order_photos') {
         const orderId=url.searchParams.get('order_id')?.replace(/^eq\./,''),photoId=url.searchParams.get('id')?.replace(/^eq\./,'');
         const rows=[...photos.values()].filter(photo=>(!orderId || photo.order_id===orderId) && (!photoId || photo.id===photoId)).sort((a,b)=>a.slot-b.slot);
