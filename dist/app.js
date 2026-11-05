@@ -3,6 +3,7 @@ import {statuses,statusLabel,money,escapeHtml as e,parseAmount,nextOrderNumber,p
 import {connect,PendingIntakePhotosError} from './backend.js';
 import {mountPhotoRecovery} from './photo-recovery-view.js';
 import {workspaceIdentity,unavailableOrder} from './workspace-view.js';
+import {loadWorkspace} from './workspace-navigation.js';
 import {registerAccount,registrationConfirmation} from './registration.js';
 import {statusChanges,statusChangeMarkup,mountStatusChange} from './status-view.js';
 import {createReceiptLinks} from './receipt.js';
@@ -15,6 +16,7 @@ let backend, workshop, session, recovery = new URLSearchParams(location.search).
 let connectionPromise;
 const storageKey = 'garantiatrack.demo.v1';
 let orders = [];
+let completeOrderList = false;
 function loadDemo() {
 try { orders = JSON.parse(localStorage.getItem(storageKey)); if (!Array.isArray(orders) || !orders.length || !orders.every(order => Number.isInteger(order.number) && Array.isArray(order.events) && Array.isArray(order.photos) && statuses.some(([key])=>key===order.status))) orders = seedOrders(); } catch { orders = seedOrders(); }
 }
@@ -39,11 +41,12 @@ async function updateOrder(order,changes,isCurrent) {
   const loaded=await backend.load(workshopId);
   if(!isCurrent())return false;
   orders=loaded;
+  completeOrderList=true;
   return true;
 }
 function shell(content,section='orders') {
   const workshopName=demoMode?'Pixel Lab':workshop.name;
-  const nav = `<a class="nav-link ${section==='orders'?'active':''}" href="#/orders">${icon('grid')} Reparaciones <span class="nav-count">${orders.filter(o=>o.status!=='delivered').length}</span></a><a class="nav-link ${section==='intake'?'active':''}" href="#/intake">${icon('plus')} Recibir equipo</a><a class="nav-link" href="${demoMode?'#/track/1042':'#/orders'}">${icon('link')} ${demoMode?'Vista del cliente':'Mis órdenes'}</a>`;
+  const nav = `<a class="nav-link ${section==='orders'?'active':''}" href="#/orders">${icon('grid')} Reparaciones ${demoMode||completeOrderList?`<span class="nav-count">${orders.filter(o=>o.status!=='delivered').length}</span>`:''}</a><a class="nav-link ${section==='intake'?'active':''}" href="#/intake">${icon('plus')} Recibir equipo</a><a class="nav-link" href="${demoMode?'#/track/1042':'#/orders'}">${icon('link')} ${demoMode?'Vista del cliente':'Mis órdenes'}</a>`;
   root.innerHTML=`<div class="shell"><aside class="sidebar">${brand}<div class="caption">TU TALLER, EN ORDEN</div><div class="nav-label">ESPACIO DE TRABAJO</div>${nav}<div class="sidebar-bottom"><div class="sidebar-note"><b>Menos llamadas.<br>Más tiempo para reparar.</b><br>Comparte el seguimiento de cada equipo con tu cliente.</div><div class="profile"><span class="avatar">PL</span><div>${e(workshopName)}<small>${demoMode?'Taller de demostración':'Taller conectado'}</small></div></div></div></aside><div class="workspace"><header class="topbar">${workspaceIdentity(workshopName)}<div class="topbar-right"><span class="connection"><i class="online-dot"></i>${demoMode?'Datos en este navegador':'Supabase conectado'}</span><span class="demo-pill">${demoMode?'DEMO INTERACTIVA':'MI TALLER'}</span><button id="sign-out" class="small">${demoMode?'Salir de demo':'Cerrar sesión'}</button><span class="avatar">PL</span></div></header><main class="page" id="main" tabindex="-1">${content}<footer class="footer"><span>GarantiaTrack · Hecho para quienes reparan.</span><span>${demoMode?'Demo · Solo datos ficticios':'GarantiaTrack · Acceso autenticado'}</span></footer></main></div><nav class="mobile-nav" aria-label="Navegación principal"><a href="#/orders" class="${section==='orders'?'active':''}">${icon('grid')}Órdenes</a><a href="#/intake" class="${section==='intake'?'active':''}">${icon('plus')}Recepción</a><a href="${demoMode?'#/track/1042':'#/orders'}">${icon('link')}${demoMode?'Seguimiento':'Taller'}</a></nav></div>`;
   document.querySelector('#sign-out').onclick=signOut;
 }
@@ -91,7 +94,7 @@ function intake() {
       document.querySelector('#intake-save-state').textContent=`Orden GT-${saved.number} guardada`;
       const loaded=await backend.load(intakeWorkshop);
       if(!isCurrent())return;
-      orders=loaded;location.hash='/orders/'+saved.number;notify('Orden guardada en el taller.');
+      orders=loaded;completeOrderList=true;location.hash='/orders/'+saved.number;notify('Orden guardada en el taller.');
     }else if(persist([...orders,order])){location.hash=`/orders/${order.number}`;notify(`Orden GT-${order.number} creada. Ya puedes compartir su seguimiento.`);} }
     catch(error){if(isCurrent()){
       if(error instanceof PendingIntakePhotosError){
@@ -172,7 +175,7 @@ async function initializeConnection(){
       if(event==='PASSWORD_RECOVERY')recovery=true;
       if(changed||event==='PASSWORD_RECOVERY'){
         receiptLinks.clear();
-        orders=[];workshop=null;renderVersion++;
+        orders=[];completeOrderList=false;workshop=null;renderVersion++;
         setTimeout(()=>{if(!demoMode)render();},0);
       }
     });
@@ -182,7 +185,7 @@ async function initializeConnection(){
 async function signOut(){
   if(!demoMode){const {error}=await backend.client.auth.signOut({scope:'local'});if(error){notify(friendly(error));return;}}
   receiptLinks.clear();
-  sessionStorage.removeItem('garantiatrack.mode');demoMode=false;session=null;workshop=null;orders=[];recovery=false;
+  sessionStorage.removeItem('garantiatrack.mode');demoMode=false;session=null;workshop=null;orders=[];completeOrderList=false;recovery=false;
   clearTimeout(toastTimer);document.querySelector('#toast').textContent='';document.querySelector('#toast').classList.remove('visible');
   location.hash='/orders';render();
 }
@@ -267,7 +270,11 @@ async function render(){
   const version=++renderVersion,route=location.hash.slice(1)||'/orders';
   if(demoMode && !route.startsWith('/tracking/')){renderScreen();return;}
   if(!configured){accessScreen();return;}
-  root.innerHTML='<main class="tracker-main" id="main"><h1>Conectando con tu taller…</h1><p role="status">Comprobando acceso.</p></main>';
+  const internal=!route.startsWith('/tracking/');
+  if(session&&workshop&&!recovery&&internal&&root.querySelector('.shell')){
+    const label=route==='/intake'?'Abriendo recepción…':route==='/orders'?'Actualizando órdenes…':'Abriendo orden…';
+    shell(`<section aria-busy="true"><h1>${label}</h1><p role="status">Un momento, por favor.</p></section>`,route==='/intake'?'intake':'orders');
+  }else root.innerHTML='<main class="tracker-main" id="main"><h1>Conectando con tu taller…</h1><p role="status">Comprobando acceso.</p></main>';
   try{
     await initializeConnection();if(version!==renderVersion)return;
     if(/^\/tracking\/[a-f0-9]{64}$/.test(route)){
@@ -282,14 +289,18 @@ async function render(){
     }
     if(!session){accessScreen();return;}
     if(recovery){accessScreen('recovery');return;}
-    workshop=await backend.workshop();if(version!==renderVersion)return;
-    if(!workshop){onboarding();return;}
-    const loaded=await backend.load(workshop.id);if(version!==renderVersion)return;orders=loaded;
+    const loaded=await loadWorkspace(backend,route,workshop?.id,()=>version===renderVersion);
+    if(!loaded)return;
+    if(workshop?.id!==loaded.workshop?.id){orders=[];completeOrderList=false;receiptLinks.clear();}
+    workshop=loaded.workshop;
+    if(!workshop){orders=[];completeOrderList=false;onboarding();return;}
+    if(loaded.request.kind==='list'){orders=loaded.orders;completeOrderList=true;}
+    else if(loaded.request.kind==='order')orders=[...orders.filter(order=>order.number!==loaded.request.number),...loaded.orders];
     if(/^\/track\//.test(route)){notFound(true);return;}
     renderScreen();
   }catch(error){
     if(version!==renderVersion)return;
-    orders=[];root.innerHTML=`<main class="tracker-main" id="main"><h1>No pudimos conectar.</h1><p class="error">${e(friendly(error))}</p><button id="retry">Reintentar</button> <button id="exit">${session?'Cerrar sesión':'Volver al acceso'}</button></main>`;
+    orders=[];completeOrderList=false;workshop=null;receiptLinks.clear();root.innerHTML=`<main class="tracker-main" id="main"><h1>No pudimos conectar.</h1><p class="error">${e(friendly(error))}</p><button id="retry">Reintentar</button> <button id="exit">${session?'Cerrar sesión':'Volver al acceso'}</button></main>`;
     document.querySelector('#retry').onclick=()=>render();document.querySelector('#exit').onclick=()=>session?signOut():accessScreen();
   }
 }

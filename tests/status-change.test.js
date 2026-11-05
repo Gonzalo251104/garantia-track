@@ -94,22 +94,22 @@ test('real SDK status updates use the existing versioned RPC and preserve saved 
   const fixture = await startPhotoRetryFixture(); t.after(() => fixture.close());
   const backend = await connect({ supabaseUrl: fixture.origin, supabaseKey: 'sb_publishable_local_fixture_only' },
     (url, key) => createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } }));
-  let saved = await backend.create('fixture-workshop', 'status-request', { customer: 'Fictional operator' });
+  let saved = await backend.create('00000000-0000-4000-8000-000000000001', 'status-request', { customer: 'Fictional operator' });
   saved = await backend.update(saved, { status: 'received', quote: 8500, notes: 'Saved note', message: 'Saved public message' });
   const stale = { ...saved };
   for (const status of ['repairing', 'ready', 'delivered', 'diagnosing', 'awaiting_approval']) {
     saved = await backend.update(saved, statusChanges(saved, status));
-    const [fresh] = await backend.load('fixture-workshop');
+    const [fresh] = await backend.load('00000000-0000-4000-8000-000000000001');
     assert.equal(fresh.status, status);
     assert.equal(fresh.quote, 8500); assert.equal(fresh.notes, 'Saved note'); assert.equal(fresh.message, 'Saved public message');
   }
   assert.equal(fixture.summary().initialEvents, 1);
-  assert.equal((await backend.load('fixture-workshop'))[0].events.length, 6);
+  assert.equal((await backend.load('00000000-0000-4000-8000-000000000001'))[0].events.length, 6);
   await assert.rejects(backend.update(stale, statusChanges(stale, 'ready')), failure => failure.code === '40001');
   assert.equal(fixture.summary().initialEvents, 1);
-  const [fresh] = await backend.load('fixture-workshop');
+  const [fresh] = await backend.load('00000000-0000-4000-8000-000000000001');
   assert.equal(fresh.status, 'awaiting_approval');
   assert.equal(fresh.events.length, 6);
   await backend.update(fresh, statusChanges(fresh, fresh.status));
-  assert.equal((await backend.load('fixture-workshop'))[0].events.length, 6);
+  assert.equal((await backend.load('00000000-0000-4000-8000-000000000001'))[0].events.length, 6);
 });
