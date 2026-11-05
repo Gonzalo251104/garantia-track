@@ -6,13 +6,15 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(fileURLToPath(new URL('../../dist/', import.meta.url)));
-const workshop = { id: '00000000-0000-4000-8000-000000000001', name: 'Photo Retry Fixture' };
+const initialWorkshop = { id: '00000000-0000-4000-8000-000000000001', name: 'Photo Retry Fixture' };
 const user = { id: '00000000-0000-4000-8000-000000000002', aud: 'authenticated', role: 'authenticated', email: 'operator@example.test' };
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' };
 
-export async function startPhotoRetryFixture(port = 0, {failures=1,readDelayMs=0} = {}) {
+export async function startPhotoRetryFixture(port = 0, {failures=1,readDelayMs=0,workshopRole='owner'} = {}) {
   if(!Number.isInteger(failures) || failures<0 || failures>5)throw new Error('Fixture failures must be between 0 and 5.');
   if(!Number.isInteger(readDelayMs)||readDelayMs<0||readDelayMs>5000)throw new Error('Fixture read delay must be between 0 and 5000 ms.');
+  if(!['owner','technician'].includes(workshopRole))throw new Error('Unsupported fixture workshop role.');
+  const workshop={...initialWorkshop,owner_id:workshopRole==='owner'?user.id:'00000000-0000-4000-8000-000000000009'};
   const orders = new Map(), photos = new Map(), objects = new Map();
   const navigationReads=[];
   const calls = { requests: [], reservations: [], uploadAttempts: 0, failedUploads: 0, imageReads: 0 };
@@ -66,6 +68,14 @@ export async function startPhotoRetryFixture(port = 0, {failures=1,readDelayMs=0
       }
       if (route.startsWith('/rest/v1/rpc/')) {
         const args = JSON.parse(body.toString() || '{}'), name = route.split('/').at(-1);
+        if (name === 'rename_workshop') {
+          if(workshopRole!=='owner'||args.p_workshop!==workshop.id)return json(response,403,{code:'42501',message:'Fixture owner access required'});
+          const clean=typeof args.p_name==='string'?args.p_name.trim():'';
+          if([...clean].length<2||[...clean].length>80||/[\u0000-\u001f\u007f]/.test(args.p_name))return json(response,400,{code:'23514',message:'Fixture invalid workshop name'});
+          if(clean===workshop.name)return json(response,200,workshop);
+          if(args.p_previous_name!==workshop.name)return json(response,409,{code:'40001',message:'Fixture workshop name changed'});
+          workshop.name=clean;return json(response,200,workshop);
+        }
         if (name === 'create_repair_order') {
           calls.requests.push(args.p_request);
           if (!orders.has(args.p_request)) {

@@ -4,6 +4,7 @@ import {connect,PendingIntakePhotosError} from './backend.js';
 import {mountPhotoRecovery} from './photo-recovery-view.js';
 import {workspaceIdentity,unavailableOrder} from './workspace-view.js';
 import {loadWorkspace} from './workspace-navigation.js';
+import {workshopSettingsMarkup,mountWorkshopSettings} from './workshop-settings.js';
 import {registerAccount,registrationConfirmation} from './registration.js';
 import {statusChanges,statusChangeMarkup,mountStatusChange} from './status-view.js';
 import {createReceiptLinks} from './receipt.js';
@@ -46,9 +47,22 @@ async function updateOrder(order,changes,isCurrent) {
 }
 function shell(content,section='orders') {
   const workshopName=demoMode?'Pixel Lab':workshop.name;
-  const nav = `<a class="nav-link ${section==='orders'?'active':''}" href="#/orders">${icon('grid')} Reparaciones ${demoMode||completeOrderList?`<span class="nav-count">${orders.filter(o=>o.status!=='delivered').length}</span>`:''}</a><a class="nav-link ${section==='intake'?'active':''}" href="#/intake">${icon('plus')} Recibir equipo</a><a class="nav-link" href="${demoMode?'#/track/1042':'#/orders'}">${icon('link')} ${demoMode?'Vista del cliente':'Mis órdenes'}</a>`;
-  root.innerHTML=`<div class="shell"><aside class="sidebar">${brand}<div class="caption">TU TALLER, EN ORDEN</div><div class="nav-label">ESPACIO DE TRABAJO</div>${nav}<div class="sidebar-bottom"><div class="sidebar-note"><b>Menos llamadas.<br>Más tiempo para reparar.</b><br>Comparte el seguimiento de cada equipo con tu cliente.</div><div class="profile"><span class="avatar">PL</span><div>${e(workshopName)}<small>${demoMode?'Taller de demostración':'Taller conectado'}</small></div></div></div></aside><div class="workspace"><header class="topbar">${workspaceIdentity(workshopName)}<div class="topbar-right"><span class="connection"><i class="online-dot"></i>${demoMode?'Datos en este navegador':'Supabase conectado'}</span><span class="demo-pill">${demoMode?'DEMO INTERACTIVA':'MI TALLER'}</span><button id="sign-out" class="small">${demoMode?'Salir de demo':'Cerrar sesión'}</button><span class="avatar">PL</span></div></header><main class="page" id="main" tabindex="-1">${content}<footer class="footer"><span>GarantiaTrack · Hecho para quienes reparan.</span><span>${demoMode?'Demo · Solo datos ficticios':'GarantiaTrack · Acceso autenticado'}</span></footer></main></div><nav class="mobile-nav" aria-label="Navegación principal"><a href="#/orders" class="${section==='orders'?'active':''}">${icon('grid')}Órdenes</a><a href="#/intake" class="${section==='intake'?'active':''}">${icon('plus')}Recepción</a><a href="${demoMode?'#/track/1042':'#/orders'}">${icon('link')}${demoMode?'Seguimiento':'Taller'}</a></nav></div>`;
+  const nav = `<a class="nav-link ${section==='orders'?'active':''}" href="#/orders">${icon('grid')} Reparaciones ${demoMode||completeOrderList?`<span class="nav-count">${orders.filter(o=>o.status!=='delivered').length}</span>`:''}</a><a class="nav-link ${section==='intake'?'active':''}" href="#/intake">${icon('plus')} Recibir equipo</a><a class="nav-link ${section==='workshop'?'active':''}" href="${demoMode?'#/track/1042':'#/workshop'}">${icon('link')} ${demoMode?'Vista del cliente':'Taller'}</a>`;
+  root.innerHTML=`<div class="shell"><aside class="sidebar">${brand}<div class="caption">TU TALLER, EN ORDEN</div><div class="nav-label">ESPACIO DE TRABAJO</div>${nav}<div class="sidebar-bottom"><div class="sidebar-note"><b>Menos llamadas.<br>Más tiempo para reparar.</b><br>Comparte el seguimiento de cada equipo con tu cliente.</div><div class="profile"><span class="avatar">PL</span><div><span class="profile-workshop-name">${e(workshopName)}</span><small>${demoMode?'Taller de demostración':'Taller conectado'}</small></div></div></div></aside><div class="workspace"><header class="topbar">${workspaceIdentity(workshopName)}<div class="topbar-right"><span class="connection"><i class="online-dot"></i>${demoMode?'Datos en este navegador':'Supabase conectado'}</span><span class="demo-pill">${demoMode?'DEMO INTERACTIVA':'MI TALLER'}</span><button id="sign-out" class="small">${demoMode?'Salir de demo':'Cerrar sesión'}</button><span class="avatar">PL</span></div></header><main class="page" id="main" tabindex="-1">${content}<footer class="footer"><span>GarantiaTrack · Hecho para quienes reparan.</span><span>${demoMode?'Demo · Solo datos ficticios':'GarantiaTrack · Acceso autenticado'}</span></footer></main></div><nav class="mobile-nav" aria-label="Navegación principal"><a href="#/orders" class="${section==='orders'?'active':''}">${icon('grid')}Órdenes</a><a href="#/intake" class="${section==='intake'?'active':''}">${icon('plus')}Recepción</a><a href="${demoMode?'#/track/1042':'#/workshop'}" class="${section==='workshop'?'active':''}">${icon('link')}${demoMode?'Seguimiento':'Taller'}</a></nav></div>`;
   document.querySelector('#sign-out').onclick=signOut;
+}
+function workshopSettings() {
+  const current=demoMode?{id:'demo',name:'Pixel Lab'}:workshop;
+  const canRename=!demoMode&&current.owner_id===session?.user?.id;
+  shell(workshopSettingsMarkup(current,{canRename,demo:demoMode}),'workshop');
+  const form=document.querySelector('#workshop-settings-form');
+  const settingsUser=session?.user?.id,settingsWorkshop=workshop?.id,settingsDemo=demoMode;
+  const isCurrent=()=>form.isConnected&&demoMode===settingsDemo&&(settingsDemo||(session?.user?.id===settingsUser&&workshop?.id===settingsWorkshop));
+  mountWorkshopSettings({form,workshop:current,canRename,isCurrent,friendly,save:(target,name)=>backend.renameWorkshop(target,name),onSaved:saved=>{
+    workshop={...workshop,name:saved.name};
+    document.querySelector('.breadcrumb').outerHTML=workspaceIdentity(workshop.name);
+    document.querySelector('.profile-workshop-name').textContent=workshop.name;
+  }});
 }
 function dashboard() {
   const open=orders.filter(o=>o.status!=='delivered');
@@ -149,7 +163,7 @@ function ticket(number){
   const userId=session?.user?.id,workshopId=workshop?.id,ticketDemo=demoMode,version=renderVersion;
   showReceipt({root,order,workshopName:demoMode?'Pixel Lab':workshop.name,demo:demoMode,links:receiptLinks,backend,applicationUrl:config.publicAppUrl?`${config.publicAppUrl}/`:`${location.origin}${location.pathname}`,isCurrent:()=>renderVersion===version && demoMode===ticketDemo && (ticketDemo || (session?.user?.id===userId && workshop?.id===workshopId))});
 }
-function renderScreen(){const route=location.hash.slice(1)||'/orders';if(route==='/orders')dashboard();else if(route==='/intake')intake();else if(/^\/orders\/\d+$/.test(route))detail(Number(route.split('/').at(-1)));else if(/^\/ticket\/\d+$/.test(route))ticket(Number(route.split('/').at(-1)));else if(/^\/track\/\d+$/.test(route))tracking(Number(route.split('/').at(-1)));else notFound();window.scrollTo(0,0);}
+function renderScreen(){const route=location.hash.slice(1)||'/orders';if(route==='/orders')dashboard();else if(route==='/intake')intake();else if(route==='/workshop')workshopSettings();else if(/^\/orders\/\d+$/.test(route))detail(Number(route.split('/').at(-1)));else if(/^\/ticket\/\d+$/.test(route))ticket(Number(route.split('/').at(-1)));else if(/^\/track\/\d+$/.test(route))tracking(Number(route.split('/').at(-1)));else notFound();window.scrollTo(0,0);}
 window.addEventListener('hashchange',()=>render());
 document.querySelector('.skip-link').addEventListener('click',event=>{event.preventDefault();document.querySelector('#main')?.focus();});
 window.addEventListener('storage',event=>{if(event.key===storageKey){notify('Los datos cambiaron en otra pestaña. Recarga antes de editar.');}});
@@ -272,8 +286,8 @@ async function render(){
   if(!configured){accessScreen();return;}
   const internal=!route.startsWith('/tracking/');
   if(session&&workshop&&!recovery&&internal&&root.querySelector('.shell')){
-    const label=route==='/intake'?'Abriendo recepción…':route==='/orders'?'Actualizando órdenes…':'Abriendo orden…';
-    shell(`<section aria-busy="true"><h1>${label}</h1><p role="status">Un momento, por favor.</p></section>`,route==='/intake'?'intake':'orders');
+    const label=route==='/intake'?'Abriendo recepción…':route==='/orders'?'Actualizando órdenes…':route==='/workshop'?'Abriendo taller…':'Abriendo orden…';
+    shell(`<section aria-busy="true"><h1>${label}</h1><p role="status">Un momento, por favor.</p></section>`,route==='/intake'?'intake':route==='/workshop'?'workshop':'orders');
   }else root.innerHTML='<main class="tracker-main" id="main"><h1>Conectando con tu taller…</h1><p role="status">Comprobando acceso.</p></main>';
   try{
     await initializeConnection();if(version!==renderVersion)return;

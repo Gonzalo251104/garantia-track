@@ -39,10 +39,11 @@ export async function connect(config,clientFactory) {
   const api = {
     client,
     async workshop(){
-      const {data,error}=await client.from('workshops').select('id,name').order('created_at').limit(1).maybeSingle();
+      const {data,error}=await client.from('workshops').select('id,name,owner_id').order('created_at').limit(1).maybeSingle();
       if(error)throw error;return data;
     },
     createWorkshop:name=>rpc('create_workshop',{p_name:name}),
+    renameWorkshop:async(workshop,name)=>singleRow(await rpc('rename_workshop',{p_workshop:workshop.id,p_previous_name:workshop.name,p_name:name})),
     async load(workshop){
       const {data,error}=await client.from('repair_orders').select('*,order_events(status,at),order_photos(id,path,state,slot)').eq('workshop_id',workshop).order('number',{ascending:false}).limit(500);
       if(error)throw error;return data.map(toOrder);
