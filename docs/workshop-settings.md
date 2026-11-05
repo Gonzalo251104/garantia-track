@@ -14,6 +14,8 @@ The new name is used by the workspace, live customer tracking and tickets prepar
 
 Apply `supabase/migrations/20261105031213_workshop_name_settings.sql` through the reviewed release process **before publishing the new frontend**. It was generated with the official CLI's `migration new` command (temporary CLI 3.0.0; no project dependency update). Preparation did not apply DDL or rename a production workshop.
 
+PR #50 was merged into develop on 2026-11-05 at `1c12da8210602a880cdbd506fc1c5d3b6b8888c0`; the feature is included in the [v0.8.0 release candidate](releases/v0.8.0.md). Production remains on v0.7.1 until the separate main release, production migration and Sites steps complete.
+
 - `public.rename_workshop(uuid,text,text)` is an invoker wrapper exposed to the Data API. The security-definer implementation lives in `private.rename_workshop`; both have an empty `search_path` and fully qualified application references.
 - Execute is revoked from PUBLIC/anon and granted only to authenticated. No UPDATE/INSERT/DELETE table grant or RLS policy is added. The existing workshop/member RLS remains enabled.
 - The implementation requires a non-null authenticated identity, matching `workshops.owner_id` **and** a current owner membership for that workshop. Missing/foreign workshops and insufficient roles return the same permission error. User-editable metadata is not used for authorization.
@@ -33,6 +35,18 @@ The actual SDK over an isolated loopback HTTP fixture checks save/reload, invali
 The actual app was inspected in the desktop in-app browser with isolated owner/technician fixtures. The owner saved an accented name containing an ampersand; confirmation, input, header and sidebar updated. A second tab with the previous name was denied a conflicting rename, retained its draft and showed the current saved name after reload. Mobile Orders → Taller navigation selected the correct tab and recovered the saved name; full reload also preserved it. At an observed 390 × 844 viewport, the field font was 16 px, the save target was 48 px high and there was no horizontal overflow. The technician view displayed the ownership explanation and no editable name/save control. Preview tabs were closed, temporary viewport changes reset and the owned loopback servers stopped after inspection. A follow-up unit regression verifies focus returns to the name field after Enter/button saves without stealing focus that moved elsewhere. These are local responsive/contract results, not hosted or physical-device acceptance.
 
 ## Release and pilot acceptance
+
+### Hosted-lab migration rehearsal — 2026-11-05
+
+The reviewed migration was applied only to the isolated lab `rtmswfvohwlklnswisst` through the migration tool. Its server-assigned history version is `20261105120834`, name `workshop_name_settings`; the source file remains `20261105031213_workshop_name_settings.sql`. The canonical Git blob SHA-256 is `231c241cd9607700979d1f51028d2d9058c4bb8c2e6f21870ca5553ab807546d`. Both installed function bodies match the reviewed source after line-ending/outer-whitespace normalization.
+
+A transaction using the existing lab owner fixture exercised the hosted function under SQL `authenticated`/`anon` roles and simulated identity claims. Owner save and identical-target retry succeeded. Stale/invalid names, nonmember/missing identity, technician role, anonymous execution and direct table UPDATE were denied. Workshop/member/order/event/photo/link/Vault rows were compared internally without returning their contents; the original fixture values were restored, asserted equal and the entire test transaction rolled back. Only the additive function migration/history entry persists. This did not create an Auth account or test actual authenticated HTTP sessions.
+
+Postflight confirmed an invoker public wrapper, private definer implementation, empty search paths, no PUBLIC/anon execute, authenticated execute, enabled workshop/member RLS and no direct authenticated UPDATE grant. Security advisors returned the same four baseline notices with no new object-level findings. A separate production read-only preflight confirmed that its rename functions still do not exist and its RLS/table-write boundary remains unchanged. Production DDL and name changes were not performed.
+
+The migration tool assigns its own history timestamp. Record this source/history mapping during production publication; inspect existing history/definitions before applying and do not blindly replay it or run a CLI push that treats timestamp differences as missing changes.
+
+### Publication checklist
 
 1. Review the feature PR into develop with current-head CI. Validate the additive migration in the isolated lab before production application; preserve existing lab recovery evidence. Publish only approved source through the normal release/main/Sites flow. Keep draft recovery PR #26 excluded.
 2. Verify the migration's function grants/security settings and unchanged workshop/member RLS after application. Check advisors for new findings, comparing against the existing baseline rather than attributing old findings to this change.
