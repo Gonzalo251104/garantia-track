@@ -5,6 +5,7 @@ import {mountPhotoRecovery} from './photo-recovery-view.js';
 import {orderPhotoThumbnail,createOrderPhotoViewer} from './photo-viewer.js';
 import {workspaceIdentity,unavailableOrder} from './workspace-view.js';
 import {loadWorkspace} from './workspace-navigation.js';
+import {createWorkspaceTransition} from './workspace-transition.js';
 import {workshopSettingsMarkup,mountWorkshopSettings} from './workshop-settings.js';
 import {registerAccount,registrationConfirmation} from './registration.js';
 import {statusChanges,statusChangeMarkup,mountStatusChange} from './status-view.js';
@@ -25,6 +26,7 @@ try { orders = JSON.parse(localStorage.getItem(storageKey)); if (!Array.isArray(
 if(demoMode) loadDemo();
 let activeFilter = 'all', search = '', toastTimer;
 const root = document.querySelector('#app');
+const workspaceTransition=createWorkspaceTransition(root);
 let photoViewerVersion=-1;
 const photoViewer=createOrderPhotoViewer({root,isCurrent:()=>photoViewerVersion===renderVersion});
 const icon = name => {
@@ -49,6 +51,7 @@ async function updateOrder(order,changes,isCurrent) {
   return true;
 }
 function shell(content,section='orders') {
+  workspaceTransition.clear();
   photoViewer.close();
   const workshopName=demoMode?'Pixel Lab':workshop.name;
   const nav = `<a class="nav-link ${section==='orders'?'active':''}" href="#/orders">${icon('grid')} Reparaciones ${demoMode||completeOrderList?`<span class="nav-count">${orders.filter(o=>o.status!=='delivered').length}</span>`:''}</a><a class="nav-link ${section==='intake'?'active':''}" href="#/intake">${icon('plus')} Recibir equipo</a><a class="nav-link ${section==='workshop'?'active':''}" href="${demoMode?'#/track/1042':'#/workshop'}">${icon('link')} ${demoMode?'Vista del cliente':'Taller'}</a>`;
@@ -60,8 +63,8 @@ function workshopSettings() {
   const canRename=!demoMode&&current.owner_id===session?.user?.id;
   shell(workshopSettingsMarkup(current,{canRename,demo:demoMode}),'workshop');
   const form=document.querySelector('#workshop-settings-form');
-  const settingsUser=session?.user?.id,settingsWorkshop=workshop?.id,settingsDemo=demoMode;
-  const isCurrent=()=>form.isConnected&&demoMode===settingsDemo&&(settingsDemo||(session?.user?.id===settingsUser&&workshop?.id===settingsWorkshop));
+  const settingsUser=session?.user?.id,settingsWorkshop=workshop?.id,settingsDemo=demoMode,settingsVersion=renderVersion;
+  const isCurrent=()=>renderVersion===settingsVersion&&form.isConnected&&demoMode===settingsDemo&&(settingsDemo||(session?.user?.id===settingsUser&&workshop?.id===settingsWorkshop));
   mountWorkshopSettings({form,workshop:current,canRename,isCurrent,friendly,save:(target,name)=>backend.renameWorkshop(target,name),onSaved:saved=>{
     workshop={...workshop,name:saved.name};
     document.querySelector('.breadcrumb').outerHTML=workspaceIdentity(workshop.name);
@@ -88,8 +91,8 @@ function intake() {
   const requestId=crypto.randomUUID(), photoIds=new Map();
   shell(`<a class="back" href="#/orders">← Volver a reparaciones</a><div class="eyebrow">NUEVA RECEPCIÓN</div><div class="heading-row intake-heading"><div><h1>Un equipo en buenas manos.</h1><p class="subtitle">Deja constancia de cómo llega. El resto empieza aquí.</p></div><span id="intake-save-state" class="badge" role="status">Borrador sin guardar</span></div><div class="form-layout"><form id="intake-form" class="panel"><section class="section"><div class="section-title"><span class="step-number">01</span><h2>¿Quién lo trae?</h2></div><div class="field-grid"><label class="field">Nombre del cliente *<input name="customer" autocomplete="off" maxlength="80" required placeholder="Ej. Alex de Prueba"></label><label class="field">Celular de contacto *<input name="phone" type="tel" inputmode="numeric" maxlength="9" pattern="9[0-9]{8}" required placeholder="900000006"><span class="hint">Usa un número ficticio de 9 dígitos.</span></label></div></section><section class="section"><div class="section-title"><span class="step-number">02</span><h2>Conozcamos el equipo</h2></div><div class="field-grid"><div class="field full">Tipo de equipo<div class="choices"><label class="choice"><input type="radio" name="device" value="console" checked>${icon('console')} Consola</label><label class="choice"><input type="radio" name="device" value="controller">${icon('controller')} Mando</label></div></div><label class="field">Modelo *<input name="model" maxlength="100" required placeholder="Ej. PlayStation 5 · Digital" list="models"><datalist id="models"><option value="PlayStation 5 · Digital"><option value="PlayStation 4 · Slim"><option value="Nintendo Switch · OLED"><option value="Xbox Series S"><option value="DualSense · Blanco"><option value="Xbox Wireless · Carbon Black"></datalist></label><label class="field">Número de serie <span class="hint">Opcional</span><input name="serial" maxlength="80" placeholder="Ej. DEMO-PS5-046"></label><label class="field full">Falla reportada por el cliente *<textarea name="issue" maxlength="1500" required placeholder="¿Qué está pasando y desde cuándo?"></textarea></label></div></section><section class="section"><div class="section-title"><span class="step-number">03</span><h2>Así lo recibimos</h2></div><div class="field-grid"><div class="field full">Accesorios recibidos<div class="choices">${['Cable de poder','Cable HDMI','Cable USB','Base','Estuche'].map(label=>`<label class="choice"><input type="checkbox" name="accessories" value="${label}">${label}</label>`).join('')}</div></div><label class="field full">Estado físico<textarea name="condition" maxlength="1500" placeholder="Rayones, golpes, sellos o piezas faltantes…"></textarea></label><div class="field full"><label class="upload">${icon('plus')}<br>Fotos del estado de ingreso<input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" multiple aria-label="Añadir fotos del equipo"></label><span class="hint">Hasta 5 fotos JPG, PNG o WebP de 10 MB. Se reducen antes de guardarse localmente.</span><div id="photo-preview" class="photo-grid"></div></div></div></section><div class="section"><p class="error" id="form-error" role="alert"></p><p class="hint">* Campos obligatorios. Este prototipo es de prueba: no ingreses información personal ni fotos sensibles.</p></div><div class="form-actions"><a class="quiet" href="#/orders">Cancelar</a><button class="primary" type="submit">Crear orden de recepción →</button></div></form><aside><div class="aside-card"><div class="eyebrow">UNA BUENA RECEPCIÓN</div><h2 style="margin-top:12px">Los detalles importan.</h2><p>Un registro claro evita dudas al entregar el equipo.</p><ul class="check-list"><li>Confirma el modelo y la serie</li><li>Revisa los accesorios juntos</li><li>Documenta marcas y golpes</li><li>Comparte el seguimiento</li></ul><p>Al guardar se asignará el número de orden y podrás abrir la vista del cliente.</p></div></aside></div>`,'intake');
   const form=document.querySelector('#intake-form');
-  const intakeUser=session?.user?.id, intakeWorkshop=workshop?.id, intakeDemo=demoMode;
-  const isCurrent=()=>form.isConnected && demoMode===intakeDemo && (intakeDemo || (session?.user?.id===intakeUser && workshop?.id===intakeWorkshop));
+  const intakeUser=session?.user?.id, intakeWorkshop=workshop?.id, intakeDemo=demoMode,intakeVersion=renderVersion;
+  const isCurrent=()=>renderVersion===intakeVersion && form.isConnected && demoMode===intakeDemo && (intakeDemo || (session?.user?.id===intakeUser && workshop?.id===intakeWorkshop));
   if(!demoMode){
     form.querySelector('[name=phone]').nextElementSibling.textContent='Número de contacto del cliente.';
     form.querySelector('.upload').parentElement.querySelector('.hint').textContent='Hasta 5 fotos. Se comprimen y se guardan en un bucket privado.';
@@ -104,7 +107,7 @@ function intake() {
   };
   form.addEventListener('click',event=>{const button=event.target.closest('[data-remove-photo]');if(button){photos.splice(Number(button.dataset.removePhoto),1);button.parentElement.remove();form.querySelectorAll('[data-remove-photo]').forEach((b,i)=>b.dataset.removePhoto=i);}});
   form.onsubmit=async event=>{
-    event.preventDefault(); const button=form.querySelector('[type=submit]');button.disabled=true; const data=new FormData(form), values=Object.fromEntries(data.entries());
+    event.preventDefault();if(!isCurrent())return; const button=form.querySelector('[type=submit]');button.disabled=true; const data=new FormData(form), values=Object.fromEntries(data.entries());
     try {validateIntake(values); const now=new Date().toISOString(); const order={number:nextOrderNumber(orders),customer:values.customer.trim(),phone:values.phone,device:values.device,model:values.model.trim(),serial:values.serial.trim(),issue:values.issue.trim(),condition:values.condition.trim(),accessories:data.getAll('accessories'),status:'received',quote:0,notes:'',message:'Recibimos tu equipo. Pronto iniciaremos la revisión.',created:now,photos:[...photos],events:[{status:'received',at:now}]}; if(!demoMode){
       const items=photos.map(src=>{if(!photoIds.has(src))photoIds.set(src,crypto.randomUUID());return {src,id:photoIds.get(src)};});
       const saved=await backend.receive(intakeWorkshop,requestId,order,items);
@@ -138,10 +141,10 @@ function detail(number) {
   document.querySelector('#print-order').onclick=()=>{location.hash=`/ticket/${number}`;};
   if(!demoMode) enhanceDetail(order);
   else document.querySelector('#copy-link').onclick=async()=>{try{await navigator.clipboard.writeText(`${location.href.split('#')[0]}#/track/${number}`);notify('Enlace copiado. Solo contiene datos en este navegador.');}catch{notify('No se pudo copiar. Abre la vista del cliente y copia la dirección.');}};
-  const detailForm=document.querySelector('#update-form'), statusContainer=document.querySelector('#status-editor'), detailUser=session?.user?.id, detailWorkshop=workshop?.id, detailDemo=demoMode;
+  const detailForm=document.querySelector('#update-form'), statusContainer=document.querySelector('#status-editor'), detailUser=session?.user?.id, detailWorkshop=workshop?.id, detailDemo=demoMode,detailVersion=renderVersion;
   let saving=false;
   const setSaving=value=>{saving=value;detailForm.querySelector('[type=submit]').disabled=value;statusContainer.querySelector('fieldset').disabled=value;statusContainer.querySelector('[type=submit]').disabled=value;};
-  const isCurrent=()=>detailForm.isConnected && demoMode===detailDemo && (detailDemo || (session?.user?.id===detailUser && workshop?.id===detailWorkshop));
+  const isCurrent=()=>renderVersion===detailVersion && detailForm.isConnected && demoMode===detailDemo && (detailDemo || (session?.user?.id===detailUser && workshop?.id===detailWorkshop));
   mountStatusChange({container:statusContainer,order,isCurrent,isBusy:()=>saving,setBusy:setSaving,friendly,save:async status=>{
     if(!await updateOrder(order,statusChanges(order,status),isCurrent))return null;
     const saved=orders.find(item=>item.number===order.number);
@@ -194,6 +197,7 @@ async function initializeConnection(){
       if(event==='PASSWORD_RECOVERY')recovery=true;
       if(changed||event==='PASSWORD_RECOVERY'){
         photoViewer.close();
+        workspaceTransition.clear();root.replaceChildren();
         receiptLinks.clear();
         orders=[];completeOrderList=false;workshop=null;renderVersion++;
         setTimeout(()=>{if(!demoMode)render();},0);
@@ -249,8 +253,8 @@ function onboarding(){
 }
 function enhanceDetail(order){
   const actions=document.querySelector('.detail-layout aside .actions-stack'),viewer=actions.querySelector('a');
-  const userId=session?.user?.id,workshopId=workshop?.id,generation=receiptLinks.generation();
-  const current=()=>actions.isConnected && !demoMode && session?.user?.id===userId && workshop?.id===workshopId && receiptLinks.generation()===generation;
+  const userId=session?.user?.id,workshopId=workshop?.id,generation=receiptLinks.generation(),detailVersion=renderVersion;
+  const current=()=>renderVersion===detailVersion && actions.isConnected && !demoMode && session?.user?.id===userId && workshop?.id===workshopId && receiptLinks.generation()===generation;
   viewer.hidden=true;
   actions.querySelector('#copy-link').textContent='Recuperar enlace del taller';
   actions.insertAdjacentHTML('beforeend','<input id="tracking-url" readonly aria-label="Enlace privado de seguimiento" hidden><button id="renew-link" class="quiet" hidden>Renovar enlace / QR</button><button id="revoke-link" class="quiet">Revocar enlace anterior</button>');
@@ -261,7 +265,7 @@ function enhanceDetail(order){
   display.insertAdjacentHTML('afterend','<div id="cloud-photos" class="photo-grid" aria-live="polite"></div><div id="photo-recovery" class="photo-recovery"></div>');
   const photoContainer=document.querySelector('#cloud-photos'),recoveryContainer=document.querySelector('#photo-recovery');
   const emptyNote=display.parentElement.querySelector('.hint');let photoVersion=0;
-  const photoCurrent=()=>photoContainer.isConnected && !demoMode && session?.user?.id===userId && workshop?.id===workshopId;
+  const photoCurrent=()=>renderVersion===detailVersion && photoContainer.isConnected && !demoMode && session?.user?.id===userId && workshop?.id===workshopId;
   const loadPhotos=()=>{
     const version=++photoVersion;
     backend.photos(order).then(urls=>{if(photoCurrent() && photoVersion===version){photoViewer.close();photoContainer.innerHTML=urls.map((src,index)=>orderPhotoThumbnail(src,index,{privatePhoto:true})).join('');}}).catch(()=>{if(photoCurrent() && photoVersion===version){photoViewer.close();photoContainer.textContent='No se pudieron cargar las fotos. Recarga para reintentar.';}});
@@ -293,10 +297,8 @@ async function render(){
   if(demoMode && !route.startsWith('/tracking/')){renderScreen();return;}
   if(!configured){accessScreen();return;}
   const internal=!route.startsWith('/tracking/');
-  if(session&&workshop&&!recovery&&internal&&root.querySelector('.shell')){
-    const label=route==='/intake'?'Abriendo recepción…':route==='/orders'?'Actualizando órdenes…':route==='/workshop'?'Abriendo taller…':'Abriendo orden…';
-    shell(`<section aria-busy="true"><h1>${label}</h1><p role="status">Un momento, por favor.</p></section>`,route==='/intake'?'intake':route==='/workshop'?'workshop':'orders');
-  }else root.innerHTML='<main class="tracker-main" id="main"><h1>Conectando con tu taller…</h1><p role="status">Comprobando acceso.</p></main>';
+  const transitioning=Boolean(session&&workshop&&!recovery&&internal&&workspaceTransition.begin(route));
+  if(!transitioning){workspaceTransition.clear();root.innerHTML='<main class="tracker-main" id="main"><h1>Conectando con tu taller…</h1><p role="status">Comprobando acceso.</p></main>';}
   try{
     await initializeConnection();if(version!==renderVersion)return;
     if(/^\/tracking\/[a-f0-9]{64}$/.test(route)){
@@ -311,8 +313,14 @@ async function render(){
     }
     if(!session){accessScreen();return;}
     if(recovery){accessScreen('recovery');return;}
-    const loaded=await loadWorkspace(backend,route,workshop?.id,()=>version===renderVersion);
+    const loaded=await loadWorkspace(backend,route,workshop?.id,()=>version===renderVersion,checked=>{
+      if(transitioning&&checked?.id!==workshop?.id){
+        workspaceTransition.clear();orders=[];completeOrderList=false;receiptLinks.clear();
+        root.innerHTML='<main class="tracker-main" id="main"><h1>Conectando con tu taller…</h1><p role="status">Comprobando acceso.</p></main>';
+      }
+    });
     if(!loaded)return;
+    workspaceTransition.clear();
     if(workshop?.id!==loaded.workshop?.id){orders=[];completeOrderList=false;receiptLinks.clear();}
     workshop=loaded.workshop;
     if(!workshop){orders=[];completeOrderList=false;onboarding();return;}
@@ -320,8 +328,10 @@ async function render(){
     else if(loaded.request.kind==='order')orders=[...orders.filter(order=>order.number!==loaded.request.number),...loaded.orders];
     if(/^\/track\//.test(route)){notFound(true);return;}
     renderScreen();
+    if(transitioning)document.querySelector('#main')?.focus({preventScroll:true});
   }catch(error){
     if(version!==renderVersion)return;
+    workspaceTransition.clear();
     orders=[];completeOrderList=false;workshop=null;receiptLinks.clear();root.innerHTML=`<main class="tracker-main" id="main"><h1>No pudimos conectar.</h1><p class="error">${e(friendly(error))}</p><button id="retry">Reintentar</button> <button id="exit">${session?'Cerrar sesión':'Volver al acceso'}</button></main>`;
     document.querySelector('#retry').onclick=()=>render();document.querySelector('#exit').onclick=()=>session?signOut():accessScreen();
   }

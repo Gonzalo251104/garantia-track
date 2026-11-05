@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+- Keep the current workshop screen visible during internal navigation; use a compact progress indicator and pending destination instead of replacing the page with a loading screen. Suspend previous-page controls until the destination is ready.
+- Discard late form/photo/receipt callbacks after navigation and clear retained content promptly when authenticated access changes.
+
 ## [0.9.0] - 2026-11-05
 
 ### Added
