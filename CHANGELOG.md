@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-04
+
+### Fixed
+- Replace the small post-registration hint with a focused confirmation screen explaining the email step and offering sign-in or a different email, without claiming account existence or email delivery.
+
+### Added
+- Change an order's status from a dedicated panel with four primary options: received, repairing, ready and delivered. Keep diagnosing and awaiting approval under additional options, automatically expanded for a current additional state.
+- Save status independently of quote, internal note and public-message drafts. Preserve existing versioned RPC validation, show explicit results, and use the ready-stage label "Listo para entregar" consistently.
+
+### Documentation
+- Record owner-relayed technician feedback from fictional GT-1051 on iPhone 15/Safari and select registration feedback as the first bounded pilot improvement.
+
 ## [0.6.0] - 2026-11-04
 
 ### Added

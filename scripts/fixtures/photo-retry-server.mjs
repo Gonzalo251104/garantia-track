@@ -17,7 +17,7 @@ export async function startPhotoRetryFixture(port = 0, {failures=1} = {}) {
   const summary = () => ({
     orders: orders.size, photos: photos.size, readyPhotos: [...photos.values()].filter(p => p.state === 'ready').length,
     objects: objects.size, bytes: [...objects.values()].reduce((sum, body) => sum + body.length, 0),
-    initialEvents: [...orders.values()].reduce((sum, order) => sum + order.order_events.length, 0), ...calls
+    initialEvents: [...orders.values()].filter(order => order.order_events.length > 0).length, ...calls
   });
   const json = (response, status, value) => {
     response.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
@@ -66,6 +66,15 @@ export async function startPhotoRetryFixture(port = 0, {failures=1} = {}) {
           calls.reservations.push(args.p_photo);
           if (!photos.has(args.p_photo)) photos.set(args.p_photo, { id: args.p_photo, order_id: args.p_order, slot: photos.size+1, state: 'pending', path: `${workshop.id}/${args.p_order}/${args.p_photo}.jpg` });
           return json(response, 200, photos.get(args.p_photo));
+        }
+        if (name === 'update_repair_order') {
+          const order = [...orders.values()].find(item => item.id === args.p_id);
+          if (!order) return json(response, 404, { code: '42501', message: 'Fixture order unavailable' });
+          if (order.version !== args.p_version) return json(response, 409, { code: '40001', message: 'Fixture stale version' });
+          if (!['received','diagnosing','awaiting_approval','repairing','ready','delivered'].includes(args.p_status)) return json(response, 400, { code: '23514', message: 'Fixture invalid status' });
+          if (order.status !== args.p_status) order.order_events.push({ status: args.p_status, at: new Date().toISOString() });
+          Object.assign(order, { status: args.p_status, quote: args.p_quote, notes: args.p_notes, message: args.p_message, version: order.version + 1 });
+          return json(response, 200, order);
         }
         if (name === 'complete_order_photo') {
           const photo = photos.get(args.p_photo), complete = Boolean(photo && objects.has(photo.path));

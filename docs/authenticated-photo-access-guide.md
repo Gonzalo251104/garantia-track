@@ -1,6 +1,6 @@
 # Actual-session photo access exercise
 
-Use the published v0.5.3 app, two separate browser profiles and only the fictional GT-1049 photo. This is a manual operator exercise; the helper's unit tests do not constitute hosted authorization evidence. No deployment is needed to run the helper from the repository.
+Use the published v0.6.0 app, two separate browser profiles and only the fictional GT-1049 photo. Recheck `/version.json` before the exercise. This is an operator exercise; the helper's unit tests do not constitute hosted authorization evidence. No deployment is needed to run the helper from the repository.
 
 ## 1. Identify the known fictional object locally
 
@@ -47,3 +47,16 @@ Record only the two summary tables, the workshop labels, app version, browser an
 An owner-issued signed URL intentionally grants temporary bearer access. Opening that URL in the other profile is not the negative test; request a new download/signing operation with the other profile's own session, as above. See [Supabase private buckets](https://supabase.com/docs/guides/storage/buckets/fundamentals).
 
 The helper is a developer/operator script under `scripts/browser`, not a production app screen. Its unit coverage checks owner/nonmember classification, anonymous rejection, inconclusive failures and output minimization. Hosted acceptance remains pending until the actual two-profile results are recorded.
+
+## Evidence worksheet
+
+Copy only the returned summary fields below. Do not prefill expected results as observations. Both rows must refer to the same GT-1049 object and independently authenticated profiles; record the owner result first.
+
+Date/time zone: pending. Published version/commit: pending. Browser/profile labels (no account identifiers): pending.
+
+| Workshop | context | authenticated | downloadStatus | downloadReturnedData | signingStatus | signedUrlIssued | result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Pilot Workshop B | pending | pending | pending | pending | pending | pending | NOT RUN |
+| GarantiaTrack QA | pending | pending | pending | pending | pending | pending | NOT RUN |
+
+If automation cannot access both profiles or execute the helper through a supported tool, record the limitation. Do not extract sessions or run authenticated requests through a read-only browser evaluator. A rendered gallery photo alone does not complete either HTTP control.

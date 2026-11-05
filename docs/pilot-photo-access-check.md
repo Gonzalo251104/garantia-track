@@ -1,5 +1,19 @@
 # Pilot photo access check
 
+## Owner deferral — 2026-11-04, America/Lima
+
+The owner explicitly deferred the actual-session photo HTTP exercise after browser-control attempts could not complete it. A connected Chrome application view confirmed GarantiaTrack QA; the in-app browser had separately shown Pilot Workshop B's fictional GT-1049 gallery. Native browser control stopped because it could not verify the current URL confidently. Neither helper download/signing control ran, so authenticated cross-workshop Storage isolation remains **unverified**, not passed or waived for real-data use.
+
+Continue with the [supervised fictional observation](supervised-pilot-observation.md). This deferral does not block preparing or conducting that limited exercise and does not change security controls or the separate real-customer readiness gates. Resume the HTTP exercise only when the owner chooses to revisit it.
+
+## Continuation check — 2026-11-04, America/Lima
+
+The public `/version.json` was rechecked and returns v0.6.0 at `e750525222a7ff8a58dd882fce14070484d7944a`. Remote main/tag still match that commit; develop remains `ca576ebdf6115d7cda0840ed8b3a35ee580753a6` with identical tracked content. Main CI and release publication succeeded. The only open PR at this check was the unrelated draft #26.
+
+The in-app browser retained Pilot Workshop B's authenticated application view and displayed GT-1049's fictional photo. This is a gallery observation, not an SDK download/signing result. No helper HTTP control was executed. The connected browser inventory exposed no second profile. The native Edge window was listed, but accessibility was unavailable and screenshot capture returned no target, so its session could not be established through that surface.
+
+Actual-session owner and nonmember HTTP controls both remain **pending**. No SQL role simulation or anonymous test was repeated or counted toward them. Use the [guide and blank evidence worksheet](authenticated-photo-access-guide.md) when both profiles are accessible. No account, policy, photo or tracking capability was changed during this continuation.
+
 ## Recorded scope — 2026-11-04
 
 Continue fictional pilot preparation after the owner deferred reconciliation of the reported Android label test. That device-specific acceptance remains unverified; do not substitute this access check for it. Published app: v0.5.3, canonical release commit `2b3a797b3f04d620e39128799eae91a58c9e9b12`.
