@@ -7,11 +7,11 @@ const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{reso
 test('intake and unsupported routes check membership without downloading orders',async()=>{
   let checks=0;
   const backend={workshop:async()=>{checks++;return {id:'A'};},load:()=>assert.fail('Unneeded list read'),loadOne:()=>assert.fail('Unneeded order read')};
-  for(const route of ['/intake','/unknown','/track/1042']){
+  for(const route of ['/intake','/workshop','/unknown','/track/1042']){
     const result=await loadWorkspace(backend,route,'A');
     assert.equal(result.orders,null);assert.equal(result.workshop.id,'A');
   }
-  assert.equal(checks,3);
+  assert.equal(checks,4);
 });
 
 test('known-workshop navigation starts fresh membership and data reads concurrently',async()=>{
