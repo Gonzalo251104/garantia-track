@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-04
+
 ### Fixed
 - Replace the small post-registration hint with a focused confirmation screen explaining the email step and offering sign-in or a different email, without claiming account existence or email delivery.
 
