@@ -38,7 +38,7 @@ export function mountWorkshopSettings({form,workshop,canRename,save,isCurrent,on
     let name;
     try{name=normalizeWorkshopName(input.value);}catch(failure){error.textContent=failure.message;return;}
     if(name===savedName){result.textContent='Este nombre ya está guardado.';return;}
-    const document=form.ownerDocument,restoreFocus=document?.activeElement===button;
+    const document=form.ownerDocument,restoreFocus=document&&(document.activeElement===button||document.activeElement===input);
     saving=true;input.disabled=true;updateButton();
     try{
       const saved=await save({id:workshop.id,name:savedName},name);

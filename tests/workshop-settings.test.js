@@ -19,11 +19,17 @@ test('workshop names are trimmed and validated; names are escaped in editable an
   assert.ok(workshopSettingsMarkup(workshop,{demo:true}).includes('demostración'));
 });
 
-function editor({canRename=true,name='Original Workshop',value='Renamed Workshop',save=async(target,newName)=>({...target,name:newName})}={}){
+function editor({canRename=true,name='Original Workshop',value='Renamed Workshop',focus,save=async(target,newName)=>({...target,name:newName})}={}){
   const state={current:true,saved:[],calls:[]};
   const input={value,disabled:false,addEventListener(_event,callback){this.oninput=callback;}};
   const nodes={'[name=name]':input,'[type=submit]':{disabled:false},'#workshop-name-error':{textContent:''},'#workshop-name-result':{textContent:''}};
-  const form={querySelector:selector=>nodes[selector]};
+  const document={body:{}};document.activeElement=focus==='input'?input:focus==='button'?nodes['[type=submit]']:document.body;
+  for(const node of [input,nodes['[type=submit]']]){
+    let disabled=node.disabled;
+    Object.defineProperty(node,'disabled',{get:()=>disabled,set:value=>{disabled=value;if(value&&document.activeElement===node)document.activeElement=document.body;}});
+  }
+  input.focus=()=>{document.activeElement=input;};
+  const form={ownerDocument:document,querySelector:selector=>nodes[selector]};
   const workshop={id:'workshop-A',name,owner_id:'owner-A'};
   mountWorkshopSettings({form,workshop,canRename,isCurrent:()=>state.current,save:async(...args)=>{state.calls.push(args);return save(...args);},onSaved:saved=>state.saved.push(saved),friendly:failure=>failure.message});
   return {form,nodes,input,state,workshop,submit:()=>form.onsubmit?.({preventDefault(){}})};
@@ -68,6 +74,15 @@ test('a wrong workshop or unconfirmed server name never replaces the active work
     const view=editor({save:async()=>result});await view.submit();
     assert.equal(view.state.saved.length,0);assert.equal(view.nodes['#workshop-name-result'].textContent,'');assert.ok(view.nodes['#workshop-name-error'].textContent);
   }
+});
+
+test('keyboard and button saves restore the name field only when focus has not moved elsewhere',async()=>{
+  for(const focus of ['input','button']){
+    const view=editor({focus});await view.submit();assert.equal(view.form.ownerDocument.activeElement,view.input);
+  }
+  let finish;const view=editor({focus:'input',save:()=>new Promise(resolve=>{finish=resolve;})});
+  const pending=view.submit(),other={};view.form.ownerDocument.activeElement=other;
+  finish({id:'workshop-A',name:'Renamed Workshop'});await pending;assert.equal(view.form.ownerDocument.activeElement,other);
 });
 
 test('actual SDK over isolated HTTP saves and reloads the name, with stale/foreign/technician failures',async t=>{
