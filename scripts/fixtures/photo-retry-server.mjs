@@ -17,6 +17,7 @@ export async function startPhotoRetryFixture(port = 0, {failures=1,readDelayMs=0
   const workshop={...initialWorkshop,owner_id:workshopRole==='owner'?user.id:'00000000-0000-4000-8000-000000000009'};
   const orders = new Map(), photos = new Map(), objects = new Map();
   const navigationReads=[];
+  let signedPhotoRequests=0;
   const calls = { requests: [], reservations: [], uploadAttempts: 0, failedUploads: 0, imageReads: 0 };
   const summary = () => ({
     orders: orders.size, photos: photos.size, readyPhotos: [...photos.values()].filter(p => p.state === 'ready').length,
@@ -38,6 +39,7 @@ export async function startPhotoRetryFixture(port = 0, {failures=1,readDelayMs=0
       }
       if (route === '/__fixture/status') return json(response, 200, summary());
       if (route === '/__fixture/navigation') return json(response,200,navigationReads);
+      if (route === '/__fixture/photo-access') return json(response,200,{signedPhotoRequests,imageReads:calls.imageReads});
       if (['/rest/v1/workshops','/rest/v1/repair_orders'].includes(route)) {
         navigationReads.push({resource:route.split('/').at(-1),number:url.searchParams.get('number')});
         if(readDelayMs)await new Promise(resolve=>setTimeout(resolve,readDelayMs));
@@ -125,7 +127,7 @@ export async function startPhotoRetryFixture(port = 0, {failures=1,readDelayMs=0
       if (route.startsWith(signPrefix)) {
         const objectPath = route.slice(signPrefix.length);
         if (!objects.has(objectPath)) return json(response, 404, { message: 'Missing fixture object' });
-        if (request.method === 'POST') return json(response, 200, { signedURL: `/object/sign/repair-photos/${objectPath}?token=local-fixture-only` });
+        if (request.method === 'POST') {signedPhotoRequests++;return json(response, 200, { signedURL: `/object/sign/repair-photos/${objectPath}?token=local-fixture-only` });}
         calls.imageReads++;
         response.writeHead(200, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'no-store' });
         return response.end(objects.get(objectPath));
