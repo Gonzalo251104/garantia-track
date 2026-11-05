@@ -63,3 +63,18 @@ test('current membership and order failures remain errors with no offline fallba
   await assert.rejects(loadWorkspace({workshop:async()=>{throw new Error('Membership unavailable');},load:async()=>{throw new Error('Order unavailable');}},'/orders','A'),/Membership unavailable/);
   await assert.rejects(loadWorkspace({workshop:async()=>({id:'A'}),load:async()=>{throw new Error('Order unavailable');}},'/orders','A'),/Order unavailable/);
 });
+
+test('membership invalidation is reported before waiting for data from a changed workshop',async()=>{
+  const data=deferred(),checked=[];
+  const pending=loadWorkspace({workshop:async()=>({id:'B'}),load:id=>id==='B'?data.promise:Promise.resolve([])},'/orders','A',()=>true,workshop=>checked.push(workshop.id));
+  await Promise.resolve();assert.deepEqual(checked,['B']);
+  data.resolve([{workshop_id:'B'}]);assert.equal((await pending).orders[0].workshop_id,'B');
+  await loadWorkspace({workshop:async()=>null},'/intake','A',()=>true,workshop=>checked.push(workshop));
+  assert.deepEqual(checked,['B',null]);
+});
+
+test('an obsolete membership response cannot invalidate or unlock a newer view',async()=>{
+  const membership=deferred();let current=true;
+  const pending=loadWorkspace({workshop:()=>membership.promise},'/intake','A',()=>current,()=>assert.fail('Obsolete membership callback'));
+  current=false;membership.resolve({id:'B'});assert.equal(await pending,null);
+});

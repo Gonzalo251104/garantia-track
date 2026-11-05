@@ -4,7 +4,7 @@ export function routeData(route) {
   return match?{kind:'order',number:Number(match[1])}:{kind:'none'};
 }
 
-export async function loadWorkspace(backend,route,previousWorkshop,isCurrent=()=>true) {
+export async function loadWorkspace(backend,route,previousWorkshop,isCurrent=()=>true,onMembership=()=>{}) {
   const request=routeData(route);
   const read=async id=>request.kind==='list'?backend.load(id):request.kind==='order'?backend.loadOne(id,request.number).then(order=>order?[order]:[]):null;
   // The previous ID is only a query hint. Membership is checked on every route.
@@ -13,6 +13,7 @@ export async function loadWorkspace(backend,route,previousWorkshop,isCurrent=()=
     ?read(previousWorkshop).then(orders=>({orders}),error=>({error})):null;
   const workshop=await backend.workshop();
   if(!isCurrent())return null;
+  onMembership(workshop);
   if(!workshop)return {workshop:null,orders:null,request};
   const result=pending&&workshop.id===previousWorkshop?await pending:{orders:await read(workshop.id)};
   if(!isCurrent())return null;
