@@ -4,6 +4,17 @@ import { createClient } from '@supabase/supabase-js';
 import { connect } from '../dist/backend.js';
 import { startPhotoRetryFixture } from '../scripts/fixtures/photo-retry-server.mjs';
 
+test('actual SDK preserves other equipment and its model across intake, retry and reload',async t=>{
+  const fixture=await startPhotoRetryFixture(0,{failures:0});t.after(()=>fixture.close());
+  const backend=await connect({supabaseUrl:fixture.origin,supabaseKey:'sb_publishable_local_fixture_only'},(url,key)=>createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}}));
+  const workshop='00000000-0000-4000-8000-000000000001',request=crypto.randomUUID();
+  const payload={customer:'Fictional QA',phone:'900000000',device:'other',model:'Fictional racing wheel',issue:'Fictional input fault'};
+  const saved=await backend.receive(workshop,request,payload,[]),retried=await backend.receive(workshop,request,payload,[]);
+  const loaded=await backend.loadOne(workshop,saved.number);
+  assert.equal(retried.id,saved.id);assert.equal(loaded.device,'other');assert.equal(loaded.model,payload.model);
+  assert.equal(fixture.summary().orders,1);assert.equal(fixture.summary().initialEvents,1);
+});
+
 test('single-order HTTP reads include workshop and number filters and preserve nested evidence',async t=>{
   const fixture=await startPhotoRetryFixture(0,{failures:0});t.after(()=>fixture.close());
   const requests=[];

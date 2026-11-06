@@ -103,5 +103,40 @@ test('persistent receipt capabilities preserve old tickets and enforce tenant bo
       await asUser(alice,()=>db.query('select public.import_receipt_tracking($1,$2)',[legacy.id,newToken]));
       assert.deepEqual(await asUser(alice,()=>call('get_receipt_tracking',legacy.id)),before);
     });
+    await t.test('other-device migration preserves existing data, capabilities, RLS and table grants',async()=>{
+      const snapshot=async()=>({
+        orders:(await db.query('select * from public.repair_orders order by id')).rows,
+        events:(await db.query('select * from public.order_events order by id')).rows,
+        photos:(await db.query('select * from public.order_photos order by id')).rows,
+        links:(await db.query('select * from public.tracking_links order by order_id')).rows,
+        secrets:(await db.query('select * from vault.secrets order by id')).rows,
+        access:(await db.query("select relname,relrowsecurity,relacl::text from pg_class where oid in('public.repair_orders'::regclass,'public.order_photos'::regclass,'public.tracking_links'::regclass) order by relname")).rows,
+        policies:(await db.query('select polname,polcmd,polroles::text,pg_get_expr(polqual,polrelid) as rule,pg_get_expr(polwithcheck,polrelid) as check_rule from pg_policy order by polname')).rows
+      });
+      const before=await snapshot();
+      await db.exec(await readFile(new URL('../supabase/migrations/20261106180602_other_device_type.sql',import.meta.url),'utf8'));
+      assert.deepEqual(await snapshot(),before);
+    });
+    await t.test('other equipment uses existing scoped, idempotent intake, status and private-tracking RPCs',async()=>{
+      const request=crypto.randomUUID();
+      const payload={customer:'Fictional Other QA',phone:'900000000',device:'other',model:'Fictional racing wheel',issue:'Fictional fault',accessories:[]};
+      const receive=(device='other',requestId=request)=>value('select to_jsonb(public.create_repair_order($1,$2,$3::jsonb))',[wa,requestId,JSON.stringify({...payload,device})]);
+      for(const invalid of ['unknown','',null])await assert.rejects(asUser(alice,()=>receive(invalid,crypto.randomUUID())));
+      for(const supported of ['console','controller'])assert.equal((await asUser(alice,()=>receive(supported,crypto.randomUUID()))).device,supported);
+      const saved=await asUser(alice,()=>receive());assert.equal(saved.device,'other');
+      assert.equal((await asUser(alice,()=>receive())).id,saved.id);
+      assert.equal(await value('select count(*)::integer from public.order_events where order_id=$1',[saved.id]),1);
+      await assert.rejects(asUser(bob,()=>receive('other',crypto.randomUUID())),/access denied/i);
+      await assert.rejects(asUser(null,()=>receive('other',crypto.randomUUID()),'anon'));
+      assert.equal(await asUser(bob,()=>value('select count(*)::integer from public.repair_orders where id=$1',[saved.id])),0);
+      await assert.rejects(asUser(alice,()=>db.query("update public.repair_orders set device='controller' where id=$1",[saved.id])));
+      const link=await asUser(alice,()=>call('ensure_receipt_tracking',saved.id));
+      const before=(await db.query('select * from public.tracking_links where order_id=$1',[saved.id])).rows[0];
+      await asUser(alice,()=>db.query("select public.update_repair_order($1,1,'repairing',0,'Internal QA','Public QA')",[saved.id]));
+      const tracked=await asUser(null,()=>value('select public.get_order_tracking($1)',[link.token]),'anon');
+      assert.equal(tracked.device,'other');assert.equal(tracked.model,payload.model);assert.equal(tracked.status,'repairing');
+      for(const key of ['customer','phone','notes','photos','serial'])assert.equal(key in tracked,false);
+      assert.deepEqual((await db.query('select * from public.tracking_links where order_id=$1',[saved.id])).rows[0],before);
+    });
   }finally{await db.close();}
 });

@@ -1,4 +1,4 @@
-import { escapeHtml } from './domain.js';
+import { escapeHtml, deviceLabel } from './domain.js';
 
 export const paperProfiles = Object.freeze({
   '80': Object.freeze({ width: 80, content: 72, margin: 4, qr: 44 }),
@@ -29,7 +29,7 @@ export function receiptData(order, workshopName) {
     number: order.number,
     workshop: workshopName,
     created: new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Lima' }).format(new Date(order.created)),
-    device: order.device === 'controller' ? 'Mando' : 'Consola',
+    device: deviceLabel(order.device),
     model: order.model,
     customer: order.customer,
     serial: order.serial || 'Sin registrar',
