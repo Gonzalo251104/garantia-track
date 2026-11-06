@@ -1,5 +1,7 @@
 # Equipment types
 
+PR #59 was merged into develop at `53c65169c84d8155faaab5ec15bc01b007590f63`. The [v0.10.0 release candidate](releases/v0.10.0.md) records migration-before-frontend publication and compatible rollback steps. Public v0.9.1 remains deployed during release preparation.
+
 ## Pilot finding and scope
 
 The technician requested an Other choice for intake. Reception now offers **Consola**, **Mando** and **Otro**, storing `console`, `controller` and `other`. Console remains the default. The existing required **Modelo** field identifies equipment such as a fictional racing wheel or charging base; choosing Other does not remove model/customer/contact/issue validation or add a second description field.
