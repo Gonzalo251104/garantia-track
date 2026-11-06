@@ -1,10 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {seedOrders,validateIntake,nextOrderNumber,parseAmount,publicOrder,escapeHtml} from '../dist/domain.js';
+import {seedOrders,validateIntake,nextOrderNumber,parseAmount,publicOrder,escapeHtml,deviceTypes,deviceLabel} from '../dist/domain.js';
 test('intake rejects incomplete and invalid contact details',()=>{
   const valid={customer:'Demo',phone:'900000006',device:'console',model:'PS5',issue:'No power'};
   assert.doesNotThrow(()=>validateIntake(valid));
-  for(const patch of [{customer:' '},{phone:'123'},{model:''},{issue:''},{device:'other'}]) assert.throws(()=>validateIntake({...valid,...patch}));
+  for(const device of ['console','controller','other'])assert.doesNotThrow(()=>validateIntake({...valid,device}));
+  for(const patch of [{customer:' '},{phone:'123'},{model:''},{issue:''},{device:'unknown'},{device:null}]) assert.throws(()=>validateIntake({...valid,...patch}));
+  assert.throws(()=>validateIntake({...valid,device:'other',model:' '}));
+});
+
+test('device labels distinguish all supported types and never mislabel an unknown type',()=>{
+  assert.deepEqual(deviceTypes.map(([key])=>key),['console','controller','other']);
+  assert.deepEqual(['console','controller','other','unknown'].map(deviceLabel),['Consola','Mando','Otro','Equipo']);
+  assert.equal(publicOrder({...seedOrders()[0],device:'other'}).device,'other');
 });
 test('order numbers increase independently of sort order',()=>{
   assert.equal(nextOrderNumber(seedOrders().reverse()),1046);

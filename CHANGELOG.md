@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+- Receive equipment as Other alongside Console and Controller, using the existing required model field. Share type labels across intake, order lists and thermal/PDF receipt data; use a generic equipment icon.
+- Extend only the device allowlist constraint through a migration, preserving existing records, private-photo rules, scoped RPCs and tracking capabilities.
+
 ## [0.9.1] - 2026-11-05
 
 ### Changed

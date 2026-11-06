@@ -4,6 +4,8 @@ export const statuses = [
   ['ready', 'Listo para entregar'], ['delivered', 'Entregado']
 ];
 export const statusLabel = value => statuses.find(([key]) => key === value)?.[1] ?? value;
+export const deviceTypes = [['console','Consola'],['controller','Mando'],['other','Otro']];
+export const deviceLabel = value => deviceTypes.find(([key])=>key===value)?.[1] ?? 'Equipo';
 export const money = cents => new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(cents / 100);
 export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[character]));
 export function parseAmount(value) {
@@ -19,7 +21,7 @@ export function publicOrder(order) {
 export function validateIntake(values) {
   if (!values.customer?.trim() || !values.model?.trim() || !values.issue?.trim()) throw new Error('Completa cliente, modelo y falla reportada.');
   if (!/^9\d{8}$/.test(values.phone ?? '')) throw new Error('Ingresa un celular peruano de 9 dígitos que empiece por 9.');
-  if (!['console','controller'].includes(values.device)) throw new Error('Selecciona un tipo de equipo.');
+  if (!deviceTypes.some(([key])=>key===values.device)) throw new Error('Selecciona un tipo de equipo.');
 }
 export function seedOrders() {
   const base = new Date();
