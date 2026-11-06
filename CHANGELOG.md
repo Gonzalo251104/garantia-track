@@ -2,9 +2,14 @@
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-06
+
 ### Added
 - Receive equipment as Other alongside Console and Controller, using the existing required model field. Share type labels across intake, order lists and thermal/PDF receipt data; use a generic equipment icon.
 - Extend only the device allowlist constraint through a migration, preserving existing records, private-photo rules, scoped RPCs and tracking capabilities.
+
+### Tests
+- Cover Other intake validation, SDK retry/reload, thermal/PDF labels and migration preservation of existing records, capabilities and access controls. Record isolated hosted-lab rollback checks and desktop/mobile fixture acceptance.
 
 ## [0.9.1] - 2026-11-05
 
