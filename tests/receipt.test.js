@@ -27,6 +27,12 @@ test('receipt projection includes intake evidence but excludes internal and fina
   assert.throws(() => receiptData({ ...order, number: NaN }, 'QA'));
 });
 
+test('other equipment is labeled correctly in thermal receipt data and markup',()=>{
+  const data=receiptData({...order,device:'other',model:'Fictional racing wheel'},'QA Workshop');
+  assert.equal(data.device,'Otro');assert.ok(receiptMarkup(data).includes('Otro'));
+  assert.ok(receiptMarkup(data).includes('Fictional racing wheel'));
+});
+
 test('receipt escapes user fields, preserves long intake text and labels demo without a shared QR', () => {
   const issue = '<script>alert("x")</script>\n' + 'Drift 🎮 '.repeat(300);
   const html = receiptMarkup(receiptData({ ...order, issue, customer: '<img src=x onerror=alert(1)>' }, 'Workshop & Co'), { demo: true });

@@ -5,12 +5,19 @@ import QRCode from 'qrcode';
 import { makeReceiptPdf } from '../dist/receipt-pdf.js';
 
 test('receipt PDF is generated locally with a QR and a tracking link', async () => {
-  const data = { workshop: 'Taller', number: 1043, created: '28/10/2026', customer: 'Cliente', device: 'Mando', model: 'DualSense', serial: '123', accessories: 'Cable', issue: 'Falla', condition: 'Bien' };
+  const data = { workshop: 'Taller', number: 1043, created: '28/10/2026', customer: 'Cliente', device: 'Otro', model: 'Volante ficticio', serial: '123', accessories: 'Cable', issue: 'Falla', condition: 'Bien' };
   const url = `https://example.test/#/tracking/${'a'.repeat(64)}`;
-  const blob = makeReceiptPdf(data, url, jsPDF, QRCode.create);
+  const drawn=[];
+  function RecordedPdf(options){
+    const pdf=new jsPDF(options),text=pdf.text;
+    pdf.text=(value,...args)=>{drawn.push(String(value));return text.call(pdf,value,...args);};
+    return pdf;
+  }
+  const blob = makeReceiptPdf(data, url, RecordedPdf, QRCode.create);
   assert.equal(blob.type, 'application/pdf');
   const bytes = Buffer.from(await blob.arrayBuffer());
   assert.equal(bytes.subarray(0, 5).toString(), '%PDF-');
   assert.ok(bytes.includes(Buffer.from(url)));
+  assert.ok(drawn.some(text=>text.includes('Otro')));
   assert.ok(bytes.length > 4000);
 });
