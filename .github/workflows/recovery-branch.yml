@@ -1,0 +1,23 @@
+name: Recovery branch CI
+on:
+  push:
+    branches: ['feature/logical-vault-recovery']
+permissions:
+  contents: read
+jobs:
+  standalone-check:
+    # This old draft can conflict with develop. Validate its head without
+    # replacing the pull-request integration check or changing branch rules.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
