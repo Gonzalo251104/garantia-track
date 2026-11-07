@@ -10,3 +10,4 @@ dist/config.js
 dist/version.json
 supabase/.temp/
 *.gtvc
+*.gtlab

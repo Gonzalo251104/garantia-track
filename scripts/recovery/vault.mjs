@@ -7,6 +7,7 @@ import pg from 'pg';
 import { sourceProject, labProject, seal, unseal } from './archive.mjs';
 import { exportRecord, restoreRecord } from './database.mjs';
 import { RecoveryFailure, safeDiagnostic } from './diagnostics.mjs';
+import { ensureParameterPrivacy } from './privacy.mjs';
 
 let stage = 'arguments';
 function fail(reason) { throw new RecoveryFailure(reason); }
@@ -81,8 +82,7 @@ async function main() {
     await db.connect();
     // Fail closed if this session cannot suppress PostgreSQL bind-parameter logging.
     stage = 'privacy-setup';
-    await db.query('set log_parameter_max_length=0');
-    await db.query('set log_parameter_max_length_on_error=0');
+    await ensureParameterPrivacy(db);
     if (mode === 'backup') {
       stage = 'export-record';
       const archive = seal(await exportRecord(db), passphrase);

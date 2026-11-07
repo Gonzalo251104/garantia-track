@@ -10,6 +10,8 @@ const reasons = {
   PASSPHRASE_CONFIRMATION: 'The backup passphrase confirmation did not match. Enter it again privately.',
   CANCELLED: 'The operator cancelled the command.',
   ARCHIVE_LIMIT: 'This drill accepts only a small GT-1044 recovery archive.',
+  PRIVACY_PERMISSION: 'Required parameter-log protection is unavailable to this database role. Stop before reading or restoring secrets; use a provider-supported protected session or an isolated destination. Do not bypass the guard or grant privileges automatically.',
+  PRIVACY_VERIFY: 'Required parameter-log protection could not be verified. No secret export or restore is allowed.',
 };
 const fallback = {
   arguments: 'Check the command format and use an interactive terminal.',
