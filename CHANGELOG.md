@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+- Improve screen readability with 16 px form controls and labels, 14 px secondary text and navigation at the default text size, stronger text/status contrast, and wrapping for narrow order cards and long equipment/customer names.
+- Remove decorative counter captions and repeated form descriptions; simplify reception guidance and place the connected dashboard's general tracking explanation in a keyboard-accessible disclosure. Keep privacy, upload limits, required-field and QR invalidation guidance visible.
+- Keep thermal receipt dimensions, print typography and PDF generation unchanged. Record isolated desktop/mobile browser validation in `docs/mobile-readability.md`.
+
 ## [0.10.0] - 2026-11-06
 
 ### Added
