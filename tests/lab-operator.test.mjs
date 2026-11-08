@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { assertContainer, LabRuntime, images } from '../scripts/recovery/lab-runtime.mjs';
+import { assertContainer, LabRuntime, images, finalServerProcess } from '../scripts/recovery/lab-runtime.mjs';
 import { validateRestore } from '../scripts/recovery/lab-database.mjs';
 import { copyExternal, exclusiveFile } from '../scripts/recovery/lab-copy.mjs';
 import { labProject, sourceProject } from '../scripts/recovery/archive.mjs';
@@ -16,6 +16,8 @@ const info = () => ({ Id: expected.id, Name: '/' + expected.name, Config: { Imag
   Labels: { 'garantiatrack-recovery-session': expected.session } }, HostConfig: { NetworkMode: 'none', PortBindings: {} }, Mounts: [] });
 
 test('restore and cleanup reject foreign identities, shared data, external networking and published ports', () => {
+  for (const name of ['bash', 'sh', 'docker-entrypoin']) assert.equal(finalServerProcess(name), false);
+  for (const name of ['postgres', '.postgres-wrapp']) assert.equal(finalServerProcess(name), true);
   assert.doesNotThrow(() => assertContainer(info(), expected));
   for (const mutate of [value => { value.Id = 'b'.repeat(64); }, value => { value.Name = '/unrelated'; },
     value => { value.Config.Image = 'untrusted:latest'; }, value => { value.Config.Labels = {}; },

@@ -38,8 +38,9 @@ async function main() {
   const passphrase = await hidden('Retained backup passphrase (hidden; isolated local restore only): ');
   stage = 'archive-authentication'; report.state = 'running'; await save();
   const bundle = openLabBundle(archive.bytes, passphrase); validateRestore(bundle);
+  report.archiveAuthenticated = true;
   stage = 'new-isolated-destination'; await save(); runtime = new LabRuntime(); await runtime.prepare();
-  stage = 'database-auth-vault-restore'; await save(); report.database = restoreDatabase(bundle, runtime);
+  stage = 'database-auth-vault-restore'; await save(); report.database = restoreDatabase(bundle, runtime, value => { stage = value; });
   report.http = await verifyServices(bundle, runtime, async value => { stage = value; await save(); });
   report.state = 'verified'; report.sourceContacted = false; report.network = 'none'; report.publishedPorts = 0;
   stage = 'complete';

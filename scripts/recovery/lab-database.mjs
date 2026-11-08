@@ -34,12 +34,14 @@ function prepareRoles(sql){
     });
 }
 
-export function restoreDatabase(bundle,runtime){
+export function restoreDatabase(bundle,runtime,onStage=()=>{}){
   const psql=runtime.psql.bind(runtime);
+  onStage('database-input-validation');
   validateRestore(bundle);
   check(bundle.parts.vault.every(row=>/^[a-f0-9-]{36}$/.test(row.old_id)&&/^[a-f0-9-]{36}$/.test(row.order_id)));
   for(const name of ['roles','schema','data'])check(!/^\s*\\(?:connect|!|include|i\s|o\s)/mi.test(bundle.parts[name]));
   const schema=bundle.parts.schema.replace(/^CREATE SCHEMA (?!IF NOT EXISTS)([^;\r\n]+);$/gm,'CREATE SCHEMA IF NOT EXISTS $1;');
+  onStage('database-role-adaptation');
   const roles=prepareRoles(bundle.parts.roles);
   const protectedSession=`set log_parameter_max_length=0; set log_parameter_max_length_on_error=0; set log_error_verbosity=terse;
     do $$ begin if current_setting('log_parameter_max_length')<>'0' or current_setting('log_parameter_max_length_on_error')<>'0' then raise exception 'Unprotected restore session'; end if; end $$;`;
@@ -88,6 +90,8 @@ do $$ begin if (select count(*) from vault.secrets)<>${bundle.parts.vault.length
 ${assertions.join('\n')}
 select json_build_object('orders',(select count(*) from public.repair_orders),'authUsers',(select count(*) from auth.users),'photoMetadata',(select count(*) from storage.objects where bucket_id='repair-photos'),'vaultRecords',(select count(*) from vault.secrets),'allDataFingerprintsMatch',true,'photoBytesRestored',false);
 commit;`;
+  onStage('database-atomic-import');
   const result=psql(sql).trim().split(/\r?\n/).filter(line=>line.startsWith('{')).at(-1);check(result);
+  onStage('database-summary');
   return JSON.parse(result);
 }
