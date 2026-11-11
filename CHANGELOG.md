@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-11-11
+
 ### Changed
 - Describe the public application without prototype wording or unmeasured time-saving claims.
 - Keep the public workspace connected and make the sample workshop an explicit loopback-only opt-in for development.
