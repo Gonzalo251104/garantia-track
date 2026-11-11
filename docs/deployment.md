@@ -20,6 +20,12 @@ npm run build
 
 For the hosting mirror, set RELEASE_COMMIT to the canonical GitHub release commit, rather than its mirror commit. Confirm dist/version.json contains the expected version and canonical commit. Generated config.js, vendor files and version.json are ignored by Git but must be included in the deployment archive. The source manifest selects dist as the static root. Route fragments work without SPA server rewrites.
 
+`REQUIRE_SUPABASE_CONFIG=1` produces a connected build with the local demo disabled. Confirm that a signed-out visitor sees the access form without the demo action. An existing browser demo session cannot load sample orders in this build. Use a separate test workshop for hosted verification.
+
+## Email readiness
+
+The built-in Supabase Auth sender only delivers to project team addresses and permits two emails per hour per project. Before opening signup to customers, configure a supported SMTP sender, verify its sending identity and test both confirmation and password recovery with a controlled external inbox at the published origin. Keep confirmation enabled and verify the return in the browser that initiated the request. The hosting plan and the SMTP sender are independent. See [Supabase Auth SMTP](https://supabase.com/docs/guides/auth/auth-smtp) and [Auth rate limits](https://supabase.com/docs/guides/auth/rate-limits).
+
 ## Supabase Auth URLs
 
 For the persistent QR frontend, apply the additive 20261028212715_persistent_receipt_tracking migration before publication. Confirm Vault is available and review member-only function grants. Existing links are preserved. Frontend rollback can retain this compatible migration; do not drop encrypted capabilities. See receipts.md for key-preserving backup and restore.

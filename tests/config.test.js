@@ -2,6 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {publicConfig,configScript} from '../scripts/config.mjs';
 test('configuration is empty until explicitly supplied',()=>assert.deepEqual(publicConfig({}),{supabaseUrl:'',supabaseKey:''}));
+test('local demo requires explicit opt-in and is disabled in a connected release',()=>{
+  assert.equal(publicConfig({ENABLE_DEMO:'1'}).demoEnabled,true);
+  assert.equal(publicConfig({ENABLE_DEMO:'true'}).demoEnabled,undefined);
+  const connected = {SUPABASE_URL:'https://project.supabase.co',SUPABASE_PUBLISHABLE_KEY:'sb_publishable_example'};
+  assert.equal(publicConfig({...connected,ENABLE_DEMO:'1',REQUIRE_SUPABASE_CONFIG:'1'}).demoEnabled,undefined);
+});
 test('configuration accepts only public keys and safe project origins',()=>{
   const jwt=role=>`header.${Buffer.from(JSON.stringify({role})).toString('base64url')}.signature`;
   assert.equal(publicConfig({SUPABASE_URL:'https://project.supabase.co',SUPABASE_PUBLISHABLE_KEY:jwt('anon')}).supabaseUrl,'https://project.supabase.co');
