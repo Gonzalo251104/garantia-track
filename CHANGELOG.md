@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Changed
+- Describe the public application without prototype wording or unmeasured time-saving claims.
 - Keep the public workspace connected and make the sample workshop an explicit loopback-only opt-in for development.
 - Use connected-workshop guidance in intake, order details and private tracking. Guide new workshops to their first intake from an empty order list.
 
