@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+- Keep the public workspace connected and make the sample workshop an explicit loopback-only opt-in for development.
+- Use connected-workshop guidance in intake, order details and private tracking. Guide new workshops to their first intake from an empty order list.
+
 ## [0.10.1] - 2026-11-06
 
 ### Changed

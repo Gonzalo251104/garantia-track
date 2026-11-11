@@ -17,7 +17,7 @@ For startup, verification commands and troubleshooting, see [local runbook](docs
 
 For a free, isolated photo-upload failure and retry exercise, see [photo upload recovery check](docs/photo-upload-recovery-check.md). `npm run dev:photo-retry` uses fictional in-memory HTTP services and never connects to hosted Supabase.
 
-Without Supabase configuration the application shows a setup screen. **Explorar con datos ficticios** explicitly enters the isolated local demo. Missing configuration or backend failures never silently save workshop records into demo storage.
+Without Supabase configuration the application shows a setup screen. To use the isolated local demo, set `ENABLE_DEMO=1` in the ignored `.env`, restart the loopback server and select **Explorar con datos ficticios**. The public application requires workshop authentication. Customer tracking remains available through its private link.
 
 ## Connect Supabase
 
