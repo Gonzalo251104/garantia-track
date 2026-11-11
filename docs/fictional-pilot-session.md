@@ -26,31 +26,9 @@ This is one operator-exported artifact checked against a current database snapsh
 
 An additional adapter test exercises a temporary photo-upload failure followed by a successful retry, asserting stable request/photo identifiers and the saved order returned after completion. It uses a simulated RPC/Storage service and complements existing server idempotency coverage; it does not replace a real browser connectivity/retry exercise. The adapter test file passed all 12 tests after the addition. Direct nonmember photo HTTP denial and real UI failed-upload recovery remain pending.
 
-## Next small pilot sessions
+## Technical checks
 
-1. **Operator exercise:** use the existing two test workshops, a fresh fictional controller/console case and harmless image. Confirm receipt, photo persistence, latest public status and isolation. Record only friction and pass/fail; stopwatch timing is optional.
-2. **Failure and handoff exercise:** validate the B-only CSV, safe retry after a failed upload, and one PDF handoff to a consenting test recipient. Test actual paper and QR scanning if a thermal printer is available. Mark unavailable tests pending.
-3. **Workshop observation:** when a workshop operator agrees to participate, have them perform the same fictional workflow with minimal guidance. Record what they need explained, whether it fits their current paper/WhatsApp process, and which single improvement would make it useful. A second account owned by the project owner is technical acceptance, not independent market validation.
-
-The project owner coordinates these sessions and retains sanitized findings. Agree on a support contact and fallback before involving an observer. Use only current free hosting and the existing test accounts; external self-service registration/password recovery still needs verified email delivery. Pause the exercise and investigate any cross-workshop exposure. Complete independent database/Auth/Vault recovery before moving to real customer records.
-
-## Preparation
-
-- Record date, published app version/commit, phone/browser, operator and observer. The recovery CLI does not change the deployed app; use the existing published release for this exercise.
-- Use two distinct test accounts, each in its own fictional workshop: Workshop A and Workshop B. Two members of the same workshop do not test tenant separation. Use team-authorized test addresses while default SMTP restrictions remain. If the second account cannot confirm email, record onboarding as blocked; keep email confirmation enabled.
-- Use invented customer/device details, an authorized test phone number and a harmless photo with no personal information. Share the PDF only with a consenting test recipient. Keep bearer URLs, sessions and signed photo links out of Git, screenshots and reports.
-- Use separate browser profiles for the two workshops and a signed-out customer browser. Record unavailable equipment, including the thermal printer.
-
-## Daily flow
-
-1. Workshop A receives one fictional controller with accessories, condition and reported fault. Time intake, attach the test photo and record the generated order number.
-2. If photo upload fails after the order is saved, retry in the original form or, after the saved-order recovery release, reopen the order and select the original image again for its pending slot. After success, reload on the phone and confirm the same order and photo. See [order-photo-recovery.md](order-photo-recovery.md); the application does not reconstruct a source file lost from the device.
-3. Perform two permitted status changes, reloading after each. Open customer tracking in a signed-out browser and check the correct order and latest status, with no contact details, serial, internal notes or photos.
-4. Share the receipt PDF to the consenting test recipient. Scan its QR on another device. Reload the workshop receipt and reprint/download it; confirm the original PDF link still works without renewing its token.
-5. In Workshop B's browser, open Workshop A's order-detail route. Confirm A's data and photos cannot be read. Do not transfer sessions or signed photo URLs between testers. Record the actual HTTP/application result; database-role simulations are separate evidence.
-6. Workshop B creates and reloads its own order. Confirm Workshop A cannot read that order. Customer tracking is a deliberate bearer capability, separate from authenticated workshop access.
-7. Try missing intake fields and a brief connection interruption; record whether messages and retries are usable. Keep security settings unchanged.
-8. Print and scan a physical receipt if a thermal printer is available; otherwise mark the check pending.
+The [pilot runbook](pilot-runbook.md) contains the current workflow checklist. The [photo access record](pilot-photo-access-check.md) preserves the separate deferred authenticated HTTP check. The results below describe dated fictional exercises. Further sessions with technicians are deferred.
 
 ## Evidence sheet
 
@@ -67,7 +45,7 @@ Keep a private operator note and copy only sanitized symptoms into GitHub.
 | Input and connectivity failures have usable recovery | partial | Invalid intake rejection, adapter/local HTTP retry and owner-operated hosted GT-1049 retry passed for their recorded scope; physical-phone and other failure cases remain pending. |
 | Physical print and QR scan | pending | |
 
-Measure intake time, failed uploads, duplicates and steps requiring help. Ask which step is confusing and whether this would replace the workshop's current process. Choose one improvement from observed friction. A tenant-isolation failure stops the session and requires a fix.
+The table records the observed results and their limits.
 
 ## Open readiness tasks
 
@@ -91,7 +69,7 @@ Times were measured with runtime wall-clock timestamps around actions, excluding
 
 The 11,934-byte ticket PDF downloaded, and the customer link opened the correct GT-1047 received state and public message. This customer-view check used the existing authenticated browser context, not a fresh anonymous session; the earlier owner-reported signed-out GT-1045 check remains separate evidence. No PDF was sent by WhatsApp. No token or signed photo URL is included in this report.
 
-Observed improvement hypotheses for a later product PR: identify the active workshop in the authenticated header (only the product name and sign-out control are currently shown), and review the extra create-QR action before first PDF download. These were visible interaction steps, not owner-reported confusion. The earlier missing-order copy issue remains relevant. No runtime/UI code or deployment changed during this exercise.
+The observations informed later changes to the active workshop header and receipt flow. See the [product review](product-review.md) for published improvements.
 
 ### Recorded exercise — 2026-11-03
 

@@ -1,5 +1,9 @@
 # Independent backup and recovery plan
 
+## Recovery evidence and limits
+
+On November 7 an isolated local laboratory restore verified a fictional order, Auth data, Vault and three photo files. The November 8 replay from USB decrypted the archive but failed during import and cleaned the isolated destination. A startup correction passed synthetic checks. The corrected full USB replay, original-password sign-in and complete operational recovery remain pending. The cause of the initial historical failure has not been established. Recovery work remains in [draft PR #26](https://github.com/Gonzalo251104/garantia-track/pull/26).
+
 Status: **proposed; independent hosted recovery is not verified**. Use fictional data only until every recovery gate below passes. This procedure does not authorize overwriting the live project or replacing a Vault key. The historical drill and its limitations are in [pilot-recovery.md](pilot-recovery.md).
 
 ## Scope and operating targets

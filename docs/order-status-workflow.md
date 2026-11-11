@@ -1,10 +1,10 @@
 # Independent order status changes
 
-Implemented through PR #44, merged into develop at `fede8751cf24b3c50ff68823b0382b1860adaa46`, after the owner authorized the next improvement from [GT-1051 technician feedback](pilot-observation-t1.md). It is included in the v0.7.0 release candidate, not a deployed release or physical-phone acceptance. Public v0.6.0 remains the pilot baseline until a separate release is published and deployed.
+Implemented through PR #44, merged into develop at `fede8751cf24b3c50ff68823b0382b1860adaa46`, after the owner authorized the next improvement from [GT-1051 test-user feedback](pilot-observation-t1.md). It shipped in v0.7.0.
 
 ## Operator behavior
 
-The order detail places a **Cambiar estado** panel near the heading. Four large primary choices follow the technician's daily vocabulary:
+The order detail places a **Cambiar estado** panel near the heading. Four large primary choices follow the test user's proposed labels:
 
 | Label | Existing stored value |
 | --- | --- |
@@ -44,6 +44,4 @@ Assisted browser checks against an isolated loopback fixture confirmed:
 
 Only synthetic loopback data was changed. The temporary viewport was reset and preview tooling/screenshots stay ignored. No production order, tracking token or photo was changed. These results do not measure physical iPhone/Safari performance, certify live cross-workshop photo HTTP isolation or prove external email delivery. The deferred authenticated photo exercise remains deferred.
 
-## Next pilot acceptance after deployment
-
-On a new or existing explicitly fictional order, ask the technician to change to their next daily state without pointing to controls. Check that a typed but unsaved note survives, saving the note does not revert the status, reload retains the status, and private customer tracking shows the same state/public message. For an order in diagnosing/approval, confirm it remains visibly selected. Record whether fewer visible choices reduce confusion; do not infer faster use from the desktop fixture.
+The reported preference motivated the four primary choices. The local fixture verifies save and draft behavior. Further physical-phone observation is deferred.

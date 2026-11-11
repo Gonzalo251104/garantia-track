@@ -1,4 +1,4 @@
-# Development environment — 2026-10-28
+# Environment and verification
 
 ## Supabase
 
@@ -6,29 +6,21 @@
 - Project: garantiatrack, reference rtfhogdqsxlqfwvzisoo.
 - Region: sa-east-1 (Sao Paulo).
 - API: https://rtfhogdqsxlqfwvzisoo.supabase.co
-- Initial workshop_backend migration applied successfully.
-- Persistent receipt migration 20261028212715 applied; Supabase Vault 0.3.1 and pgcrypto 1.3 are installed. Existing hashes/expiry/revocation states were preserved.
+- Applied migrations cover the workshop backend, persistent receipt tracking, workshop name settings and the Other device type. See the [versioned migrations](../supabase/migrations).
 - Client configuration is in ignored .env; no privileged key is used or committed.
 - The owner created their application account. A fictional QA workshop/order/photo now exist for testing; the assistant did not create a separate account or handle the owner's password.
 
-## Auth dashboard setup
+## Hosting and Auth
 
-The owner reports that Auth callback URLs are configured, and authenticated application access has been verified. The settings are managed at:
+The November 11 release put v0.10.2 on [Cloudflare Pages](https://garantiatrack.pages.dev/). The original Sites origin remains the Auth Site URL and the tracking destination for issued QR links. The exact root and `?auth=recovery` redirects are configured for Pages, the original Sites origin and the default loopback origin. The [deployment guide](deployment.md) records the publishing and rollback procedure.
 
-https://supabase.com/dashboard/project/rtfhogdqsxlqfwvzisoo/auth/url-configuration
-
-For local development, the original Site URL was http://127.0.0.1:4173. On publication, replace Site URL with the actual HTTPS deployment origin and add its exact root/recovery callbacks as described in deployment.md. Preserve these local redirect URLs:
-
-- http://127.0.0.1:4173/
-- http://127.0.0.1:4173/?auth=recovery
-
-Email confirmation remains enabled. The owner already registered a GarantiaTrack account; a Supabase dashboard account is not automatically an application user. Use your own email and password; never share the password in chat. A custom SMTP service may be necessary for email delivery to users outside the project's team. See supabase-setup.md.
+Email confirmation remains enabled. A team mailbox delivered a recovery link and returned to the Pages password form. The check ended before a password change. External confirmation and recovery remain pending.
 
 ## Verification
 
 Run npm run smoke:supabase for non-destructive live checks: Auth endpoint reachability, unknown tracking token rejection, denied anonymous order reads and denied anonymous photo uploads. This script creates no objects or users.
 
-A transaction with rollback on the live database additionally verified transactional workshop creation, request idempotency, tenant isolation and the tracking allowlist under the actual authenticated/anon roles. The subsequent authenticated browser test passed receipt creation, private photo upload/download, reload persistence, status updates and tracking. A separate anonymous SDK client confirmed field restrictions, private photo denial, rotation and revocation. See qa-supabase.md.
+See the dated integration evidence below and the [photo access record](pilot-photo-access-check.md) for the remaining authenticated cross-workshop Storage check.
 
 The Supabase security advisor reports intentional SECURITY DEFINER exposure for the tightly granted membership-checked RPCs and the anonymous token-limited tracking RPC. It also notes RLS with no policies on tracking_links, which is deliberately inaccessible through table grants; only functions access it. These are documented design decisions, not a claim of a warning-free security review.
 
@@ -36,13 +28,8 @@ References: [anonymous definer advisory](https://supabase.com/docs/guides/databa
 
 Receipt recovery adds three intentionally member-only SECURITY DEFINER RPCs with fixed search paths, explicit workshop membership and per-order locks. Their authenticated-function advisory findings are expected and reviewed; no anonymous recovery/creation/import grant or direct Vault read was added. Live encrypted lifecycle and membership probes passed with fixture changes rolled back. The advisor also reports pre-existing disabled leaked-password protection; see [password protection guidance](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). Auth settings were not changed by this feature.
 
-## GitHub
+## Historical integration verification — 2026-10-28
 
-Remote: https://github.com/Gonzalo251104/garantia-track
+A rolled-back hosted SQL exercise checked workshop creation, request idempotency, tenant isolation and the tracking allowlist with database roles. An authenticated browser session on fictional order GT-1042 verified intake, private photo upload and reload, status/message updates and private tracking. An anonymous SDK client checked the tracking projection and denial of access to private photos. Link rotation and revocation were exercised on that fictional order. Password recovery, session expiry and a second physical device were outside that exercise.
 
-- PR #1: prototype -> develop.
-- PR #2: Supabase integration -> develop, retargeted after PR #1 merged.
-- Both PRs were merged after review corrections and successful CI.
-- Application source entered develop through those PRs. The v0.2.0 release enters main through a separate release PR and returns through a backmerge PR.
-
-The terminal Git credential helper could not authenticate. The connected GitHub API uploaded exact local Git blobs and matching source trees; local branch history was aligned to those commits only after tree equality was verified. Original local commits remain reachable through refs/backups/pre-github. No source files were discarded.
+See [Gitflow](workflow.md) for current repository operations and the [v0.10.2 release](https://github.com/Gonzalo251104/garantia-track/releases/tag/v0.10.2) for the published build and deployment evidence.
