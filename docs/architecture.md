@@ -18,6 +18,12 @@ Tracking links are bearer capabilities. Their separate RPC bypasses tenant RLS o
 
 Member-only receipt RPCs recover a token from Supabase Vault after per-order membership checks. Public tracking retains the hash-based capability lookup and its minimal field allowlist. Order-level locks serialize retrieval, creation, import, rotation and revocation. Reads/reprints never change expiry, and creation never silently replaces an existing record. Vault plaintext is not exposed through Data API table grants. Legacy import validates the exact active hash and preserves old tickets. Key-preserving backup/restore is required when changing Supabase projects; the Vault helper functions isolate this provider dependency. See receipts.md.
 
+## Concurrent writes and view changes
+
+Each intake owns its photo selection. Capture the selection before awaiting the order request and reuse stable request and photo identifiers during retries. The order creation RPC carries intake metadata and writes the initial event on the server. Photo bytes follow through Storage.
+
+Updates and link actions retain their originating form, identity and version. Ignore a delayed completion if the session, workshop or view has changed. This keeps stale responses from overwriting a different form and keeps photos attached to the intended intake.
+
 ## Storage consistency
 
 Intake commits first with a unique workshop/request key. Photo reservations then allocate up to five paths under workshop/order/photo IDs. Upload is immutable and metadata becomes ready only after the object exists. Retrying the same form reuses request/photo identifiers, so an acknowledged or ambiguous upload is finalized rather than duplicated. Database and object storage are not one transaction: partial completion is explicit and documented.

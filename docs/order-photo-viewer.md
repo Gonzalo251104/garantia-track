@@ -2,7 +2,7 @@
 
 ## Behavior and scope
 
-The first technician wanted to tap a saved intake photo to see it larger. Prepared thumbnails now use labeled `type=button` controls with an **Ampliar** affordance. A click, tap or keyboard activation opens that photo in a native modal dialog. The whole image fits the available viewport with `object-fit: contain`; the thumbnail can remain cropped. Landscape and portrait images use the same viewer.
+The test user wanted to tap a saved intake photo to see it larger. Prepared thumbnails now use labeled `type=button` controls with an **Ampliar** affordance. A click, tap or keyboard activation opens that photo in a native modal dialog. The whole image fits the available viewport with `object-fit: contain`; the thumbnail can remain cropped. Landscape and portrait images use the same viewer.
 
 **Cerrar foto**, native Escape and an outside-backdrop click dismiss the viewer. Focus starts at the close action and returns to the current thumbnail when appropriate. The close target is at least 48 px high. Opening/closing does not remount the order form, submit it, save drafts or change status. No carousel, download/share action, new tab or image transformation service is introduced. The feature displays the existing stored/compressed image rather than reconstructing a higher-resolution original.
 
@@ -35,6 +35,6 @@ These are local responsive/HTTP-contract checks, not hosted Storage authorizatio
 
 Use the usual feature PR → develop → release PR → main flow. Include `photo-viewer.js` with changed app/styles in the next approved Sites package; no migration or service configuration is required. Public v0.8.0 is unchanged by this prepared feature.
 
-PR #53 was merged into develop on 2026-11-05 at `068e0ee64f1b2c80510c123249a5d4625b87f74c` after current-head CI passed. The [v0.9.0 release candidate](releases/v0.9.0.md) includes the viewer, existing local evidence and publication/rollback steps. No maintained runtime, test or schema change is added during release preparation.
+PR #53 was merged into develop on 2026-11-05 at `068e0ee64f1b2c80510c123249a5d4625b87f74c` after current-head CI passed. The [v0.9.0 release notes](releases/v0.9.0.md) includes the viewer, existing local evidence and publication/rollback steps. No maintained runtime, test or schema change is added during release preparation.
 
-After publication, use an authorized fictional order with confirmed photos on desktop and the technician's phone. Tap/click to inspect landscape/portrait images, close without losing a draft, and confirm keyboard/focus behavior where relevant. Preserve existing photo objects, QR and original expiry; keep signed URLs/private links out of reports and screenshots. Do not replace local/SQL evidence with an authenticated owner/nonmember acceptance claim.
+The viewer shipped in v0.9.0. Local keyboard, focus and responsive checks are recorded above. Further phone observation and authenticated nonmember Storage verification are deferred.

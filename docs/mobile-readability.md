@@ -1,6 +1,6 @@
 # Mobile readability and concise guidance
 
-Prepared on 2026-11-06, America/Lima, after the owner's report that the technician saw many small annotations during the fictional iPhone 15/Safari session with GT-1051. The original report did not identify individual labels or include an accessibility audit. Inspection of the v0.10.0 frontend found 10–12 px navigation, field labels and helper text, plus repeated decorative descriptions.
+Prepared on 2026-11-06, America/Lima, after the owner's report that the test user saw many small annotations during the fictional iPhone 15/Safari session with GT-1051. The original report did not identify individual labels or include an accessibility audit. Inspection of the v0.10.0 frontend found 10–12 px navigation, field labels and helper text, plus repeated decorative descriptions.
 
 ## Change
 
@@ -28,8 +28,6 @@ Local browser checks used the actual frontend and bundled SDK against the existi
 
 References: [W3C contrast minimum](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html), [reflow at 320 CSS px](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html), and [text resizing](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html). These informed the checks; no physical Safari, browser zoom or assistive-technology certification is claimed.
 
-## Follow-up after release
+## Published scope
 
-On the technician's physical phone, ask them to find an order, read its status, identify the internal/public message fields and start a fictional reception without coaching. Record any remaining small text, unwanted horizontal scrolling or need to zoom. Compare comprehension with the original report; do not claim the technician has validated this revision until that happens.
-
-Publication follows feature PR to develop, release PR to main, verified Sites deployment and backmerge. Until then the published baseline remains v0.10.0. Existing real-data readiness gates remain open.
+The changes shipped in v0.10.1. The owner relayed that the test user completed three later reading tasks without help or zoom. That report was limited to those tasks. Further physical-phone checks are deferred.

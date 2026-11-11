@@ -2,7 +2,7 @@
 
 ## Scope
 
-The first technician reported that Taller did not open settings and the workshop name could not be changed. The prepared feature routes the connected mobile Taller tab and desktop Taller link to `#/workshop`, with a selected navigation state. It uses the existing workspace layout and fresh membership read; it does not download the order list for this route.
+The test user reported that Taller did not open settings and the workshop name could not be changed. The prepared feature routes the connected mobile Taller tab and desktop Taller link to `#/workshop`, with a selected navigation state. It uses the existing workspace layout and fresh membership read; it does not download the order list for this route.
 
 The form shows the current name and an explicit **Guardar nombre** action. A confirmed save updates the input, header and sidebar without remounting the form, and announces **Nombre del taller guardado**. An unchanged name does not write. Names are trimmed and limited to 2–80 characters without control characters; all displayed/attribute values are escaped or assigned as text. Provider errors retain the draft. A stale expected name produces a reload/retry instruction rather than silently overwriting another session's change.
 
@@ -53,7 +53,7 @@ The migration tool assigns its own history timestamp. Record this source/history
 3. In an authorized fictional owner session, open Taller from mobile/desktop, save an invented name, see confirmation/header update, navigate away/back and reload. Check long/accented names for readable mobile layout.
 4. In a separate authorized technician/other-workshop session where available, verify read-only/denied behavior without sharing sessions or extracting JWTs. Local SQL/fixture tests do not replace hosted authenticated checks.
 5. Check the renamed display in a newly prepared ticket and existing private customer tracking while preserving the order, QR and original expiry. Keep private links and signed photo URLs out of reports/screenshots.
-6. Reobserve on the technician's physical phone. Desktop mobile viewports are not physical Safari acceptance. The pilot remains fictional until the separately documented real-data gates are closed.
+6. Record desktop viewport and hosted checks with their respective scope. Further physical-phone observation is deferred.
 
 The migration is additive and compatible with the previous frontend. A frontend rollback can retain it; avoid dropping functions, changing permissions broadly or restoring an older database just to undo a name display. The owner can save the previous name through the same guarded action when appropriate.
 
