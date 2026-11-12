@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.10.7] - 2026-11-12
+
+### Documentation
+
+- Refresh the GitHub README around the repair intake and customer tracking workflow.
+- Keep the Sites manifest in its separate source mirror.
+
 ## [0.10.6] - 2026-11-11
 
 ### Changed
