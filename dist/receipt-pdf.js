@@ -1,18 +1,24 @@
+import { drawReceiptGear } from './receipt-pdf-mark.js';
+
 // This PDF contains the same customer-facing intake projection as the printed ticket.
 export function makeReceiptPdf(data, url, jsPDF, createQr) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: true });
   let y = 20;
-  const line = (text, bold = false) => {
+  const line = (text, bold = false, { gear = false } = {}) => {
     doc.setFont('helvetica', bold ? 'bold' : 'normal');
     doc.setFontSize(bold ? 11 : 10);
+    const x = gear ? 27 : 20;
     // Built-in PDF fonts support Latin text; unsupported characters are made explicit.
     const safe = String(text).replace(/[^\x20-\x7e\xa0-\xff\n]/g, '?');
-    for (const part of doc.splitTextToSize(safe, 170)) {
+    for (const [index, part] of doc.splitTextToSize(safe, 190 - x).entries()) {
       if (y > 275) { doc.addPage(); y = 20; }
-      doc.text(part, 20, y); y += 6;
+      if (gear && index === 0) drawReceiptGear(doc, 20, y - 4.1, 5);
+      doc.text(part, x, y); y += 6;
     }
   };
-  line(data.workshop, true); line('RECEPCIÓN DE EQUIPO', true); line(`Ticket GT-${data.number}`, true);
+  line(data.workshop, true);
+  line('RECEPCIÓN DE EQUIPO', true, { gear: true });
+  line(`Ticket GT-${data.number}`, true);
   line(`${data.created} · Lima`); y += 4;
   for (const [label, value] of [['Cliente',data.customer],['Equipo',`${data.device} · ${data.model}`],['Serie',data.serial],['Accesorios',data.accessories],['Falla reportada',data.issue],['Estado de ingreso',data.condition]]) {
     line(`${label}:`, true); line(value); y += 2;
