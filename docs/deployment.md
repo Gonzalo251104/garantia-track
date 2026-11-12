@@ -6,6 +6,8 @@ Build from an approved commit in the canonical GitHub repository. Follow [Gitflo
 
 The existing [Cloudflare Pages project](https://garantiatrack.pages.dev/) is the primary public entry point. The [original Sites origin](https://garantiatrack-console-workshop.gonzaloacd.chatgpt.site/) serves issued QR links. Keep that origin in `APP_PUBLIC_URL` while it remains the tracking destination.
 
+The original Sites project uses a separate source checkout and its own `.openai/hosting.json`. When updating that origin, retain its project manifest in the Sites mirror while synchronizing the approved GitHub source. Include the mirror's manifest and the compiled frontend in the Sites archive.
+
 ## Build
 
 Requires Node.js 22+ (CI uses 24). Install with npm ci. Copy .env.example to ignored .env and configure only SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY. The publishable key is intentionally public; authorization comes from Auth, RLS, storage policies and transactional RPC checks.
