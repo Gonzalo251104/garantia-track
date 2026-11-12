@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.10.4] - 2026-11-11
+
+### Changed
+
+- Use the gear-shaped GarantiaTrack mark as the browser tab icon.
+
 ## [0.10.3] - 2026-11-11
 
 ### Changed
