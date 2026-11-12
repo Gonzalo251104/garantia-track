@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.10.6] - 2026-11-11
+
+### Changed
+
+- Add the monochrome gear-shaped G to the downloadable and shareable A4 receipt header.
+
 ## [0.10.5] - 2026-11-11
 
 ### Changed
