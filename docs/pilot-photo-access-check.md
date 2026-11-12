@@ -4,7 +4,7 @@
 
 The owner explicitly deferred the actual-session photo HTTP exercise after browser-control attempts could not complete it. A connected Chrome application view confirmed GarantiaTrack QA; the in-app browser had separately shown Pilot Workshop B's fictional GT-1049 gallery. Native browser control stopped because it could not verify the current URL confidently. Neither helper download/signing control ran, so authenticated cross-workshop Storage isolation remains **unverified**, not passed or waived for real-data use.
 
-Continue with the [supervised fictional observation](supervised-pilot-observation.md). This deferral does not block preparing or conducting that limited exercise and does not change security controls or the separate real-customer readiness gates. Resume the HTTP exercise only when the owner chooses to revisit it.
+The [pilot runbook](pilot-runbook.md) lists the technical checks and real-customer readiness gates. The owner deferred both the HTTP exercise and further sessions with technicians.
 
 ## Continuation check — 2026-11-04, America/Lima
 

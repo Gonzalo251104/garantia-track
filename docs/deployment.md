@@ -2,9 +2,9 @@
 
 ## Source and Gitflow
 
-GitHub is the canonical source. Start release/0.2.0 from develop, prepare the changelog and release notes, and open a PR into main. Merge only after CI passes on the current head. Use a merge commit to preserve Gitflow ancestry. The main workflow reruns validation, creates an immutable v0.2.0 tag and publishes a GitHub Release. A repeated run accepts the same tag/commit and refuses to move a tag. Return main to develop through another PR. Future work starts from develop; urgent fixes start from main on hotfix/* and return through PRs to both permanent branches.
+Build from an approved commit in the canonical GitHub repository. Follow [Gitflow](workflow.md) for the release PR, immutable tag and backmerge. Publishing a GitHub Release and deploying the frontend are separate steps.
 
-The hosting source repository is a deployment mirror of the reviewed GitHub main source, not a second development branch. Build and publish only an approved commit. The Sites source helper synchronizes the mirror and packages dist with .openai/hosting.json. Never put repository credentials or privileged Supabase credentials into source, command arguments, archives or logs.
+The existing [Cloudflare Pages project](https://garantiatrack.pages.dev/) is the primary public entry point. The [original Sites origin](https://garantiatrack-console-workshop.gonzaloacd.chatgpt.site/) serves issued QR links. Keep that origin in `APP_PUBLIC_URL` while it remains the tracking destination.
 
 ## Build
 
@@ -14,11 +14,12 @@ PowerShell production build:
 
 ```powershell
 $env:REQUIRE_SUPABASE_CONFIG = '1'
+$env:APP_PUBLIC_URL = 'https://garantiatrack-console-workshop.gonzaloacd.chatgpt.site'
 $env:RELEASE_COMMIT = git rev-parse HEAD
 npm run build
 ```
 
-For the hosting mirror, set RELEASE_COMMIT to the canonical GitHub release commit, rather than its mirror commit. Confirm dist/version.json contains the expected version and canonical commit. Generated config.js, vendor files and version.json are ignored by Git but must be included in the deployment archive. The source manifest selects dist as the static root. Route fragments work without SPA server rewrites.
+Confirm `dist/version.json` contains the approved version and canonical release commit. Package the contents of `dist/` with `index.html` at the ZIP root. Include generated `config.js`, `version.json` and vendor assets. Upload the ZIP as a production deployment to the existing Pages project using [Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/). The deployment package contains only public frontend assets.
 
 `REQUIRE_SUPABASE_CONFIG=1` produces a connected build with the local demo disabled. Confirm that a signed-out visitor sees the access form without the demo action. An existing browser demo session cannot load sample orders in this build. Use a separate test workshop for hosted verification.
 
@@ -28,30 +29,14 @@ The built-in Supabase Auth sender only delivers to project team addresses and pe
 
 ## Supabase Auth URLs
 
-For the persistent QR frontend, apply the additive 20261028212715_persistent_receipt_tracking migration before publication. Confirm Vault is available and review member-only function grants. Existing links are preserved. Frontend rollback can retain this compatible migration; do not drop encrypted capabilities. See receipts.md for key-preserving backup and restore.
+The verified callback set includes the root and `?auth=recovery` routes for Pages, the original Sites origin and `http://127.0.0.1:4173/`. See the [environment record](environment.md) for the configured default site origin. Keep email confirmation enabled and use exact redirect URLs. PKCE recovery links return to the browser that requested them.
 
-After deployment, copy its exact HTTPS origin from the successful deployment result. In Authentication > URL Configuration set Site URL to that origin. Preserve local development redirects and add these four exact entries, replacing PRODUCTION_ORIGIN with the actual origin:
-
-- http://127.0.0.1:4173/
-- http://127.0.0.1:4173/?auth=recovery
-- PRODUCTION_ORIGIN/
-- PRODUCTION_ORIGIN/?auth=recovery
-
-Do not disable email confirmation or add unrestricted wildcards. Existing accounts and workshop data remain in the same Supabase project. Signing in on a different device creates its own session. Recovery links must be opened in the browser that requested them because of PKCE. Old localhost tracking links should be replaced by newly generated links from the deployed application; rotating a link invalidates the previous one.
+Check migration history before applying any newly required migration. Existing migrations, including persistent receipt tracking, are already applied. Existing links retain their original origin and expiry.
 
 ## Verification and rollback
 
-1. Check /version.json against the released GitHub main SHA, and check that config.js selects the intended Supabase project.
-2. Open the public URL in a signed-out browser: workshop data must require GarantiaTrack authentication.
-3. Sign in with the existing owner account. Receive a fictional controller with a JPEG, reload and verify its photo persists.
-4. Generate a customer link, open it on another device without signing in, update the order status and verify the customer view updates after reload. Check that internal notes, contacts, serials and photos remain absent.
-5. Rotate and revoke the link. Confirm the old link no longer works.
-6. Test on a phone over mobile data, and verify confirmation/recovery callbacks after configuring email delivery.
+1. Match the Pages `/version.json` to the approved GitHub tag and compare the served assets with the release package.
+2. Verify the original tracking origin still responds. Use an existing authorized fictional test session to check the workshop and intake. Use an authorized fictional tracking link when available to check customer-facing fields and expiry.
+3. Record the deployment result, version and canonical commit without storing tracking tokens, session details or private photo URLs.
 
-For a frontend regression, redeploy the last known good saved Sites version. Retain its version ID and GitHub SHA. For the first release, if no earlier version exists, pause usage while fixing via hotfix/* and PRs. Do not reset branches, move existing tags or roll back schema blindly. Frontend rollback does not remove orders or storage objects. Database/photo backup and restoration are separate responsibilities.
-
-## Free pilot and growth
-
-Use the existing Sites hosting and Supabase Free project; no paid plan or custom domain is required for the pilot. Monitor database size, storage, egress and active users in Supabase. Free quotas and pause behavior can change; review the provider dashboard before expanding real usage. Keep compressed JPEGs, avoid polling and remove obsolete evidence according to an agreed retention policy. At higher volume, add server pagination and indexed search, then increase the PostgreSQL/storage plan if usage justifies it. The static frontend and standard PostgreSQL schema remain portable. This release does not automate Sites deployment from GitHub Actions; publishing remains a deliberate release step after PR integration.
-
-References: [Supabase redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls), [Supabase production checklist](https://supabase.com/docs/guides/deployment/going-into-prod), [GitHub release API](https://docs.github.com/en/rest/releases/releases#create-a-release).
+For a frontend regression, identify the last compatible successful production deployment by version and commit. In the Pages project, open **Deployments**, open the action menu for that deployment and select **Rollback to this deployment**. Confirm the target and recheck the public version and app access. A Sites rollback uses its own saved deployment. Keep database and Storage recovery procedures separate from frontend rollback. See [Cloudflare Pages rollbacks](https://developers.cloudflare.com/pages/configuration/rollbacks/).

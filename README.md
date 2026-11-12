@@ -81,11 +81,9 @@ Before collecting real customer information, verify SMTP, email confirmation, ac
 
 ## Releases and hosting
 
-The remote is [Gonzalo251104/garantia-track](https://github.com/Gonzalo251104/garantia-track). PR #1 and PR #2 were reviewed and merged into develop in order. The first published pilot was v0.2.0. The thermal receipt feature ships in v0.3.0 through the same Gitflow process: release/* enters main through a PR, and main returns to develop through a second PR. No source changes are pushed directly to permanent branches. See [Gitflow](docs/workflow.md), [release notes](docs/releases/v0.2.0.md) and [deployment and rollback](docs/deployment.md).
+The main public entry point is [GarantiaTrack on Cloudflare Pages](https://garantiatrack.pages.dev/). The original Sites origin still serves issued tracking links. The frontend uses Supabase Auth, PostgreSQL and private Storage. Each deployment reports its release and canonical GitHub commit in `/version.json`.
 
-The static frontend is published with Sites from a mirror of the approved GitHub source. Access to the URL is public; workshops sign in with GarantiaTrack. Supabase Auth, PostgreSQL and private Storage provide the backend. The ignored .env contains only public client configuration. dist/version.json identifies the deployed version and canonical GitHub commit. No paid plan is required for the pilot.
-
-The initial migration is already applied on the connected free Supabase project. Do not rerun it as a new migration. See [environment status](docs/environment.md) and the deployment runbook for exact Auth redirect configuration.
+See [Gitflow](docs/workflow.md), [deployment and rollback](docs/deployment.md) and the [environment record](docs/environment.md) for release, hosting and Auth configuration.
 
 ## License
 
