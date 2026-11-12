@@ -16,7 +16,7 @@ On an active public ticket, **Compartir ticket PDF** opens the native share shee
 
 ## Printing
 
-The thermal header includes the GarantiaTrack gear-shaped G in black. The mark shares the reception label row. The QR remains 40 mm wide on 58 mm paper and 44 mm wide on 80 mm paper, including its quiet zone. These widths apply to **Imprimir ticket**, including the browser's Save as PDF option. The separate download and share actions generate the A4 PDF.
+The thermal header includes the GarantiaTrack gear-shaped G in black. The mark shares the reception label row. The QR remains 40 mm wide on 58 mm paper and 44 mm wide on 80 mm paper, including its quiet zone. These widths apply to **Imprimir ticket**, including the browser's Save as PDF option. The separate download and share actions use the same A4 PDF with a black vector gear in the header and a 48 mm QR, including its quiet zone.
 
 1. Select 80 mm or 58 mm in GarantiaTrack.
 2. Choose **Imprimir ticket** and select the same roll width in the installed printer driver.
