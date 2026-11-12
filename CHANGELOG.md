@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Replace the letter badge with the GarantiaTrack gear-shaped G mark.
+
 ## [0.10.2] - 2026-11-11
 
 ### Changed
