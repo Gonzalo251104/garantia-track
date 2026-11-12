@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.10.5] - 2026-11-11
+
 ### Changed
 
 - Add the monochrome gear-shaped G to both thermal receipt headers while preserving the QR layout.
