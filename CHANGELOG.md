@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.10.5] - 2026-11-11
+
+### Changed
+
+- Add the monochrome gear-shaped G to both thermal receipt headers while preserving the QR layout.
+- Prevent an empty trailing page caused by the thermal preview's screen height.
+
 ## [0.10.4] - 2026-11-11
 
 ### Changed

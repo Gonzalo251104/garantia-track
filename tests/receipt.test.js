@@ -39,7 +39,8 @@ test('receipt escapes user fields, preserves long intake text and labels demo wi
   assert.ok(!html.includes('<script>')); assert.ok(!html.includes('<img'));
   assert.ok(html.includes('&lt;script&gt;')); assert.ok(html.includes('Workshop &amp; Co'));
   assert.ok(html.includes('Drift 🎮 '.repeat(300))); assert.ok(html.includes('DEMO · SIN VALIDEZ'));
-  assert.ok(!html.includes('<svg')); assert.ok(html.includes('no tiene seguimiento compartido'));
+  assert.doesNotMatch(html, /class="receipt-qr"|Código QR de seguimiento/);
+  assert.ok(html.includes('no tiene seguimiento compartido'));
 });
 
 test('receipt only accepts a token-bearing URL on the configured application base', () => {
