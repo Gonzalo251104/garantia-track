@@ -6,7 +6,9 @@ async function checkPrivatePhotoAccess(loadSdk = () => import('/vendor/supabase.
   try {
     const config = window.GARANTIATRACK_CONFIG;
     if (location.origin !== 'https://garantiatrack-console-workshop.gonzaloacd.chatgpt.site' || config?.supabaseUrl !== 'https://rtfhogdqsxlqfwvzisoo.supabase.co') throw new Error();
-    if (document.querySelector('.demo-pill')?.textContent.trim() !== 'MI TALLER') throw new Error();
+    if (!document.querySelector('[data-workspace="connected"], .topbar .demo-pill')) throw new Error();
+    const legacyPill = document.querySelector('.topbar .demo-pill');
+    if (legacyPill && legacyPill.textContent.trim() !== 'MI TALLER') throw new Error();
     stage = 'input';
     const path = prompt('Paste the fictional photo object path locally, not a signed URL.');
     if (path === null) return { result: 'CANCELLED' };

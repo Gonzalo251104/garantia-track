@@ -12,13 +12,14 @@ export function createWorkspaceTransition(root) {
     if(!page)return false;
     // Retain the actual DOM, not an HTML snapshot with lost form state/listeners.
     page.inert=true;page.setAttribute('aria-busy','true');
-    const destination=route==='/intake'?'recepción':route==='/workshop'?'taller':route==='/orders'?'órdenes':'orden';
+    const [pathname]=route.split('?');
+    const destination=({'/dashboard':'panel','/intake':'recepción','/workshop':'taller','/orders':'órdenes'})[pathname]??'orden';
     indicator=root.ownerDocument.createElement('div');
     indicator.className='workspace-transition';indicator.setAttribute('role','status');
     indicator.textContent=`Abriendo ${destination}…`;
     root.querySelector('.shell').append(indicator);
-    root.querySelectorAll('.nav-link,.mobile-nav a').forEach(link=>{
-      if(link.getAttribute('href')===`#${route}`){link.setAttribute('data-navigation-pending','');link.setAttribute('aria-busy','true');}
+    root.querySelectorAll('.nav-link').forEach(link=>{
+      if(link.getAttribute('href')===`#${pathname}`){link.setAttribute('data-navigation-pending','');link.setAttribute('aria-busy','true');}
     });
     return true;
   };

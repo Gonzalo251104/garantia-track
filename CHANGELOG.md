@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Separate a dashboard with four clickable order totals from reception, the order list, and workshop settings.
+- Simplify workspace and sign-in copy and consolidate duplicate actions.
+
 ## [0.10.7] - 2026-11-12
 
 ### Documentation

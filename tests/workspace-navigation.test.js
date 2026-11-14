@@ -24,6 +24,14 @@ test('known-workshop navigation starts fresh membership and data reads concurren
   assert.deepEqual((await pending).orders,[{number:1042}]);
 });
 
+test('dashboard and filtered order URLs load a list scoped to the active workshop',async()=>{
+  const backend={workshop:async()=>({id:'A'}),load:async id=>[{workshop_id:id}]};
+  for(const route of ['/dashboard','/orders?status=awaiting_approval']){
+    const result=await loadWorkspace(backend,route);
+    assert.deepEqual(result.orders,[{workshop_id:'A'}]);
+  }
+});
+
 test('direct order and ticket routes fetch only the requested scoped order after membership',async()=>{
   assert.deepEqual(routeData('/orders/1042'),{kind:'order',number:1042});
   assert.deepEqual(routeData('/ticket/1042'),{kind:'order',number:1042});

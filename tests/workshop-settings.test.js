@@ -15,7 +15,7 @@ test('workshop names are trimmed and validated; names are escaped in editable an
     assert.equal(html.includes('<img'),false);assert.ok(html.includes('&lt;img'));assert.ok(html.includes('&quot;QA&quot;'));
     assert.equal(html.includes('Guardar nombre'),canRename);
   }
-  assert.ok(workshopSettingsMarkup(workshop).includes('Solo la persona propietaria'));
+  assert.ok(workshopSettingsMarkup(workshop).includes('Solo el propietario puede cambiar el nombre.'));
   assert.ok(workshopSettingsMarkup(workshop,{demo:true}).includes('demostración'));
 });
 

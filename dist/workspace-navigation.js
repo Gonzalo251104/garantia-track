@@ -1,5 +1,6 @@
 export function routeData(route) {
-  if(route==='/orders')return {kind:'list'};
+  const [pathname]=route.split('?');
+  if(pathname==='/orders'||pathname==='/dashboard')return {kind:'list'};
   const match=/^\/(?:orders|ticket)\/(\d+)$/.exec(route);
   return match?{kind:'order',number:Number(match[1])}:{kind:'none'};
 }
