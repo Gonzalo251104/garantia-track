@@ -2,9 +2,9 @@
 
 ## Scope
 
-The test user reported that Taller did not open settings and the workshop name could not be changed. The prepared feature routes the connected mobile Taller tab and desktop Taller link to `#/workshop`, with a selected navigation state. It uses the existing workspace layout and fresh membership read; it does not download the order list for this route.
+Select the workshop name in the workspace navigation to open `#/workshop` on desktop or mobile. The route reads current membership without downloading the order list.
 
-The form shows the current name and an explicit **Guardar nombre** action. A confirmed save updates the input, header and sidebar without remounting the form, and announces **Nombre del taller guardado**. An unchanged name does not write. Names are trimmed and limited to 2–80 characters without control characters; all displayed/attribute values are escaped or assigned as text. Provider errors retain the draft. A stale expected name produces a reload/retry instruction rather than silently overwriting another session's change.
+The form shows the current name and an explicit **Guardar nombre** action. A confirmed save updates the input and navigation link without remounting the form, and announces **Nombre del taller guardado**. An unchanged name does not write. Names are trimmed and limited to 2–80 characters without control characters; all displayed/attribute values are escaped or assigned as text. Provider errors retain the draft. A stale expected name produces a reload/retry instruction rather than silently overwriting another session's change.
 
 Only the current workshop owner can rename. The UI derives editability from the already readable `owner_id`; this is presentation, not authorization. Technicians see the name and an ownership explanation without edit/save controls. A direct demo settings route is read-only; existing demo tracking navigation remains available. This feature does not add invites, role changes, ownership transfer or other workshop fields.
 

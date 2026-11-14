@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Combine order counts with their filters and simplify workshop navigation and copy.
+
 ## [0.10.7] - 2026-11-12
 
 ### Documentation

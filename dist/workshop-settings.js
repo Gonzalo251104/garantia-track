@@ -7,11 +7,11 @@ export function normalizeWorkshopName(value) {
 }
 
 export function workshopSettingsMarkup(workshop,{canRename=false,demo=false}={}) {
-  return `<div class="eyebrow">ESPACIO DE TRABAJO</div><div class="heading-row"><div><h1>Tu taller</h1><p class="subtitle">El nombre que ven tu equipo y tus clientes.</p></div></div>
+  return `<div class="heading-row"><h1 id="workshop-name-heading">Taller</h1></div>
     <form id="workshop-settings-form" class="panel workshop-settings" aria-labelledby="workshop-name-heading">
-      <div class="section"><h2 id="workshop-name-heading">Nombre del taller</h2>
+      <div class="section">
         ${canRename?`<label class="field">Nombre del taller<input id="workshop-name" name="name" required minlength="2" maxlength="80" autocomplete="organization" value="${e(workshop.name)}" aria-describedby="workshop-name-help"></label>`:`<p class="workshop-name">${e(workshop.name)}</p>`}
-        <p id="workshop-name-help" class="workshop-help">${demo?'Este es un taller de demostración. Para configurar el tuyo, sal de la demo e inicia sesión.':canRename?'Se actualiza en el panel, el seguimiento y los tickets que prepares a partir del cambio.':'Solo la persona propietaria puede cambiar el nombre del taller.'}</p>
+        <p id="workshop-name-help" class="workshop-help">${demo?'Taller de demostración.':canRename?'Visible en el seguimiento y los próximos tickets.':'Solo el propietario puede cambiar el nombre.'}</p>
         ${canRename?'<p id="workshop-name-error" class="error" role="alert"></p><p id="workshop-name-result" class="workshop-result" role="status"></p><button class="primary" type="submit">Guardar nombre</button>':''}
       </div>
     </form>`;

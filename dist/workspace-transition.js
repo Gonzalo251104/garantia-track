@@ -17,7 +17,7 @@ export function createWorkspaceTransition(root) {
     indicator.className='workspace-transition';indicator.setAttribute('role','status');
     indicator.textContent=`Abriendo ${destination}…`;
     root.querySelector('.shell').append(indicator);
-    root.querySelectorAll('.nav-link,.mobile-nav a').forEach(link=>{
+    root.querySelectorAll('.nav-link').forEach(link=>{
       if(link.getAttribute('href')===`#${route}`){link.setAttribute('data-navigation-pending','');link.setAttribute('aria-busy','true');}
     });
     return true;

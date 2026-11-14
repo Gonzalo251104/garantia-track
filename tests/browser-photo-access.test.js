@@ -21,7 +21,7 @@ async function exercise({ member = false, authenticated = true, status = 403, gr
   const run = runInNewContext(`${source}\ncheckPrivatePhotoAccess`, {
     window: { GARANTIATRACK_CONFIG: { supabaseUrl: 'https://rtfhogdqsxlqfwvzisoo.supabase.co', supabaseKey: 'PUBLIC-KEY' } },
     location: { origin: origin || 'https://garantiatrack-console-workshop.gonzaloacd.chatgpt.site' },
-    document: { querySelector: () => ({ textContent: 'MI TALLER' }) },
+    document: { querySelector: selector => selector.includes('[data-workspace="connected"]') ? {} : null },
     prompt: () => input,
     console: { table(value) { tables.push(JSON.stringify(value)); } }
   });

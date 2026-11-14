@@ -4,10 +4,10 @@ import { workspaceIdentity, unavailableOrder } from '../dist/workspace-view.js';
 
 test('Workshop identity escapes untrusted names in content and attributes', () => {
   const output = workspaceIdentity('Workshop "B" <img src=x onerror=alert(1)> & Co');
-  assert.ok(output.includes('aria-label="Taller activo"'));
+  assert.ok(output.includes('href="#/workshop"'));
   assert.ok(output.includes('&quot;B&quot; &lt;img'));
   assert.equal(output.includes('<img'), false);
-  assert.equal(output.includes('title="Workshop "B"'), false);
+  assert.equal(output.includes('aria-label="Configurar Workshop "B"'), false);
 });
 test('Unavailable-order guidance is identical for missing and inaccessible orders', () => {
   const output = unavailableOrder();

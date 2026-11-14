@@ -1,8 +1,9 @@
 import { escapeHtml } from './domain.js';
 
-export function workspaceIdentity(name) {
+export function workspaceIdentity(name, { current = false, demo = false } = {}) {
   const safeName = escapeHtml(name);
-  return `<div class="breadcrumb" aria-label="Taller activo"><span class="workspace-label">Espacio de trabajo</span><span class="workspace-brand" aria-hidden="true">GarantiaTrack</span><strong class="active-workshop" title="${safeName}">${safeName}</strong></div>`;
+  const initials = name.trim().split(/\s+/).slice(0, 2).map(word => [...word][0]).join('').toLocaleUpperCase('es');
+  return `<a class="nav-link workshop-link${current ? ' active' : ''}" href="${demo ? '#/track/1042' : '#/workshop'}"${current ? ' aria-current="page"' : ''} aria-label="${demo ? 'Seguimiento de ejemplo' : `Configurar ${safeName}`}"><span class="avatar" aria-hidden="true">${escapeHtml(initials)}</span><span class="profile-workshop-name">${safeName}</span></a>`;
 }
 
 export function unavailableOrder() {
