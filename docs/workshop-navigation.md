@@ -1,5 +1,7 @@
 # Workshop navigation
 
+The signed-in workspace opens on **Panel**, with four totals linking to matching filters in **Órdenes**. **Recepción** opens the intake form, and the workshop name opens **Taller** settings. Panel and Orders use the existing latest 500 order listing and its workshop scope. The two views show a notice when the listing reaches that limit.
+
 ## Problem and bounded change
 
 The test user reported slow screen changes on iPhone 15/Safari. The owner also observed the repeated “Conectando con tu taller” screen. Inspection of v0.7.0 found that every internal route checked workshop membership, then downloaded up to 500 orders with nested events/photo metadata, even for an empty intake form or one order.

@@ -20,18 +20,24 @@ let backend, workshop, session, recovery = new URLSearchParams(location.search).
 let connectionPromise;
 const storageKey = 'garantiatrack.demo.v1';
 let orders = [];
-let completeOrderList = false;
 function loadDemo() {
 try { orders = JSON.parse(localStorage.getItem(storageKey)); if (!Array.isArray(orders) || !orders.length || !orders.every(order => Number.isInteger(order.number) && Array.isArray(order.events) && Array.isArray(order.photos) && statuses.some(([key])=>key===order.status))) orders = seedOrders(); } catch { orders = seedOrders(); }
 }
 if(demoMode) loadDemo();
-let activeFilter = 'all', search = '', toastTimer;
+let search = '', toastTimer;
+const summaryCards = [
+  ['active','Órdenes activas','grid'],
+  ['repairing','En reparación','controller'],
+  ['awaiting_approval','Por aprobar','clock'],
+  ['ready','Listos para entregar','check']
+];
+const orderFilters=[['all','Todas'],['active','Activas'],['repairing','En reparación'],['awaiting_approval','Por aprobar'],['ready','Listas'],['delivered','Entregadas']];
 const root = document.querySelector('#app');
 const workspaceTransition=createWorkspaceTransition(root);
 let photoViewerVersion=-1;
 const photoViewer=createOrderPhotoViewer({root,isCurrent:()=>photoViewerVersion===renderVersion});
 const icon = name => {
-  const paths = {grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',plus:'<path d="M12 5v14M5 12h14"/>',other:'<path d="m12 3 9 5v8l-9 5-9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/>',controller:'<path d="M7 7h10c3 0 5 10 3 11-2 1-4-3-5-3H9c-1 0-3 4-5 3C2 17 4 7 7 7Z"/><path d="M8 9v5m-2-2.5h4M16 10h.1M18 13h.1"/>',console:'<path d="m8 3 8 2v15l-8 1Z"/><path d="M8 3 5 5v14l3 2m8-16 3 2v11l-3 2M11 7v8m2 3h.1"/>',link:'<path d="m10 13 4-4m-6 6-2 2a3 3 0 0 1-4-4l5-5a3 3 0 0 1 4 0m2 1 2-2a3 3 0 0 1 4 4l-5 5a3 3 0 0 1-4 0"/>',clock:'<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',check:'<path d="m5 12 4 4L19 6"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>'};
+  const paths = {list:'<path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1"/>',grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',plus:'<path d="M12 5v14M5 12h14"/>',other:'<path d="m12 3 9 5v8l-9 5-9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/>',controller:'<path d="M7 7h10c3 0 5 10 3 11-2 1-4-3-5-3H9c-1 0-3 4-5 3C2 17 4 7 7 7Z"/><path d="M8 9v5m-2-2.5h4M16 10h.1M18 13h.1"/>',console:'<path d="m8 3 8 2v15l-8 1Z"/><path d="M8 3 5 5v14l3 2m8-16 3 2v11l-3 2M11 7v8m2 3h.1"/>',link:'<path d="m10 13 4-4m-6 6-2 2a3 3 0 0 1-4-4l5-5a3 3 0 0 1 4 0m2 1 2-2a3 3 0 0 1 4 4l-5 5a3 3 0 0 1-4 0"/>',clock:'<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',check:'<path d="m5 12 4 4L19 6"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>'};
   return `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] ?? paths.grid}</svg>`;
 };
 const brand = `<div class="brand"><img class="brand-mark" src="./garantiatrack-mark.svg" width="34" height="34" alt=""><div>Garantia<span>Track</span></div></div>`;
@@ -48,7 +54,7 @@ async function updateOrder(order,changes,isCurrent) {
   const loaded=await backend.load(workshopId);
   if(!isCurrent())return false;
   orders=loaded;
-  completeOrderList=true;
+
   return true;
 }
 function shell(content,section='orders') {
@@ -60,8 +66,9 @@ function shell(content,section='orders') {
     <aside class="sidebar" data-workspace="${demoMode?'demo':'connected'}">
       ${brand}
       <nav class="workspace-nav" aria-label="Navegación principal">
-        ${navLink('/orders','Reparaciones','grid',section==='orders')}
-        ${navLink('/intake','Recibir equipo','plus',section==='intake')}
+        ${navLink('/dashboard','Panel','grid',section==='dashboard')}
+        ${navLink('/intake','Recepción','plus',section==='intake')}
+        ${navLink('/orders','Órdenes','list',section==='orders')}
         ${workspaceIdentity(workshopName,{current:section==='workshop',demo:demoMode})}
       </nav>
       <button id="sign-out" class="small">${demoMode?'Salir de demo':'Cerrar sesión'}</button>
@@ -83,20 +90,35 @@ function workshopSettings() {
   }});
 }
 function dashboard() {
-  const filters=[['all','Todas'],['active','Activas'],['repairing','En reparación'],['awaiting_approval','Por aprobar'],['ready','Listas'],['delivered','Entregadas']];
-  shell(`<div class="heading-row"><h1>Reparaciones</h1><button class="quiet small" id="export">Exportar CSV</button></div>
+  shell(`<div class="heading-row"><h1>Panel</h1></div>
+    <div class="summary-grid">${summaryCards.map(([key,label,symbol])=>{
+      const count=orders.filter(order=>matchesOrderFilter(order,key)).length;
+      return `<a class="summary-card" href="#/orders?status=${key}"><span class="summary-label">${label} ${icon(symbol)}</span><strong>${String(count).padStart(2,'0')}</strong></a>`;
+    }).join('')}</div>
+    ${orderLimitNote()}`,'dashboard');
+}
+function orderLimitNote() {
+  return !demoMode&&orders.length>=500?'<p class="hint">Últimas 500 órdenes.</p>':'';
+}
+function orderList(status) {
+  const activeFilter=orderFilters.some(([key])=>key===status)?status:'all';
+  const results=()=>renderRows(activeFilter);
+  shell(`<div class="heading-row"><h1>Órdenes</h1><button class="quiet small" id="export">Exportar CSV</button></div>
     <div class="toolbar">
-      <div class="tabs" role="group" aria-label="Filtrar órdenes">${filters.map(([key,label])=>{
-        const count=orders.filter(order=>matchesOrderFilter(order,key)).length;
-        return `<button class="tab ${activeFilter===key?'active':''}" aria-pressed="${activeFilter===key}" data-filter="${key}">${label}${completeOrderList||demoMode?` <span class="filter-count">${count}</span>`:''}</button>`;
-      }).join('')}</div>
+      <div class="tabs" role="group" aria-label="Filtrar órdenes">${orderFilters.map(([key,label])=>`<button class="tab ${activeFilter===key?'active':''}" aria-pressed="${activeFilter===key}" data-filter="${key}">${label}</button>`).join('')}</div>
       <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" aria-label="Buscar órdenes" placeholder="Buscar órdenes" value="${e(search)}"></label>
     </div>
     <section class="panel" aria-label="Resultados"><div id="order-results"></div></section>
+    ${orderLimitNote()}
     ${demoMode?'<button class="quiet small" id="reset">Restablecer datos de ejemplo</button>':''}`);
-  renderRows();
-  document.querySelector('#search').addEventListener('input',event=>{search=event.target.value;renderRows();});
-  document.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{activeFilter=button.dataset.filter;dashboard();}));
+  results();
+  document.querySelector('#search').addEventListener('input',event=>{search=event.target.value;results();});
+  document.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{
+    const filter=button.dataset.filter;
+    history.replaceState(history.state,'',filter==='all'?'#/orders':`#/orders?status=${filter}`);
+    orderList(filter);
+    document.querySelector('[data-filter][aria-pressed="true"]').focus();
+  }));
   if(demoMode) document.querySelector('#reset').onclick=showReset;
   document.querySelector('#export').onclick=()=>exportOrders();
 }
@@ -105,12 +127,12 @@ function matchesOrderFilter(order,filter) {
   if(filter==='active')return order.status!=='delivered';
   return order.status===filter;
 }
-function renderRows() {
+function renderRows(activeFilter) {
   const query=search.toLocaleLowerCase('es');
   const found=orders.filter(o=>matchesOrderFilter(o,activeFilter)&&`${o.number} ${o.model} ${o.customer} ${o.phone} ${o.serial}`.toLocaleLowerCase('es').includes(query)).sort((a,b)=>b.number-a.number);
   document.querySelector('#order-results').innerHTML=found.length ? `<div class="table-wrap"><table><thead><tr><th>Equipo / Orden</th><th>Cliente</th><th>Estado</th><th>Presupuesto</th><th></th></tr></thead><tbody>${found.map(o=>`<tr><td><div class="device-cell"><div class="device-art">${icon(o.device)}</div><div><strong>${e(o.model)}</strong><span class="order-number">GT-${o.number}</span> <small>· ${deviceLabel(o.device)}</small></div></div></td><td><strong>${e(o.customer)}</strong><small>${e(o.phone)}</small></td><td>${badge(o.status)}</td><td>${o.quote?money(o.quote):'<small>Por definir</small>'}</td><td><a class="row-link" href="#/orders/${o.number}" aria-label="Ver orden GT-${o.number}">Ver orden →</a></td></tr>`).join('')}</tbody></table></div><div class="panel-foot">${found.length} ${found.length===1?'orden':'órdenes'}</div>` : orders.length
     ? '<div class="empty"><h2>Sin resultados</h2></div>'
-    : '<div class="empty"><h2>Sin reparaciones</h2></div>';
+    : '<div class="empty"><h2>Sin órdenes</h2></div>';
 }
 function intake() {
   let photos=[];
@@ -135,7 +157,7 @@ function intake() {
       document.querySelector('#intake-save-state').textContent=`Orden GT-${saved.number} guardada`;
       const loaded=await backend.load(intakeWorkshop);
       if(!isCurrent())return;
-      orders=loaded;completeOrderList=true;location.hash='/orders/'+saved.number;notify('Orden guardada en el taller.');
+      orders=loaded;location.hash='/orders/'+saved.number;notify('Orden guardada en el taller.');
     }else if(persist([...orders,order])){location.hash=`/orders/${order.number}`;notify(`Orden GT-${order.number} creada. Ya puedes compartir su seguimiento.`);} }
     catch(error){if(isCurrent()){
       if(error instanceof PendingIntakePhotosError){
@@ -156,7 +178,7 @@ async function compressPhoto(file) {
 function detail(number) {
   const order=orders.find(o=>o.number===number); if(!order) return notFound();
   photoViewerVersion=renderVersion;
-  shell(`<a class="back" href="#/orders">← Todas las reparaciones</a><div class="heading-row"><div><h1>GT-${order.number} <span style="color:#a4af9b;font-weight:400">/</span> ${e(order.model)}</h1><p class="subtitle">Recibido el ${date(order.created)}</p></div><span id="order-status-badge">${badge(order.status)}</span></div><div id="status-editor">${statusChangeMarkup(order.status)}</div><div class="detail-layout"><div><section class="panel"><div class="panel-head"><div><h2>Recepción del equipo</h2></div><div class="device-art">${icon(order.device)}</div></div><div class="section"><dl class="detail-grid"><div><dt>Cliente</dt><dd>${e(order.customer)}</dd></div><div><dt>Celular</dt><dd>${e(order.phone)}</dd></div><div><dt>Serie</dt><dd>${e(order.serial||'Sin registrar')}</dd></div><div><dt>Accesorios</dt><dd>${order.accessories.map(e).join(', ')||'Sin accesorios'}</dd></div><div class="full"><dt>Falla reportada</dt><dd>${e(order.issue)}</dd></div><div class="full"><dt>Estado físico</dt><dd>${e(order.condition||'Sin observaciones')}</dd></div></dl>${order.photos.length?`<div class="photo-grid">${order.photos.map((src,i)=>orderPhotoThumbnail(safePhoto(src),i)).join('')}</div>`:`<p class="hint">${demoMode?'Esta orden de ejemplo no tiene fotos. Puedes añadirlas al crear una recepción.':'Sin fotos de ingreso.'}</p>`}</div></section><form class="panel" id="update-form" style="margin-top:20px"><div class="panel-head"><div><h2>Presupuesto y mensajes</h2></div></div><div class="section"><div class="field-grid"><label class="field">Presupuesto (S/)<input name="quote" type="number" min="0" max="999999.99" step="0.01" required value="${(order.quote/100).toFixed(2)}"></label><label class="field full">Notas internas<textarea name="notes" maxlength="2000">${e(order.notes)}</textarea><span class="hint">Solo aparecen en el panel del taller.</span></label><label class="field full">Mensaje para el cliente<textarea name="message" maxlength="600" required>${e(order.message)}</textarea><span class="hint">Visible en el seguimiento. No incluyas información sensible.</span></label></div><p class="error" id="update-error" role="alert"></p></div><div class="form-actions"><button class="primary" type="submit">Guardar cambios</button></div></form></div><aside><section class="panel"><div class="section"><h2>Seguimiento</h2><div class="actions-stack" style="margin-top:20px"><a class="primary" style="padding:13px;text-align:center;border-radius:8px" href="${demoMode?`#/track/${order.number}`:'#/orders'}" ${demoMode?'':'hidden'}>Abrir vista del cliente ↗</a><button id="copy-link">${demoMode?'Copiar enlace de demo':'Recuperar enlace del taller'}</button><button id="print-order" class="secondary">Imprimir recepción</button></div><p class="hint">${demoMode?'El enlace solo funciona con los datos de este navegador. No es un seguimiento compartido real.':'Reimprimir o copiar conserva el enlace y su vencimiento. Renovar o revocar invalida los tickets anteriores.'}</p></div></section><section class="panel" style="margin-top:20px"><div class="section"><h2>Historial</h2><ol class="timeline" id="order-history">${order.events.map(event=>`<li>${statusLabel(event.status)}<small>${date(event.at)}</small></li>`).join('')}</ol></div></section></aside></div>`);
+  shell(`<a class="back" href="#/orders">← Órdenes</a><div class="heading-row"><div><h1>GT-${order.number} <span style="color:#a4af9b;font-weight:400">/</span> ${e(order.model)}</h1><p class="subtitle">Recibido el ${date(order.created)}</p></div><span id="order-status-badge">${badge(order.status)}</span></div><div id="status-editor">${statusChangeMarkup(order.status)}</div><div class="detail-layout"><div><section class="panel"><div class="panel-head"><div><h2>Recepción del equipo</h2></div><div class="device-art">${icon(order.device)}</div></div><div class="section"><dl class="detail-grid"><div><dt>Cliente</dt><dd>${e(order.customer)}</dd></div><div><dt>Celular</dt><dd>${e(order.phone)}</dd></div><div><dt>Serie</dt><dd>${e(order.serial||'Sin registrar')}</dd></div><div><dt>Accesorios</dt><dd>${order.accessories.map(e).join(', ')||'Sin accesorios'}</dd></div><div class="full"><dt>Falla reportada</dt><dd>${e(order.issue)}</dd></div><div class="full"><dt>Estado físico</dt><dd>${e(order.condition||'Sin observaciones')}</dd></div></dl>${order.photos.length?`<div class="photo-grid">${order.photos.map((src,i)=>orderPhotoThumbnail(safePhoto(src),i)).join('')}</div>`:`<p class="hint">${demoMode?'Esta orden de ejemplo no tiene fotos. Puedes añadirlas al crear una recepción.':'Sin fotos de ingreso.'}</p>`}</div></section><form class="panel" id="update-form" style="margin-top:20px"><div class="panel-head"><div><h2>Presupuesto y mensajes</h2></div></div><div class="section"><div class="field-grid"><label class="field">Presupuesto (S/)<input name="quote" type="number" min="0" max="999999.99" step="0.01" required value="${(order.quote/100).toFixed(2)}"></label><label class="field full">Notas internas<textarea name="notes" maxlength="2000">${e(order.notes)}</textarea><span class="hint">Solo aparecen en el panel del taller.</span></label><label class="field full">Mensaje para el cliente<textarea name="message" maxlength="600" required>${e(order.message)}</textarea><span class="hint">Visible en el seguimiento. No incluyas información sensible.</span></label></div><p class="error" id="update-error" role="alert"></p></div><div class="form-actions"><button class="primary" type="submit">Guardar cambios</button></div></form></div><aside><section class="panel"><div class="section"><h2>Seguimiento</h2><div class="actions-stack" style="margin-top:20px"><a class="primary" style="padding:13px;text-align:center;border-radius:8px" href="${demoMode?`#/track/${order.number}`:'#/orders'}" ${demoMode?'':'hidden'}>Abrir vista del cliente ↗</a><button id="copy-link">${demoMode?'Copiar enlace de demo':'Recuperar enlace del taller'}</button><button id="print-order" class="secondary">Imprimir recepción</button></div><p class="hint">${demoMode?'El enlace solo funciona con los datos de este navegador. No es un seguimiento compartido real.':'Reimprimir o copiar conserva el enlace y su vencimiento. Renovar o revocar invalida los tickets anteriores.'}</p></div></section><section class="panel" style="margin-top:20px"><div class="section"><h2>Historial</h2><ol class="timeline" id="order-history">${order.events.map(event=>`<li>${statusLabel(event.status)}<small>${date(event.at)}</small></li>`).join('')}</ol></div></section></aside></div>`);
   document.querySelector('#print-order').textContent='Ticket de recepción · QR';
   document.querySelector('#print-order').onclick=()=>{location.hash=`/ticket/${number}`;};
   if(!demoMode) enhanceDetail(order);
@@ -189,14 +211,14 @@ function notFound(client=false,demoTracking=false){
   const back=demoTracking?'<a class="row-link" href="#/orders">Volver al taller de demo →</a>':'';
   root.innerHTML=`<main class="tracker-main" id="main"><h1>Orden no disponible</h1><p>${help}</p>${back}</main>`;
 }
-function showReset(){const dialog=document.createElement('dialog');dialog.innerHTML='<h2>¿Restablecer la demo?</h2><p>Se eliminarán las órdenes y fotos creadas en este navegador y volverán los cinco ejemplos iniciales.</p><div class="dialog-actions"><button id="cancel-reset">Cancelar</button><button class="primary" id="confirm-reset">Restablecer</button></div>';document.body.append(dialog);dialog.showModal();dialog.querySelector('#cancel-reset').onclick=()=>dialog.close();dialog.querySelector('#confirm-reset').onclick=()=>{if(persist(seedOrders())){dialog.close();dashboard();notify('Datos ficticios restablecidos.');}};dialog.addEventListener('close',()=>dialog.remove());}
+function showReset(){const dialog=document.createElement('dialog');dialog.innerHTML='<h2>¿Restablecer la demo?</h2><p>Se eliminarán las órdenes y fotos creadas en este navegador y volverán los cinco ejemplos iniciales.</p><div class="dialog-actions"><button id="cancel-reset">Cancelar</button><button class="primary" id="confirm-reset">Restablecer</button></div>';document.body.append(dialog);dialog.showModal();dialog.querySelector('#cancel-reset').onclick=()=>dialog.close();dialog.querySelector('#confirm-reset').onclick=()=>{if(persist(seedOrders())){dialog.close();renderScreen();notify('Datos ficticios restablecidos.');}};dialog.addEventListener('close',()=>dialog.remove());}
 function exportOrders(){const cell=value=>`"${String(value??'').replace(/^[=+@\-\t\r]/,'\'$&').replaceAll('"','""')}"`;const rows=[['order_number','customer','phone','model','status','quote_pen','created_at'],...orders.map(o=>[`GT-${o.number}`,o.customer,o.phone,o.model,o.status,(o.quote/100).toFixed(2),o.created])];const url=URL.createObjectURL(new Blob(['\uFEFF'+rows.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download=demoMode?'garantiatrack-demo-orders.csv':'garantiatrack-orders.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notify(demoMode?'Exportación de demostración descargada.':'Exportación CSV descargada.');}
 function ticket(number){
   const order=orders.find(item=>item.number===number);if(!order)return notFound();
   const userId=session?.user?.id,workshopId=workshop?.id,ticketDemo=demoMode,version=renderVersion;
   showReceipt({root,order,workshopName:demoMode?'Pixel Lab':workshop.name,demo:demoMode,links:receiptLinks,backend,applicationUrl:config.publicAppUrl?`${config.publicAppUrl}/`:`${location.origin}${location.pathname}`,isCurrent:()=>renderVersion===version && demoMode===ticketDemo && (ticketDemo || (session?.user?.id===userId && workshop?.id===workshopId))});
 }
-function renderScreen(){const route=location.hash.slice(1)||'/orders';if(route==='/orders')dashboard();else if(route==='/intake')intake();else if(route==='/workshop')workshopSettings();else if(/^\/orders\/\d+$/.test(route))detail(Number(route.split('/').at(-1)));else if(/^\/ticket\/\d+$/.test(route))ticket(Number(route.split('/').at(-1)));else if(/^\/track\/\d+$/.test(route))tracking(Number(route.split('/').at(-1)));else notFound();window.scrollTo(0,0);}
+function renderScreen(){const [route,query]=location.hash.slice(1).split('?');if(!route||route==='/dashboard')dashboard();else if(route==='/orders')orderList(new URLSearchParams(query).get('status'));else if(route==='/intake')intake();else if(route==='/workshop')workshopSettings();else if(/^\/orders\/\d+$/.test(route))detail(Number(route.split('/').at(-1)));else if(/^\/ticket\/\d+$/.test(route))ticket(Number(route.split('/').at(-1)));else if(/^\/track\/\d+$/.test(route))tracking(Number(route.split('/').at(-1)));else notFound();window.scrollTo(0,0);}
 window.addEventListener('hashchange',()=>render());
 document.querySelector('.skip-link').addEventListener('click',event=>{event.preventDefault();document.querySelector('#main')?.focus();});
 if(demoEnabled) window.addEventListener('storage',event=>{if(event.key===storageKey){notify('Los datos cambiaron en otra pestaña. Recarga antes de editar.');}});
@@ -224,7 +246,7 @@ async function initializeConnection(){
         photoViewer.close();
         workspaceTransition.clear();root.replaceChildren();
         receiptLinks.clear();
-        orders=[];completeOrderList=false;workshop=null;renderVersion++;
+        orders=[];workshop=null;renderVersion++;
         setTimeout(()=>{if(!demoMode)render();},0);
       }
     });
@@ -235,9 +257,9 @@ async function signOut(){
   photoViewer.close();
   if(!demoMode){const {error}=await backend.client.auth.signOut({scope:'local'});if(error){notify(friendly(error));return;}}
   receiptLinks.clear();
-  sessionStorage.removeItem('garantiatrack.mode');demoMode=false;session=null;workshop=null;orders=[];completeOrderList=false;recovery=false;
+  sessionStorage.removeItem('garantiatrack.mode');demoMode=false;session=null;workshop=null;orders=[];recovery=false;
   clearTimeout(toastTimer);document.querySelector('#toast').textContent='';document.querySelector('#toast').classList.remove('visible');
-  location.hash='/orders';render();
+  location.hash='/dashboard';render();
 }
 function accessScreen(mode='login'){
   if(mode==='confirmation'){
@@ -248,7 +270,7 @@ function accessScreen(mode='login'){
   const titles={login:'Iniciar sesión',register:'Crear cuenta',reset:'Recuperar acceso',recovery:'Elige una nueva contraseña.'};
   root.innerHTML=`<div class="tracker-body"><header class="tracker-top">${brand}</header><main class="tracker-main" id="main" tabindex="-1"><div class="tracker-intro"><h1>${titles[mode]}</h1></div><section class="panel"><div class="section">${configured?`<form id="auth-form" class="actions-stack">${mode!=='recovery'?'<label class="field">Correo electrónico<input name="email" type="email" autocomplete="email" required maxlength="254"></label>':''}${mode!=='reset'?`<label class="field">Contraseña<input name="password" type="password" autocomplete="${mode==='login'?'current-password':'new-password'}" required minlength="${mode==='login'?1:12}" maxlength="128"></label>`:''}<p id="auth-error" class="error" role="alert"></p><p id="auth-info" class="hint" role="status"></p><button type="submit" class="primary">${{login:'Entrar al taller',register:'Crear cuenta',reset:'Enviar enlace de recuperación',recovery:'Guardar contraseña'}[mode]}</button></form><div class="auth-links">${[['login','Iniciar sesión'],['register','Crear cuenta'],['reset','Olvidé mi contraseña']].filter(([key])=>key!==mode).map(([key,label])=>`<button class="quiet small" data-auth="${key}">${label}</button>`).join('')}</div>`:'<h2>Conectemos tu Supabase</h2><p class="subtitle">Falta configurar la URL del proyecto y su clave pública. Consulta docs/supabase-setup.md y reinicia el servidor después de completar .env.</p><p class="hint">El acceso a datos reales permanece cerrado hasta configurar el servicio.</p>'}${demoEnabled?`<hr style="border:0;border-top:1px solid var(--line);margin:24px 0"><button id="enter-demo" class="secondary" style="width:100%">Explorar con datos ficticios</button><p class="hint">La demo es independiente. No importa datos ni simula una sesión autenticada.</p>`:''}</div></section></main></div>`;
   if(demoEnabled){
-    document.querySelector('#enter-demo').onclick=()=>{receiptLinks.clear();sessionStorage.setItem('garantiatrack.mode','demo');demoMode=true;loadDemo();location.hash='/orders';render();};
+    document.querySelector('#enter-demo').onclick=()=>{receiptLinks.clear();sessionStorage.setItem('garantiatrack.mode','demo');demoMode=true;loadDemo();location.hash='/dashboard';render();};
   }
   document.querySelectorAll('[data-auth]').forEach(button=>button.onclick=()=>accessScreen(button.dataset.auth));
   const form=document.querySelector('#auth-form');if(!form)return;
@@ -268,7 +290,7 @@ function accessScreen(mode='login'){
         const {error}=await backend.client.auth.resetPasswordForEmail(email,{redirectTo:redirect});if(error)throw error;
         infoNode.textContent='Si existe una cuenta con ese correo, recibirás las instrucciones de recuperación.';
       }else{
-        const {error}=await backend.client.auth.updateUser({password});if(error)throw error;recovery=false;history.replaceState(null,'',location.pathname+'#/orders');render();notify('Contraseña actualizada.');
+        const {error}=await backend.client.auth.updateUser({password});if(error)throw error;recovery=false;history.replaceState(null,'',location.pathname+'#/dashboard');render();notify('Contraseña actualizada.');
       }
     }catch(error){if(form.isConnected)errorNode.textContent=friendly(error);}finally{button.disabled=false;}
   };
@@ -316,7 +338,8 @@ function enhanceDetail(order){
 }
 async function render(){
   photoViewer.close();
-  const version=++renderVersion,route=location.hash.slice(1)||'/orders';
+  const version=++renderVersion,route=location.hash.slice(1)||'/dashboard';
+  search='';
   if(demoMode && !route.startsWith('/tracking/')){renderScreen();return;}
   if(!configured){accessScreen();return;}
   const internal=!route.startsWith('/tracking/');
@@ -334,16 +357,16 @@ async function render(){
     if(recovery){accessScreen('recovery');return;}
     const loaded=await loadWorkspace(backend,route,workshop?.id,()=>version===renderVersion,checked=>{
       if(transitioning&&checked?.id!==workshop?.id){
-        workspaceTransition.clear();orders=[];completeOrderList=false;receiptLinks.clear();
+        workspaceTransition.clear();orders=[];receiptLinks.clear();
         root.innerHTML='<main class="tracker-main" id="main"><h1>Conectando con tu taller…</h1><p role="status">Comprobando acceso.</p></main>';
       }
     });
     if(!loaded)return;
     workspaceTransition.clear();
-    if(workshop?.id!==loaded.workshop?.id){orders=[];completeOrderList=false;receiptLinks.clear();}
+    if(workshop?.id!==loaded.workshop?.id){orders=[];receiptLinks.clear();}
     workshop=loaded.workshop;
-    if(!workshop){orders=[];completeOrderList=false;onboarding();return;}
-    if(loaded.request.kind==='list'){orders=loaded.orders;completeOrderList=true;}
+    if(!workshop){orders=[];onboarding();return;}
+    if(loaded.request.kind==='list'){orders=loaded.orders;}
     else if(loaded.request.kind==='order')orders=[...orders.filter(order=>order.number!==loaded.request.number),...loaded.orders];
     if(/^\/track\//.test(route)){notFound(true);return;}
     renderScreen();
@@ -351,7 +374,7 @@ async function render(){
   }catch(error){
     if(version!==renderVersion)return;
     workspaceTransition.clear();
-    orders=[];completeOrderList=false;workshop=null;receiptLinks.clear();root.innerHTML=`<main class="tracker-main" id="main"><h1>No pudimos conectar.</h1><p class="error">${e(friendly(error))}</p><button id="retry">Reintentar</button> <button id="exit">${session?'Cerrar sesión':'Volver al acceso'}</button></main>`;
+    orders=[];workshop=null;receiptLinks.clear();root.innerHTML=`<main class="tracker-main" id="main"><h1>No pudimos conectar.</h1><p class="error">${e(friendly(error))}</p><button id="retry">Reintentar</button> <button id="exit">${session?'Cerrar sesión':'Volver al acceso'}</button></main>`;
     document.querySelector('#retry').onclick=()=>render();document.querySelector('#exit').onclick=()=>session?signOut():accessScreen();
   }
 }

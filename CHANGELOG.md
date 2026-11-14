@@ -4,7 +4,8 @@
 
 ### Changed
 
-- Combine order counts with their filters and simplify workshop navigation and copy.
+- Separate a dashboard with four clickable order totals from reception, the order list, and workshop settings.
+- Simplify workspace and sign-in copy and consolidate duplicate actions.
 
 ## [0.10.7] - 2026-11-12
 
